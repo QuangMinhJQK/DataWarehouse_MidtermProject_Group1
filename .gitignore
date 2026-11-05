@@ -209,6 +209,12 @@ tempCodeRunnerFile.py
 # PyPI configuration file
 .pypirc
 
+# LaTeX Workshop build output
+docs/build/
+
+# Local Fabric credentials and public certificate output
+tools/fabric/local/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
