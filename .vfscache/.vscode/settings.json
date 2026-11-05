@@ -1,0 +1,20 @@
+{
+  "python.analysis.stubPath": "d:\\CODE\\datawarehouse\\DataWarehouse_MidtermProject_Group1\\.stubs\\pyspark34",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingModuleSource": "none"
+  },
+  "synapse.workspaceFilter": {
+    "workspaceIds": [
+      "d0eaee60-9f3e-47b2-8aee-bbd327ab2062"
+    ]
+  },
+  "chat.agentSkillsLocations": {
+    ".agents/skills": true,
+    ".github/skills": true,
+    ".claude/skills": true,
+    "~/.agents/skills": true,
+    "~/.copilot/skills": true,
+    "~/.claude/skills": true,
+    "~/.vscode/extensions/synapsevscode.synapse-1.27.0/copilot/skills": true
+  }
+}

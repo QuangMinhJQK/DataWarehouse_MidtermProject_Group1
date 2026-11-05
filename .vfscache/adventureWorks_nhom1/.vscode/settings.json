@@ -1,0 +1,6 @@
+{
+  "python.analysis.stubPath": "d:\\CODE\\datawarehouse\\DataWarehouse_MidtermProject_Group1\\.stubs\\pyspark34",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingModuleSource": "none"
+  }
+}
