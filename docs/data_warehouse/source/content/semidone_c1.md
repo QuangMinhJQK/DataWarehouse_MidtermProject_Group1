@@ -64,3 +64,11 @@ Về phạm vi thử nghiệm và đánh giá, dự án kiểm tra chất lượ
 
 Dự án được triển khai ở quy mô đồ án môn học, tập trung mô phỏng và đánh giá giải pháp trong môi trường thử nghiệm. Các nội dung như vận hành hệ thống ở quy mô doanh nghiệp, tích hợp dữ liệu giao dịch thời gian thực, tối ưu toàn bộ hoạt động sản xuất và quản lý chuỗi cung ứng nằm ngoài phạm vi triển khai của đồ án.
 
+
+Chaudhuri, S., & Dayal, U. (1997). An overview of data warehousing and OLAP technology. ACM SIGMOD Record, 26(1), 65–74. https://doi.org/10.1145/248603.248616
+
+Microsoft. (n.d.-a). Analysis Services tutorial scenario. Microsoft Learn. https://learn.microsoft.com/en-us/analysis-services/multidimensional-tutorial/analysis-services-tutorial-scenario?view=sql-analysis-services-2025
+
+Microsoft. (n.d.-c). What is Microsoft Fabric? Microsoft Learn. https://learn.microsoft.com/en-us/fabric/fundamentals/microsoft-fabric-overview
+
+Microsoft. (n.d.-b). What is Fabric Data Warehouse? Microsoft Learn. https://learn.microsoft.com/en-us/fabric/data-warehouse/data-warehousing

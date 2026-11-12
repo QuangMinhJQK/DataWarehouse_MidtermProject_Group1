@@ -1,5 +1,5 @@
 % !TEX program = xelatex
-% Báo cáo kiến tập - Khoa Hệ thống thông tin, UEL
+% Đồ án môn học Nhà kho dữ liệu và tích hợp
 % Biên dịch: xelatex main.tex (chạy 2 lần để cập nhật mục lục)
 \documentclass[13pt,a4paper]{extarticle}
 
@@ -9,6 +9,7 @@
 \usepackage{setspace,indentfirst,graphicx,float,xcolor,tikz}
 \usepackage{array,tabularx,longtable,multirow,enumitem}
 \usepackage{titlesec}
+\usepackage[authoryear,round]{natbib}
 \usepackage[font=it,labelsep=colon,justification=centering]{caption}
 \usepackage[hidelinks,unicode]{hyperref}
 
@@ -16,7 +17,7 @@
 \newcommand{\tenkhoa}{KHOA HỆ THỐNG THÔNG TIN}
 \newcommand{\tennganh}{HỆ THỐNG THÔNG TIN QUẢN LÝ}
 \newcommand{\tenchuyennganh}{KINH DOANH SỐ VÀ TRÍ TUỆ NHÂN TẠO}
-\newcommand{\tendetai}{XÂY DỰNG PIPELINE ĐỒNG BỘ DỮ LIỆU GẦN THỜI GIAN THỰC - TÍCH HỢP KIỂM SOÁT CHẤT LƯỢNG DỮ LIỆU VÀ GIÁM SÁT VẬN HÀNH}
+\newcommand{\tendetai}{XÂY DỰNG GIẢI PHÁP KHO DỮ LIỆU TRÊN NỀN TẢNG MICROSOFT \mbox{FABRIC} CHO HOẠT ĐỘNG BÁN HÀNG CỦA ADVENTURE WORKS CYCLES}
 \newcommand{\gvhd}{[Học hàm, học vị, họ tên GVHD]}
 \newcommand{\svth}{[Họ tên sinh viên]}
 \newcommand{\mssv}{[MSSV]}
@@ -32,9 +33,10 @@
 \graphicspath{{images/}}
 \renewcommand{\contentsname}{MỤC LỤC}
 \renewcommand{\listfigurename}{DANH MỤC HÌNH ẢNH}
-\renewcommand{\listtablename}{DANH MỤC BẢNG}
+\renewcommand{\listtablename}{DANH MỤC BẢNG BIỂU}
 \renewcommand{\figurename}{Hình}
 \renewcommand{\tablename}{Bảng}
+\renewcommand{\refname}{TÀI LIỆU THAM KHẢO}
 \counterwithin{figure}{section}
 \counterwithin{table}{section}
 \captionsetup[table]{position=top}
@@ -53,6 +55,7 @@
 
 % \heading{...}: đề mục lớn không đánh số (LỜI CẢM ƠN, A., B., C., ...)
 \newcommand{\heading}[1]{\clearpage\section*{#1}\addcontentsline{toc}{section}{#1}}
+\newcommand{\chuong}[1]{\clearpage\refstepcounter{section}\section*{CHƯƠNG \thesection: #1}\addcontentsline{toc}{section}{CHƯƠNG \thesection: #1}}
 % \phan{...}: "PHẦN n: ..." trong mục B; \phan[]{...} để không sang trang mới
 \newcommand{\phan}[2][\clearpage]{#1\refstepcounter{section}%
   \section*{PHẦN \thesection: #2}\addcontentsline{toc}{phan}{PHẦN \thesection: #2}}
@@ -88,9 +91,9 @@
 \begin{document}
 
 \input{frontmatter}
-\input{part-a}
-\input{part-b}
-\input{part-c}
+\input{chapter-1}
+\input{chapter-2}
+\input{planned-toc}
 \input{backmatter}
 
 \end{document}
