@@ -1,9 +1,9 @@
 # Báo cáo LaTeX
 
-Mở thư mục gốc của dự án trong VS Code, sau đó mở `docs/main.tex`.
+Mở thư mục gốc của dự án trong VS Code, sau đó mở `docs/data_warehouse/main.tex` cho môn Nhà kho dữ liệu và tích hợp hoặc `docs/BI/main.tex` cho môn BI.
 Dùng lệnh **LaTeX Workshop: Build LaTeX project** (hoặc `Ctrl+Alt+B`)
 và chọn recipe **latexmk (XeLaTeX)** nếu được hỏi. PDF được tạo tại
-`docs/build/main.pdf`; dùng **LaTeX Workshop: View LaTeX PDF** để xem.
+`docs/data_warehouse/build/main.pdf` hoặc `docs/BI/build/main.pdf`; dùng **LaTeX Workshop: View LaTeX PDF** để xem.
 
 Mẫu dùng XeLaTeX để gõ tiếng Việt UTF-8 với Times New Roman. Sửa thông tin
 trang bìa và thay các đoạn hướng dẫn trong từng chương bằng nội dung thực tế
