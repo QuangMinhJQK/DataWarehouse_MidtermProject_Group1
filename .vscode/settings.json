@@ -8,6 +8,9 @@
         "~/.claude/skills": true,
         "~/.vscode/extensions/synapsevscode.synapse-1.27.0/copilot/skills": true
     },
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.latex.rootFile.doNotPrompt": true,
+    "latex-workshop.latex.rootFile.useSubFile": false,
     "latex-workshop.latex.outDir": "%DIR%/build",
     "latex-workshop.latex.recipes": [
         {
@@ -18,7 +21,7 @@
     "latex-workshop.latex.tools": [
         {
             "name": "latexmk-xelatex",
-            "command": "latexmk",
+            "command": "C:\\Users\\Khai\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\latexmk.exe",
             "args": [
                 "-pdfxe",
                 "-synctex=1",
@@ -26,7 +29,10 @@
                 "-file-line-error",
                 "-outdir=%OUTDIR%",
                 "%DOC%"
-            ]
+            ],
+            "env": {
+                "PATH": "C:\\Users\\Khai\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64;C:\\Strawberry\\perl\\bin;%PATH%"
+            }
         }
     ]
 }

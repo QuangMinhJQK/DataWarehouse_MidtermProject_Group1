@@ -1,0 +1,164 @@
+\chuong{XÂY DỰNG KHO DỮ LIỆU TRÊN MICROSOFT FABRIC}
+
+\subsection{Kiến trúc tổng thể của giải pháp}
+
+Giải pháp được triển khai hoàn toàn trong một workspace của Microsoft Fabric, nhận dữ liệu từ một cơ sở dữ liệu Azure SQL mô phỏng hệ thống giao dịch và đưa dữ liệu qua ba tầng Bronze, Silver, Gold theo kiến trúc Medallion. Kiến trúc Medallion tổ chức dữ liệu thành nhiều tầng liên tiếp, mỗi tầng nâng dần chất lượng và mức độ sẵn sàng cho phân tích so với tầng trước~\citep{microsoft-medallion}. Hình~\ref{fig:fabric-architecture} mô tả toàn bộ kiến trúc, từ nguồn dữ liệu bên trái, các tầng xử lý trong workspace ở giữa, đến các đối tượng khai thác ở bên phải.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth,keepaspectratio]{fabric.jpg}
+\caption{Kiến trúc Medallion của giải pháp trên Microsoft Fabric.}
+\label{fig:fabric-architecture}
+\end{figure}
+
+\subsubsection{Kiến trúc Microsoft Fabric}
+
+Kiến trúc gồm ba khối chính. Khối thứ nhất là nguồn dữ liệu: cơ sở dữ liệu Azure SQL AdventureWorks, chứa năm lược đồ nguồn là HumanResources, Person, Production, Purchasing và Sales. Khối thứ hai là workspace Microsoft Fabric, nơi toàn bộ quá trình tích hợp, chuyển đổi và lưu trữ diễn ra qua các tầng:
+
+\begin{itemize}[nosep]
+\item Tầng Bronze: một Lakehouse lưu các bảng nguồn ở dạng thô (\textit{Raw Source Tables}).
+\item Tầng Silver: một Lakehouse gồm hai vùng xử lý là STG (chuẩn hóa dữ liệu) và INT (tích hợp dữ liệu và áp dụng quy tắc nghiệp vụ).
+\item Tầng Gold: một Warehouse chứa các bảng chiều, bảng sự kiện và data mart, cùng một Lakehouse chứa đặc trưng và biến mục tiêu cho học máy (\textit{ML Features, Targets}).
+\end{itemize}
+
+Khối thứ ba là các đối tượng khai thác dữ liệu (\textit{Consumers}). Warehouse tầng Gold được công bố qua một Semantic model, từ đó phục vụ báo cáo Power BI và một Data agent. Ngoài luồng chính, kiến trúc còn có một nhánh học máy: dữ liệu huấn luyện lấy từ Lakehouse tầng Gold được đưa vào Fabric AutoML để huấn luyện mô hình, sau đó kết quả dự báo (\textit{ML result}) được ghi ngược về Lakehouse tầng Gold.
+
+\subsubsection{Luồng dữ liệu trong hệ thống}
+
+Dữ liệu đi qua hệ thống theo các bước sau:
+
+\begin{enumerate}[nosep]
+\item Dữ liệu từ năm lược đồ của Azure SQL Database được sao chép nguyên trạng vào Lakehouse tầng Bronze bằng một Data Pipeline sử dụng hoạt động \textit{Copy job}.
+\item Từ Bronze sang Silver, một Data Pipeline gọi \textit{Data flow} để đọc các bảng thô, chuẩn hóa ở vùng STG rồi tích hợp, áp dụng quy tắc nghiệp vụ ở vùng INT.
+\item Từ Silver sang Gold, một Data Pipeline chạy các \textit{Script} để nạp dữ liệu INT vào các bảng chiều và bảng sự kiện của Warehouse.
+\item Từ Warehouse, dữ liệu được chuyển tiếp sang Lakehouse tầng Gold để tạo tập đặc trưng cho học máy.
+\item Fabric AutoML nhận dữ liệu huấn luyện (\textit{Training Data}) từ Lakehouse tầng Gold, huấn luyện mô hình và trả kết quả dự báo về cùng Lakehouse.
+\item Warehouse tầng Gold được mô hình hóa thành Semantic model để Power BI và Data agent truy vấn.
+\end{enumerate}
+
+\subsubsection{Vai trò của OneLake}
+
+OneLake là lớp lưu trữ dùng chung của Microsoft Fabric, đóng vai trò một data lake logic duy nhất cho toàn bộ tổ chức. Các Lakehouse và Warehouse trong workspace đều lưu dữ liệu tại OneLake ở định dạng Delta Parquet~\citep{microsoft-onelake}. Nhờ vậy, dữ liệu đi từ tầng này sang tầng khác trong cùng nền tảng mà không cần một hệ thống lưu trữ riêng cho từng tầng, Warehouse tầng Gold và Lakehouse tầng Silver cùng truy cập được một kho lưu trữ thống nhất, và Semantic model đọc dữ liệu trực tiếp từ nơi chúng đã được lưu.
+
+\subsubsection{Vai trò của Lakehouse và Data Warehouse}
+
+Giải pháp kết hợp cả hai loại đối tượng lưu trữ, mỗi loại đảm nhận phần việc phù hợp với đặc điểm của nó. Lakehouse được dùng ở tầng Bronze và Silver, nơi dữ liệu còn thay đổi cấu trúc và cần được xử lý linh hoạt bằng pipeline, dataflow hoặc notebook. Lakehouse cũng được dùng ở tầng Gold để chứa đặc trưng học máy, vì dữ liệu này là đầu vào cho notebook và AutoML chứ không phải cho truy vấn báo cáo.
+
+Data Warehouse được dùng ở tầng Gold cho dữ liệu đã chuẩn hóa theo mô hình chiều. Fabric Data Warehouse là lớp dữ liệu quan hệ, hỗ trợ đầy đủ T-SQL và phù hợp với mô hình hình sao~\citep{microsoft-warehouse}, nên thích hợp để chứa bảng sự kiện bán hàng cùng các bảng chiều làm nguồn cho Semantic model.
+
+\subsection{Tích hợp dữ liệu với Microsoft Fabric}
+
+\subsubsection{Kết nối và thu thập dữ liệu nguồn}
+
+Dữ liệu gốc của AdventureWorks ở dạng tệp CSV, được chia theo năm lược đồ nghiệp vụ là HumanResources, Person, Production, Purchasing và Sales. Để mô phỏng một hệ thống giao dịch thực tế, nhóm nạp các tệp CSV này vào một cơ sở dữ liệu Azure SQL, dùng cơ sở dữ liệu đó làm nguồn OLTP cho toàn bộ giải pháp (Hình~\ref{fig:datasource}). Cách làm này giữ đúng điểm xuất phát của một dự án kho dữ liệu trong thực tế là dữ liệu nằm trong hệ thống vận hành, chưa được mô hình hóa cho phân tích.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.85\textwidth,keepaspectratio]{datasource.png}
+\caption{Nguồn dữ liệu: các tệp CSV AdventureWorks được nạp vào Azure SQL Database.}
+\label{fig:datasource}
+\end{figure}
+
+Từ Azure SQL Database, dữ liệu được đưa vào Fabric bằng một Data Pipeline với hoạt động Copy job, ghi vào Lakehouse tầng Bronze (Hình~\ref{fig:fabric-architecture}).
+
+\todo{Bổ sung: tên server/database (ẩn thông tin nhạy cảm), loại connection trong Fabric, ảnh chụp cấu hình connection và danh sách bảng được chọn.}
+
+\subsubsection{Xây dựng Data Pipeline}
+
+Giải pháp sử dụng ba nhóm hoạt động trong các Data Pipeline, mỗi nhóm đảm nhận một chặng của luồng dữ liệu, như Bảng~\ref{tab:pipelines} tóm tắt.
+
+\begin{table}[H]\centering
+\caption{Các hoạt động pipeline trong giải pháp}
+\label{tab:pipelines}
+\begin{tabularx}{\textwidth}{|l|l|X|}\hline
+\textbf{Hoạt động} & \textbf{Chặng} & \textbf{Nhiệm vụ} \\ \hline
+Copy job & Azure SQL $\rightarrow$ Bronze & Sao chép các bảng nguồn vào Lakehouse tầng Bronze \\ \hline
+Data flow & Bronze $\rightarrow$ Silver & Chuẩn hóa, tích hợp dữ liệu và áp dụng quy tắc nghiệp vụ \\ \hline
+Script & Silver $\rightarrow$ Gold & Chạy các câu lệnh nạp dữ liệu vào Warehouse \\ \hline
+\end{tabularx}
+\end{table}
+
+\todo{Bổ sung: ảnh chụp canvas pipeline, thứ tự và ràng buộc giữa các hoạt động, tham số, cách xử lý lỗi.}
+
+\subsubsection{Xây dựng Dataflow Gen2}
+
+Ở chặng Bronze sang Silver, kiến trúc sử dụng \textit{Data flow} để biến đổi dữ liệu thô thành dữ liệu đã chuẩn hóa và tích hợp.
+
+\todo{Bổ sung: các truy vấn Power Query trong dataflow, các bước làm sạch cụ thể (kiểu dữ liệu, giá trị thiếu, trùng lặp), đích ghi dữ liệu.}
+
+\subsubsection{Tự động hóa quá trình tích hợp dữ liệu}
+
+\todo{Bổ sung: pipeline tổng điều phối ba chặng, lịch chạy, kết quả chạy thử. Nội dung chi tiết nằm ở mục 5.1.}
+
+\subsection{Xây dựng Lakehouse theo Medallion Architecture}
+
+Bảng~\ref{tab:medallion-layers} tổng hợp vai trò của từng tầng trong kiến trúc Medallion của giải pháp.
+
+\begin{table}[H]\centering
+\caption{Tổng hợp các tầng trong kiến trúc Medallion}
+\label{tab:medallion-layers}
+\begin{tabularx}{\textwidth}{|l|l|X|}\hline
+\textbf{Tầng} & \textbf{Đối tượng Fabric} & \textbf{Nội dung} \\ \hline
+Bronze & Lakehouse & Bảng nguồn thô, giữ nguyên cấu trúc từ Azure SQL \\ \hline
+Silver & Lakehouse (STG, INT) & Dữ liệu đã chuẩn hóa và tích hợp, áp dụng quy tắc nghiệp vụ \\ \hline
+Gold & Warehouse & Bảng chiều, bảng sự kiện và data mart phục vụ phân tích \\ \hline
+Gold & Lakehouse & Đặc trưng và biến mục tiêu cho học máy, cùng kết quả dự báo \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{Tầng Bronze – dữ liệu nguồn}
+
+Tầng Bronze là một Lakehouse lưu các bảng nguồn ở dạng thô, giữ nguyên cấu trúc của năm lược đồ nguồn. Tầng này chưa áp dụng bất kỳ phép biến đổi nào, nhằm lưu lại một bản sao trung thực của hệ thống nguồn để có thể đối chiếu và chạy lại các bước phía sau khi cần.
+
+\todo{Bổ sung: danh sách bảng đã nạp, số dòng của từng bảng, ảnh chụp Lakehouse Bronze.}
+
+\subsubsection{Tầng Silver – dữ liệu làm sạch và chuyển đổi}
+
+Tầng Silver là một Lakehouse chia thành hai vùng xử lý. Vùng STG (\textit{Data Standardization}) chuẩn hóa dữ liệu từ Bronze, như thống nhất kiểu dữ liệu và định dạng. Vùng INT (\textit{Data Integration \& Business Rules}) tích hợp dữ liệu giữa các bảng và áp dụng các quy tắc nghiệp vụ, tạo ra dữ liệu sẵn sàng cho việc xây dựng mô hình chiều.
+
+\todo{Bổ sung: quy tắc chuẩn hóa ở STG, quy tắc nghiệp vụ ở INT (ví dụ định nghĩa doanh thu, trạng thái đơn hàng), các bảng Silver kết quả.}
+
+\subsubsection{Tầng Gold – dữ liệu được chuẩn hóa phục vụ phân tích}
+
+Tầng Gold gồm hai đối tượng với hai mục đích khác nhau. Warehouse chứa các bảng chiều, bảng sự kiện và data mart theo mô hình chiều, là nguồn của Semantic model. Lakehouse chứa đặc trưng và biến mục tiêu cho học máy, đồng thời nhận kết quả dự báo từ mô hình để các báo cáo có thể khai thác cùng với dữ liệu lịch sử.
+
+\todo{Bổ sung: danh sách bảng Gold, ảnh chụp Warehouse và Lakehouse Gold.}
+
+\subsubsection{Luồng chuyển đổi dữ liệu giữa các tầng}
+
+Dữ liệu chỉ đi theo một chiều chính từ Bronze sang Silver rồi sang Gold: Data flow đảm nhận chặng Bronze sang Silver, các Script đảm nhận chặng Silver sang Gold (Bảng~\ref{tab:pipelines}). Riêng tầng Gold có thêm một vòng phụ cho học máy, trong đó dữ liệu huấn luyện đi ra khỏi Lakehouse tầng Gold và kết quả dự báo quay trở lại cùng Lakehouse.
+
+\subsection{Thiết kế Data Warehouse cho hoạt động bán hàng}
+
+\subsubsection{Xác định Business Process và Grain}
+\todo{Quy trình bán hàng; grain: một dòng cho mỗi SalesOrderDetailID (đã nêu ở mục 2.5.2).}
+\subsubsection{Xây dựng Bus Matrix}
+\todo{Bus matrix: quy trình bán hàng $\times$ các chiều thời gian, sản phẩm, khách hàng, lãnh thổ, kênh bán.}
+\subsubsection{Thiết kế Dimension Tables}
+\todo{Danh sách chiều, khóa thay thế, thuộc tính.}
+\subsubsection{Thiết kế Fact Tables}
+\todo{Bảng sự kiện, số đo, khóa ngoại.}
+\subsubsection{Xây dựng mô hình Star Schema}
+\todo{Sơ đồ hình sao.}
+
+\subsection{Xây dựng Fabric Data Warehouse}
+
+\subsubsection{Tạo và cấu hình Data Warehouse}
+\todo{Tạo Warehouse trong workspace, đặt tên, cấu hình.}
+\subsubsection{Xây dựng các bảng Dimension}
+\todo{Script tạo bảng chiều.}
+\subsubsection{Xây dựng các bảng Fact}
+\todo{Script tạo bảng sự kiện.}
+\subsubsection{Thiết lập khóa và mối quan hệ}
+\todo{Khóa chính, khóa ngoại.}
+\subsubsection{Nạp và đồng bộ dữ liệu}
+\todo{Script nạp dữ liệu từ Silver vào Warehouse.}
+
+\subsection{Xây dựng Semantic Model}
+
+\subsubsection{Thiết kế mô hình dữ liệu phân tích}
+\todo{Semantic model tạo trên Warehouse tầng Gold, các bảng được đưa vào.}
+\subsubsection{Xây dựng Measures và KPI}
+\todo{Các measure DAX: doanh thu, số lượng, số đơn hàng.}
+\subsubsection{Thiết lập Relationships và Hierarchies}
+\todo{Quan hệ giữa bảng sự kiện và bảng chiều, hierarchy thời gian, sản phẩm, khu vực.}
+\subsubsection{Kết nối với Power BI}
+\todo{Power BI và Data agent kết nối với Semantic model (Hình~\ref{fig:fabric-architecture}).}
