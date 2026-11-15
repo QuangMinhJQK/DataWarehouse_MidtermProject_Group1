@@ -1,0 +1,182 @@
+% !TEX root = main.tex
+
+\chuong{XÂY DỰNG CÁC MÔ HÌNH HỌC MÁY CHO HOẠT ĐỘNG BÁN HÀNG}
+
+\subsection{Chuẩn bị dữ liệu cho Machine Learning}
+
+\subsubsection{Xác định phạm vi bài toán}
+
+Nhánh học máy được xây dựng từ dữ liệu lịch sử tại tầng Gold và gồm ba bài toán có đối tượng dự báo, cửa sổ thời gian và dạng biến mục tiêu khác nhau. Bài toán thứ nhất dự báo lượng bán của từng sản phẩm trong 7 ngày tiếp theo. Hai bài toán còn lại phân tích hành vi khách hàng, lần lượt dự đoán khả năng mua lại trong 30 ngày và nhóm sản phẩm chính của lần mua tiếp theo trong 60 ngày.
+
+\begin{table}[H]\centering
+\caption{Phạm vi ba bài toán học máy}
+\label{tab:ml-problems}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{3.4cm}|p{3.7cm}|X|}\hline
+\textbf{Bài toán} & \textbf{Mức hạt} & \textbf{Biến mục tiêu} & \textbf{Dạng bài toán} \\ \hline
+Lượng bán 7 ngày & Một sản phẩm tại một ngày chốt & Tổng số lượng bán từ ngày $t+1$ đến $t+7$ & Hồi quy \\ \hline
+Mua lại 30 ngày & Một khách hàng tại một ngày chốt & Nhãn 1 nếu có mua lại từ $t+1$ đến $t+30$, ngược lại là 0 & Phân loại nhị phân \\ \hline
+Nhóm sản phẩm tiếp theo 60 ngày & Một khách hàng tại một ngày chốt & \texttt{BIKES}, \texttt{ACCESSORIES} hoặc \texttt{OTHER} & Phân loại đa lớp \\ \hline
+\end{tabularx}
+\end{table}
+
+Ba bài toán không sử dụng cùng một mức hạt. Vì vậy, khóa sản phẩm hoặc khách hàng và ngày chốt được giữ lại để nhận diện bản ghi, kiểm tra tính nhất quán và liên kết kết quả với dữ liệu nghiệp vụ, nhưng không được đưa vào tập đặc trưng huấn luyện. Cách phân tách này giúp mô hình học từ hành vi lịch sử thay vì ghi nhớ mã định danh của từng đối tượng.
+
+\subsubsection{Xây dựng các tập dữ liệu dạng rộng}
+
+Mỗi bài toán sử dụng một bảng dạng rộng đã được chuẩn bị tại Lakehouse Gold. Bảng dự báo lượng bán có 141.457 dòng, bảng mua lại có 303.836 dòng và bảng dự đoán nhóm sản phẩm tiếp theo có 37.261 dòng. Các tổng này bao gồm nhiều vai trò dữ liệu trong cùng một bảng, như huấn luyện, holdout và thời điểm chấm điểm; do đó không được hiểu là toàn bộ các dòng đều có nhãn để huấn luyện.
+
+\begin{table}[H]\centering
+\caption{Đặc trưng sử dụng cho ba bài toán học máy}
+\label{tab:ml-features}
+\begin{tabularx}{\textwidth}{|p{3.1cm}|p{4.7cm}|X|}\hline
+\textbf{Bài toán} & \textbf{Đặc trưng} & \textbf{Ý nghĩa} \\ \hline
+Lượng bán 7 ngày & \path{qty_7}, \path{qty_14}, \path{qty_28} & Tổng lượng bán quan sát được trong 7, 14 và 28 ngày gần nhất tính đến ngày chốt \\ \hline
+Lượng bán 7 ngày & \path{std_28}, \path{positive_28}, \path{weekday} & Độ dao động lượng bán trong 28 ngày, số ngày có bán trong 28 ngày và thứ của ngày chốt \\ \hline
+Mua lại 30 ngày và nhóm sản phẩm 60 ngày & \path{recency}, \path{buy_days}, \path{orders_90}, \path{units_90}, \path{net_90} & Độ gần của lần mua cuối, số ngày có mua, số đơn, số lượng và giá trị mua trong 90 ngày gần nhất \\ \hline
+Mua lại 30 ngày và nhóm sản phẩm 60 ngày & \path{last_bikes}, \path{last_accessories}, \path{last_other} & Ba biến nhị phân mô tả nhóm sản phẩm chính của lần mua gần nhất \\ \hline
+\end{tabularx}
+\end{table}
+
+Đối với bài toán lượng bán, lịch ngày được dựng liên tục cho các thành phẩm trong khoảng thời gian đủ điều kiện bán. Ngày không phát sinh giao dịch được biểu diễn bằng lượng bán bằng 0. Một dòng chỉ đủ điều kiện tạo đặc trưng khi có 28 ngày lịch sử và chỉ được gán nhãn khi có đủ 7 ngày tương lai. Cách xây dựng này giữ lại cả thời điểm không bán được sản phẩm, phù hợp với mục tiêu dự báo lượng bán quan sát được thay vì chỉ dự báo trên các ngày đã có giao dịch.
+
+Đối với hai bài toán khách hàng, phạm vi đặc trưng là 90 ngày gần nhất. Các dòng hàng của cùng khách hàng trong cùng một ngày được tổng hợp thành một giỏ hàng. Nhóm chính của giỏ là nhóm có tổng lượng bán lớn nhất; nếu nhiều nhóm bằng nhau thì thứ tự chữ cái được dùng để xác định kết quả. Ngoài hai nhóm \texttt{BIKES} và \texttt{ACCESSORIES}, các nhóm hợp lệ còn lại được gộp thành \texttt{OTHER}.
+
+\subsubsection{Chia dữ liệu theo thời gian và tiền xử lý}
+
+Dữ liệu được chia theo thời gian nhằm mô phỏng tình huống sử dụng lịch sử để dự đoán một giai đoạn xảy ra sau đó. Mốc bắt đầu holdout được xác định bằng ngày dữ liệu hoàn chỉnh gần nhất trừ đi 89 ngày. Tập huấn luyện chỉ giữ các dòng có nhãn và có toàn bộ cửa sổ gán nhãn kết thúc trước mốc holdout. Tập holdout gồm các ngày chốt thuộc giai đoạn sau và vẫn phải có đủ tương lai để xác định target. Các dòng có cửa sổ nhãn giao nhau với vùng holdout không được dùng để huấn luyện, nhờ đó hạn chế rò rỉ thông tin theo thời gian.
+
+Trước khi huấn luyện, biến mục tiêu được tách khỏi tập đặc trưng. Với thuộc tính số, giá trị thiếu được điền bằng trung bình khi phân phối có độ lệch không lớn và bằng trung vị khi phân phối lệch mạnh; các thuộc tính còn lại sử dụng giá trị xuất hiện nhiều nhất. Toàn bộ tham số điền thiếu chỉ được ước lượng trên tập huấn luyện rồi áp dụng lại cho holdout. Các thuộc tính đầu vào sau đó được chuyển về dạng số thống nhất. Quy trình này bảo đảm thông tin của holdout không tham gia vào bước chuẩn bị mô hình.
+
+\subsection{Dự báo lượng bán trong 7 ngày tiếp theo}
+
+\subsubsection{Biến mục tiêu và đặc trưng đầu vào}
+
+Bài toán được xây dựng ở mức sản phẩm--ngày chốt. Biến mục tiêu là tổng số lượng sản phẩm bán được trong 7 ngày sau ngày chốt. Sáu đặc trưng đầu vào gồm ba tổng lượng bán trễ \path{qty_7}, \path{qty_14}, \path{qty_28}; độ lệch chuẩn \path{std_28}; số ngày có lượng bán dương \path{positive_28}; và \path{weekday} biểu diễn yếu tố chu kỳ trong tuần.
+
+Ba cửa sổ 7, 14 và 28 ngày giúp mô hình quan sát đồng thời biến động ngắn hạn và mức hoạt động trong khoảng thời gian dài hơn. \path{std_28} phản ánh mức ổn định của nhu cầu, trong khi \path{positive_28} phân biệt sản phẩm bán thường xuyên với sản phẩm chỉ phát sinh giao dịch ở một số ít ngày. Ngày trong tuần được bổ sung để mô hình nhận biết khác biệt có tính chu kỳ.
+
+\subsubsection{Huấn luyện mô hình}
+
+Mô hình được chọn là hồi quy tăng cường dựa trên histogram. Cấu hình sử dụng tốc độ học 0,05, tối đa 300 vòng lặp, tối đa 31 nút lá, hệ số điều chuẩn L2 bằng 1,0 và hạt giống ngẫu nhiên 41. Thuật toán này phù hợp với các quan hệ phi tuyến giữa lịch sử bán hàng và lượng bán tương lai, đồng thời có thể mô hình hóa tương tác giữa nhiều cửa sổ thời gian mà không cần xây dựng thủ công toàn bộ các biến tương tác.
+
+Mô hình được huấn luyện trên toàn bộ \path{train_pool} sau khi tiền xử lý. Không sử dụng phép chia ngẫu nhiên hoặc tối ưu bằng cross-validation vì holdout theo thời gian đã được xác định từ khi xây dựng dữ liệu. Cách thực hiện này duy trì đúng thứ tự thời gian và làm cho đánh giá gần hơn với tình huống dự báo trên dữ liệu tương lai.
+
+\begin{figure}[H]\centering
+\fbox{\begin{minipage}{0.90\textwidth}\small\ttfamily
+LOAD the 7-day demand dataset\\
+SELECT labeled rows from train\_pool and holdout\\
+SEPARATE the target from the six input features\\
+FIT the missing-value imputer on train\_pool\\
+TRANSFORM train\_pool and holdout with the fitted imputer\\
+INITIALIZE the histogram-based gradient boosting regressor\\
+FIT the model on train\_pool\\
+PREDICT 7-day demand for the holdout set\\
+COMPUTE MAE between the target and predicted values
+\end{minipage}}
+\caption{Mã giả huấn luyện mô hình dự báo lượng bán 7 ngày}
+\label{fig:pseudo-demand-7d}
+\end{figure}
+
+\subsubsection{Baseline và tiêu chí đánh giá}
+
+Chỉ tiêu chính là sai số tuyệt đối trung bình (MAE), được tính trên toàn bộ holdout, bao gồm cả các dòng có target bằng 0. Việc giữ các dòng không phát sinh bán là cần thiết vì đây là trạng thái thường gặp của dữ liệu sản phẩm theo ngày. Bên cạnh MAE tổng thể, có thể xem thêm MAE trên nhóm có target dương để đánh giá riêng khả năng dự báo khi thực sự phát sinh nhu cầu.
+
+Hai baseline được sử dụng để tạo mốc so sánh: luôn dự báo bằng 0 và lấy lượng bán 7 ngày gần nhất làm dự báo cho 7 ngày tiếp theo. Bảng~\ref{tab:demand-baseline} cho thấy baseline bằng 0 có MAE thấp hơn baseline \path{qty_7} trên cả tập huấn luyện và holdout. Kết quả này phản ánh tỷ lệ lớn các dòng có target bằng 0 và cho thấy một mô hình mới chỉ có ý nghĩa khi cải thiện được mốc 9,49 trên đúng tập holdout đã xác định.
+
+\begin{table}[H]\centering
+\caption{Quy mô dữ liệu và kết quả baseline của bài toán lượng bán 7 ngày}
+\label{tab:demand-baseline}
+\small
+\begin{tabularx}{\textwidth}{|X|>{\raggedleft\arraybackslash}p{1.7cm}|>{\raggedleft\arraybackslash}p{1.8cm}|>{\raggedleft\arraybackslash}p{2.0cm}|>{\raggedleft\arraybackslash}p{2.1cm}|>{\raggedleft\arraybackslash}p{2.2cm}|}\hline
+\textbf{Tập dữ liệu} & \textbf{Số dòng} & \textbf{Sản phẩm} & \textbf{Target = 0} & \textbf{MAE dự báo 0} & \textbf{MAE dùng \path{qty_7}} \\ \hline
+Train pool & 124.909 & 295 & 58,66\% & 12,46 & 20,68 \\ \hline
+Holdout & 16.351 & 197 & 57,09\% & 9,49 & 13,21 \\ \hline
+\end{tabularx}
+\end{table}
+
+Quy trình đánh giá đã xác định cách tính MAE cho mô hình hồi quy tăng cường. Tuy nhiên, giá trị MAE của mô hình trên holdout chưa được xác nhận, nên chưa được sử dụng để đưa ra kết luận về mức cải thiện so với baseline.
+
+\subsection{Dự đoán khả năng mua lại trong 30 ngày}
+
+\subsubsection{Xác định target và tập đặc trưng}
+
+Bài toán mua lại được xây dựng ở mức khách hàng--ngày chốt. Target bằng 1 khi khách hàng phát sinh ít nhất một giao dịch trong 30 ngày tiếp theo và bằng 0 khi không phát sinh giao dịch nhưng vẫn có đủ 30 ngày để quan sát. Những ngày chốt không có đủ tương lai để xác định hành vi mua lại không được dùng làm dữ liệu có nhãn.
+
+Tám đặc trưng được sử dụng gồm \path{recency}, \path{buy_days}, \path{orders_90}, \path{units_90}, \path{net_90}, \path{last_bikes}, \path{last_accessories} và \path{last_other}. Nhóm đặc trưng thứ nhất mô tả mức độ gần, tần suất và quy mô mua hàng trong 90 ngày. Nhóm thứ hai mô tả xu hướng sản phẩm của lần mua gần nhất. Sự kết hợp này cho phép mô hình xem xét đồng thời cường độ quan hệ với khách hàng và nội dung giao dịch gần nhất.
+
+\subsubsection{Huấn luyện và đánh giá}
+
+Mô hình được sử dụng là hồi quy logistic với tối đa 1.000 vòng lặp, bộ giải \texttt{lbfgs}, hạt giống ngẫu nhiên 41 và trọng số lớp cân bằng. Trọng số lớp được đưa vào để giảm ảnh hưởng của chênh lệch số lượng giữa nhóm mua lại và không mua lại. Mô hình sinh xác suất thuộc lớp 1 thay vì chỉ tạo nhãn cứng, nhờ đó có thể xếp hạng khách hàng theo khả năng quay lại.
+
+Average Precision là chỉ tiêu chính vì đánh giá chất lượng xếp hạng lớp dương qua nhiều ngưỡng quyết định. Log loss được dùng bổ sung để đánh giá độ phù hợp của xác suất dự đoán; một dự đoán sai nhưng quá tự tin sẽ bị phạt mạnh hơn. Tỷ lệ mua lại trong tập huấn luyện được dùng làm baseline xác suất hằng để việc so sánh không phụ thuộc vào một ngưỡng phân lớp tùy ý.
+
+\begin{figure}[H]\centering
+\fbox{\begin{minipage}{0.90\textwidth}\small\ttfamily
+LOAD the 30-day repeat-purchase dataset\\
+SELECT labeled rows from train\_pool and holdout\\
+INSPECT the binary class distribution\\
+SEPARATE the target from the eight behavioral features\\
+FIT the missing-value imputer on train\_pool\\
+INITIALIZE logistic regression with balanced class weights\\
+FIT the model on train\_pool\\
+PREDICT repeat-purchase probabilities for the holdout set\\
+COMPUTE Average Precision and log loss
+\end{minipage}}
+\caption{Mã giả huấn luyện mô hình mua lại trong 30 ngày}
+\label{fig:pseudo-repeat-30d}
+\end{figure}
+
+Tập dữ liệu dạng rộng của bài toán hiện có 303.836 dòng. Số dòng có nhãn theo từng tập, tỷ lệ lớp dương và giá trị metric trên holdout chưa được xác nhận, nên chưa được sử dụng để kết luận về chất lượng phân loại.
+
+\subsection{Dự đoán nhóm sản phẩm tiếp theo trong 60 ngày}
+
+\subsubsection{Xác định target và điều kiện gán nhãn}
+
+Bài toán thứ ba dự đoán nhóm chính của giỏ hàng tại ngày mua đầu tiên trong 60 ngày sau ngày chốt. Target nhận một trong ba giá trị \texttt{BIKES}, \texttt{ACCESSORIES} hoặc \texttt{OTHER}. Nếu khách hàng không mua trong cửa sổ 60 ngày, hoặc giỏ hàng đầu tiên không xác định được nhóm sản phẩm, dòng dữ liệu không có nhãn và không tham gia huấn luyện.
+
+Do chỉ các trường hợp có giao dịch tương lai mới được gán lớp sản phẩm, kết quả của mô hình phải được diễn giải theo điều kiện: nhóm nào có khả năng được mua tiếp nếu khách hàng quay lại trong 60 ngày. Mô hình không thay thế bài toán mua lại 30 ngày và cũng không trực tiếp ước lượng xác suất khách hàng có phát sinh giao dịch.
+
+Tập đặc trưng giống bài toán mua lại, gồm năm chỉ tiêu hành vi trong 90 ngày và ba biến mô tả nhóm chính của lần mua gần nhất. Bảng dữ liệu dạng rộng hiện có 37.261 dòng, nhỏ hơn đáng kể so với tập mua lại do yêu cầu phải quan sát được lần mua tiếp theo và xác định được nhóm của giỏ hàng tương lai.
+
+\subsubsection{Huấn luyện và đánh giá}
+
+Mô hình sử dụng hồi quy logistic đa lớp với tối đa 1.000 vòng lặp, bộ giải \texttt{lbfgs}, hạt giống ngẫu nhiên 41 và trọng số lớp cân bằng. Nhãn được giữ ở dạng chuỗi trong quá trình huấn luyện. Mô hình đồng thời tạo nhãn dự đoán và phân phối xác suất trên ba lớp.
+
+Macro F1 là chỉ tiêu chính, trong đó F1 được tính riêng cho từng lớp rồi lấy trung bình không trọng số. Cách tính này ngăn lớp có nhiều mẫu chi phối hoàn toàn kết quả đánh giá. Log loss đa lớp được sử dụng bổ sung để đánh giá chất lượng xác suất. Baseline thứ nhất luôn chọn lớp phổ biến nhất trong tập huấn luyện; baseline xác suất sử dụng phân phối lớp của tập huấn luyện cho mọi dòng holdout.
+
+\begin{figure}[H]\centering
+\fbox{\begin{minipage}{0.90\textwidth}\small\ttfamily
+LOAD the 60-day next-category dataset\\
+SELECT labeled rows from train\_pool and holdout\\
+KEEP the target as string class labels\\
+INSPECT the sample count for each class\\
+FIT the missing-value imputer on train\_pool\\
+INITIALIZE multinomial logistic regression with balanced class weights\\
+FIT the model on train\_pool\\
+PREDICT class labels and probabilities for the holdout set\\
+COMPUTE Macro F1 and multiclass log loss
+\end{minipage}}
+\caption{Mã giả huấn luyện mô hình nhóm sản phẩm tiếp theo trong 60 ngày}
+\label{fig:pseudo-next-category-60d}
+\end{figure}
+
+Quy trình đánh giá đã xác định cách tính Macro F1 và log loss. Tuy nhiên, phân phối lớp và giá trị metric trên holdout chưa được xác nhận; vì vậy chưa thể kết luận mức độ chính xác của mô hình hoặc so sánh định lượng với baseline.
+
+\subsection{Tổ chức quy trình huấn luyện trên Microsoft Fabric}
+
+Ba quy trình huấn luyện có cùng một cấu trúc thực thi. Dữ liệu dạng rộng được đọc từ Lakehouse Gold, sau đó lọc riêng \path{train_pool} và holdout trước khi chuyển sang bước xử lý mô hình. Chỉ các cột đặc trưng và target được đưa vào bộ dữ liệu huấn luyện; khóa nghiệp vụ, ngày chốt và thông tin phiên dữ liệu được giữ ngoài mô hình để phục vụ đối soát.
+
+Quy trình sử dụng các mô hình cố định với tham số được khai báo rõ ràng, thay cho việc tìm kiếm tự động nhiều thuật toán. Cách tiếp cận này làm cho kết quả có khả năng lặp lại và phù hợp với phạm vi đồ án, đồng thời giúp so sánh trực tiếp với baseline trên một holdout thời gian duy nhất. Hạn chế là chưa thực hiện tìm kiếm siêu tham số hoặc đánh giá nhiều họ mô hình, nên kết quả hiện tại phản ánh một cấu hình triển khai cụ thể chứ chưa chứng minh đây là mô hình tối ưu.
+
+\begin{table}[H]\centering
+\caption{Tổng hợp thiết kế đánh giá ba mô hình}
+\label{tab:ml-evaluation-summary}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{4.2cm}|p{3.5cm}|X|}\hline
+\textbf{Bài toán} & \textbf{Mô hình} & \textbf{Chỉ tiêu chính} & \textbf{Baseline} \\ \hline
+Lượng bán 7 ngày & Hồi quy tăng cường dựa trên histogram & MAE & Luôn dự báo 0; dùng lượng bán 7 ngày gần nhất \\ \hline
+Mua lại 30 ngày & Hồi quy logistic nhị phân có trọng số lớp & Average Precision; log loss & Xác suất hằng bằng tỷ lệ lớp dương trong train \\ \hline
+Nhóm sản phẩm 60 ngày & Hồi quy logistic đa lớp có trọng số lớp & Macro F1; log loss & Lớp phổ biến nhất; phân phối lớp trong train \\ \hline
+\end{tabularx}
+\end{table}
+
+Trong phạm vi hiện tại, chỉ baseline của bài toán lượng bán đã có số liệu kiểm chứng. Hai bài toán hành vi khách hàng đã xác định đầy đủ biến mục tiêu, đặc trưng, cách chia dữ liệu, mô hình và chỉ tiêu đánh giá, nhưng chưa có kết quả định lượng được xác nhận. Vì vậy, phần đánh giá không suy diễn hiệu năng chỉ từ cấu hình mô hình.

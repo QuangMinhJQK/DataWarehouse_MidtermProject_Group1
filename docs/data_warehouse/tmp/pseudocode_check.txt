@@ -1,0 +1,2655 @@
+     KHOA HỆ THỐNG THÔNG TIN
+
+
+
+
+ĐỒ ÁN MÔN HỌC NHÀ KHO DỮ LIỆU VÀ TÍCH HỢP
+
+
+
+
+XÂY DỰNG GIẢI PHÁP KHO DỮ LIỆU TRÊN NỀN
+ TẢNG MICROSOFT FABRIC CHO HOẠT ĐỘNG
+ BÁN HÀNG CỦA ADVENTURE WORKS CYCLES
+
+
+
+
+                GVHD: TS. Nguyễn Thôn Dã
+                Nhóm thực hiện: Nhóm 1
+
+
+
+
+            TP.HCM, THÁNG ../....
+                        DANH SÁCH THÀNH VIÊN
+
+
+
+
+STT Họ và tên                                    MSSV       Đóng góp
+ 1   Nguyễn Nhựt Thụy                          K244060807    100%
+ 2   Phạm Ngọc Phương Trúc                     K244060814    100%
+ 3   Nguyễn Văn Quang Minh                     K244060790    100%
+ 4   Lê Tuấn Anh                               K244060760    100%
+ 5   Ngô Hoàng Khải                            K244060779    100%
+
+
+
+
+                                 1
+                                    LỜI CẢM ƠN
+
+       Nhóm thực hiện xin trân trọng cảm ơn TS. Nguyễn Thôn Dã, giảng viên hướng
+dẫn, đã định hướng chuyên môn và đóng góp những ý kiến cần thiết trong quá trình thực
+hiện đồ án. Những hướng dẫn của Thầy đã giúp nhóm xác định rõ phạm vi bài toán, tổ
+chức quy trình xây dựng kho dữ liệu và hoàn thiện nội dung báo cáo theo hướng nhất
+quán hơn.
+       Nhóm xin gửi lời cảm ơn đến quý Thầy Cô Khoa Hệ thống Thông tin đã trang bị
+các kiến thức nền tảng về cơ sở dữ liệu, tích hợp dữ liệu, mô hình hóa kho dữ liệu và
+phân tích dữ liệu. Đây là cơ sở để nhóm vận dụng Microsoft Fabric vào việc xây dựng
+giải pháp kho dữ liệu cho hoạt động bán hàng của Adventure Works Cycles.
+       Nhóm cũng trân trọng sự phối hợp và tinh thần trách nhiệm của các thành viên
+trong suốt quá trình thu thập dữ liệu, xây dựng pipeline, thiết kế mô hình dữ liệu, thực
+hiện các bài toán học máy và biên soạn báo cáo. Sự trao đổi giữa các thành viên đã góp
+phần giúp các nội dung của đồ án được hoàn thành đồng bộ.
+      Mặc dù nhóm đã cố gắng kiểm tra và hoàn thiện báo cáo, đồ án khó tránh khỏi
+những thiếu sót do giới hạn về thời gian, kinh nghiệm và môi trường thử nghiệm. Nhóm
+kính mong nhận được những nhận xét và góp ý của Thầy để tiếp tục điều chỉnh, bổ sung
+và nâng cao chất lượng của giải pháp.
+
+
+                                                                      Nhóm thực hiện
+                                                                             Nhóm 1
+
+
+
+
+                                           2
+                                      MỤC LỤC
+
+DANH SÁCH THÀNH VIÊN . . . . . . . . . . . . . . . . . . . . . . . . . . .              1
+LỜI CẢM ƠN . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        2
+MỤC LỤC . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       3
+DANH MỤC HÌNH ẢNH . . . . . . . . . . . . . . . . . . . . . . . . . . . . .             7
+DANH MỤC BẢNG BIỂU . . . . . . . . . . . . . . . . . . . . . . . . . . . .              9
+DANH MỤC TỪ VIẾT TẮT . . . . . . . . . . . . . . . . . . . . . . . . . . .             10
+DANH MỤC THUẬT NGỮ . . . . . . . . . . . . . . . . . . . . . . . . . . . .             11
+CHƯƠNG 1: GIỚI THIỆU TỔNG QUAN . . . . . . . . . . . . . . . . . . .                   12
+   1.1 Bối cảnh thực tế . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      12
+     1.2 Lý do chọn đề tài . . . . . . . . . . . . . . . . . . . . . . . . . . . .     13
+     1.3 Mục tiêu dự án . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      13
+        1.3.1 Mục tiêu tổng quan . . . . . . . . . . . . . . . . . . . . . . . . .     13
+        1.3.2 Mục tiêu cụ thể . . . . . . . . . . . . . . . . . . . . . . . . . . .    13
+     1.4 Đối tượng và phạm vi dự án . . . . . . . . . . . . . . . . . . . . . .        15
+        1.4.1 Đối tượng nghiên cứu . . . . . . . . . . . . . . . . . . . . . . . .     15
+        1.4.2 Phạm vi nghiệp vụ bán hàng . . . . . . . . . . . . . . . . . . . .       15
+        1.4.3 Phạm vi dữ liệu . . . . . . . . . . . . . . . . . . . . . . . . . . .    15
+        1.4.4 Phạm vi triển khai . . . . . . . . . . . . . . . . . . . . . . . . . .   15
+     1.5 Công nghệ và nền tảng sử dụng . . . . . . . . . . . . . . . . . . . .         16
+        1.5.1 Azure SQL Database . . . . . . . . . . . . . . . . . . . . . . . .       16
+        1.5.2 Microsoft Fabric và OneLake . . . . . . . . . . . . . . . . . . . .      17
+        1.5.3 Lakehouse và Medallion Architecture . . . . . . . . . . . . . . .        17
+        1.5.4 Fabric Data Factory . . . . . . . . . . . . . . . . . . . . . . . . .    17
+        1.5.5 Fabric Data Warehouse và Semantic Model . . . . . . . . . . . .          17
+        1.5.6 Fabric Data Science và Machine Learning . . . . . . . . . . . . .        18
+        1.5.7 Power BI và Data Agent . . . . . . . . . . . . . . . . . . . . . . .     18
+CHƯƠNG 2: MÔ TẢ VÀ PHÂN TÍCH DỮ LIỆU BÁN HÀNG . . . . . . .                            19
+   2.1 Tổng quan về Adventure Works Cycles . . . . . . . . . . . . . . . .             19
+   2.2 Tổng quan hoạt động bán hàng . . . . . . . . . . . . . . . . . . . .            19
+      2.2.1 Quy trình bán hàng . . . . . . . . . . . . . . . . . . . . . . . . .       19
+      2.2.2 Các đối tượng tham gia hoạt động bán hàng . . . . . . . . . . . .          20
+        2.2.3 Các chỉ tiêu đánh giá hoạt động bán hàng . . . . . . . . . . . . . .     20
+
+
+                                           3
+     2.3 Nguồn gốc và cấu trúc dữ liệu . . . . . . . . . . . . . . . . . . . . .      20
+        2.3.1 Nguồn dữ liệu Adventure Works . . . . . . . . . . . . . . . . . .       20
+        2.3.2 Cấu trúc dữ liệu nguồn . . . . . . . . . . . . . . . . . . . . . . .    20
+        2.3.3 Các bảng dữ liệu phục vụ hoạt động bán hàng . . . . . . . . . . .       22
+        2.3.4 Mối quan hệ giữa các bảng dữ liệu . . . . . . . . . . . . . . . . .     22
+     2.4 Khám phá và trực quan hóa dữ liệu . . . . . . . . . . . . . . . . . .        22
+        2.4.1 Phạm vi dữ liệu và phương pháp khám phá . . . . . . . . . . . . .       22
+        2.4.2 Kiểm tra chất lượng và khả năng liên kết . . . . . . . . . . . . . .    24
+        2.4.3 Phân tích doanh thu theo thời gian . . . . . . . . . . . . . . . . .    25
+        2.4.4 Phân tích kênh bán hàng và khách hàng . . . . . . . . . . . . . . .     25
+        2.4.5 Phân tích cơ cấu sản phẩm . . . . . . . . . . . . . . . . . . . . .     27
+        2.4.6 Phân tích doanh thu theo lãnh thổ . . . . . . . . . . . . . . . . . .   27
+        2.4.7 Kết luận từ khám phá dữ liệu . . . . . . . . . . . . . . . . . . . .    28
+     2.5 Xác định yêu cầu dữ liệu cho giải pháp . . . . . . . . . . . . . . . .       29
+        2.5.1 Xác định quy trình nghiệp vụ . . . . . . . . . . . . . . . . . . . .    29
+        2.5.2 Xác định mức độ chi tiết dữ liệu . . . . . . . . . . . . . . . . . .    29
+        2.5.3 Xác định các chiều phân tích . . . . . . . . . . . . . . . . . . . .    29
+        2.5.4 Xác định các chỉ tiêu đo lường . . . . . . . . . . . . . . . . . . .    29
+        2.5.5 Xác định yêu cầu dữ liệu cho Machine Learning . . . . . . . . . .       30
+CHƯƠNG 3: XÂY DỰNG KHO DỮ LIỆU TRÊN MICROSOFT FABRIC .                                31
+   3.1 Kiến trúc tổng thể của giải pháp . . . . . . . . . . . . . . . . . . . .       31
+      3.1.1 Kiến trúc Microsoft Fabric . . . . . . . . . . . . . . . . . . . . .      33
+      3.1.2 Luồng dữ liệu trong hệ thống . . . . . . . . . . . . . . . . . . . .      35
+      3.1.3 Vai trò của OneLake . . . . . . . . . . . . . . . . . . . . . . . . .     36
+      3.1.4 Vai trò của Lakehouse và Data Warehouse . . . . . . . . . . . . .         36
+     3.2 Tích hợp dữ liệu với Microsoft Fabric . . . . . . . . . . . . . . . .        36
+        3.2.1 Kết nối và thu thập dữ liệu nguồn . . . . . . . . . . . . . . . . . .   36
+        3.2.2 Xây dựng Data Pipeline . . . . . . . . . . . . . . . . . . . . . . .    37
+        3.2.3 Xây dựng Dataflow Gen2 . . . . . . . . . . . . . . . . . . . . . .      38
+        3.2.4 Phạm vi điều phối các quy trình tích hợp dữ liệu . . . . . . . . . .    39
+     3.3 Xây dựng Lakehouse theo Medallion Architecture . . . . . . . . .             40
+        3.3.1 Tầng Bronze – dữ liệu nguồn . . . . . . . . . . . . . . . . . . . .     40
+        3.3.2 Tầng Silver – dữ liệu làm sạch và chuyển đổi . . . . . . . . . . .      41
+        3.3.3 Tầng Gold – dữ liệu được chuẩn hóa phục vụ phân tích . . . . . .        43
+        3.3.4 Luồng chuyển đổi dữ liệu giữa các tầng . . . . . . . . . . . . . .      47
+     3.4 Thiết kế Data Warehouse cho hoạt động bán hàng . . . . . . . . .             48
+
+                                           4
+        3.4.1 Xác định Business Process và Grain . . . . . . . . . . . . . . . .       48
+        3.4.2 Xây dựng Bus Matrix . . . . . . . . . . . . . . . . . . . . . . . .      49
+        3.4.3 Thiết kế Dimension Tables . . . . . . . . . . . . . . . . . . . . .      50
+        3.4.4 Thiết kế Fact Tables . . . . . . . . . . . . . . . . . . . . . . . . .   51
+        3.4.5 Xây dựng mô hình Star Schema . . . . . . . . . . . . . . . . . . .       52
+     3.5 Xây dựng Fabric Data Warehouse . . . . . . . . . . . . . . . . . .            53
+        3.5.1 Tạo và cấu hình Data Warehouse . . . . . . . . . . . . . . . . . .       53
+        3.5.2 Xây dựng các bảng Dimension . . . . . . . . . . . . . . . . . . .        53
+        3.5.3 Xây dựng các bảng Fact . . . . . . . . . . . . . . . . . . . . . . .     53
+        3.5.4 Thiết lập khóa và mối quan hệ . . . . . . . . . . . . . . . . . . .      54
+        3.5.5 Nạp và đồng bộ dữ liệu . . . . . . . . . . . . . . . . . . . . . . .     54
+     3.6 Xây dựng Semantic Model . . . . . . . . . . . . . . . . . . . . . . .         55
+        3.6.1 Thiết kế mô hình dữ liệu phân tích . . . . . . . . . . . . . . . . .     55
+        3.6.2 Xây dựng Measures và KPI . . . . . . . . . . . . . . . . . . . . .       56
+        3.6.3 Thiết lập Relationships và Hierarchies . . . . . . . . . . . . . . .     58
+        3.6.4 Kết nối với Power BI . . . . . . . . . . . . . . . . . . . . . . . .     60
+CHƯƠNG 4: XÂY DỰNG CÁC MÔ HÌNH HỌC MÁY CHO HOẠT ĐỘNG
+BÁN HÀNG . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       63
+   4.1 Chuẩn bị dữ liệu cho Machine Learning . . . . . . . . . . . . . . .             63
+      4.1.1 Xác định phạm vi bài toán . . . . . . . . . . . . . . . . . . . . . .      63
+      4.1.2 Xây dựng các tập dữ liệu dạng rộng . . . . . . . . . . . . . . . . .       63
+      4.1.3 Chia dữ liệu theo thời gian và tiền xử lý . . . . . . . . . . . . . .      64
+   4.2 Dự báo lượng bán trong 7 ngày tiếp theo . . . . . . . . . . . . . . .           65
+      4.2.1 Biến mục tiêu và đặc trưng đầu vào . . . . . . . . . . . . . . . . .       65
+      4.2.2 Huấn luyện mô hình . . . . . . . . . . . . . . . . . . . . . . . . .       65
+        4.2.3 Baseline và tiêu chí đánh giá . . . . . . . . . . . . . . . . . . . .    66
+     4.3 Dự đoán khả năng mua lại trong 30 ngày . . . . . . . . . . . . . . .          67
+        4.3.1 Xác định target và tập đặc trưng . . . . . . . . . . . . . . . . . . .   67
+        4.3.2 Huấn luyện và đánh giá . . . . . . . . . . . . . . . . . . . . . . .     67
+     4.4 Dự đoán nhóm sản phẩm tiếp theo trong 60 ngày . . . . . . . . . .             68
+        4.4.1 Xác định target và điều kiện gán nhãn . . . . . . . . . . . . . . .      68
+        4.4.2 Huấn luyện và đánh giá . . . . . . . . . . . . . . . . . . . . . . .     68
+     4.5 Tổ chức quy trình huấn luyện trên Microsoft Fabric . . . . . . . .            69
+CHƯƠNG 5: KHAI THÁC DỮ LIỆU . . . . . . . . . . . . . . . . . . . . . .                71
+   5.1 Khai thác dữ liệu với Power BI . . . . . . . . . . . . . . . . . . . .          71
+      5.1.1 Tổng quan hoạt động bán hàng . . . . . . . . . . . . . . . . . . .         71
+
+                                           5
+       5.1.2 Phân tích sản phẩm và vận hành giao hàng . . . . . . . . . . . . .      72
+       5.1.3 Theo dõi hạn ngạch và tồn kho . . . . . . . . . . . . . . . . . . .     73
+       5.1.4 Theo dõi chất lượng dữ liệu và dữ liệu học máy . . . . . . . . . .      74
+     5.2 Xây dựng Data Agent khai thác Semantic Model . . . . . . . . . .            76
+        5.2.1 Kiến trúc ứng dụng và nguồn dữ liệu . . . . . . . . . . . . . . . .    76
+        5.2.2 Luồng xử lý truy vấn . . . . . . . . . . . . . . . . . . . . . . . .   78
+        5.2.3 Kiểm soát an toàn và tính nhất quán . . . . . . . . . . . . . . . .    80
+        5.2.4 Kết quả thử nghiệm và phạm vi triển khai . . . . . . . . . . . . .     81
+CHƯƠNG 6: THỬ NGHIỆM VÀ ĐÁNH GIÁ GIẢI PHÁP . . . . . . . . . .                        –
+   6.1 Đánh giá Data Warehouse . . . . . . . . . . . . . . . . . . . . . . .          –
+      6.1.1 Đánh giá tính đầy đủ và nhất quán của dữ liệu . . . . . . . . . . .       –
+      6.1.2 Đánh giá mô hình Star Schema . . . . . . . . . . . . . . . . . . .        –
+      6.1.3 Đánh giá khả năng truy vấn và khai thác dữ liệu . . . . . . . . . .       –
+   6.2 Đánh giá các mô hình Machine Learning . . . . . . . . . . . . . . .            –
+        6.2.1 Đánh giá mô hình dự báo doanh số . . . . . . . . . . . . . . . . .      –
+        6.2.2 Đánh giá mô hình dự báo nhu cầu và nguy cơ hết hàng . . . . . .         –
+     6.3 Đánh giá hệ thống báo cáo và Data Agent . . . . . . . . . . . . . .          –
+        6.3.1 Kết quả Dashboard . . . . . . . . . . . . . . . . . . . . . . . . .     –
+        6.3.2 Kết quả thử nghiệm Data Agent . . . . . . . . . . . . . . . . . . .     –
+        6.3.3 Khả năng hỗ trợ hoạt động bán hàng . . . . . . . . . . . . . . . .      –
+     6.4 Đề xuất khai thác dữ liệu cho hoạt động bán hàng . . . . . . . . . .         –
+CHƯƠNG 7: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN . . . . . . . . . . . .                       83
+   7.1 Kết quả đạt được . . . . . . . . . . . . . . . . . . . . . . . . . . . .       –
+   7.2 Ưu điểm của giải pháp . . . . . . . . . . . . . . . . . . . . . . . . .        –
+     7.3 Hạn chế của dự án . . . . . . . . . . . . . . . . . . . . . . . . . . .     83
+        7.3.1 Chưa có pipeline điều phối thống nhất . . . . . . . . . . . . . . .    83
+        7.3.2 Giới hạn công bố Data Agent ra môi trường công cộng . . . . . .        83
+        7.3.3 Giới hạn tích hợp Git và công bố mã nguồn . . . . . . . . . . . .      84
+        7.3.4 Giới hạn về thời gian và bảo mật môi trường . . . . . . . . . . . .    84
+     7.4 Hướng phát triển . . . . . . . . . . . . . . . . . . . . . . . . . . . .     –
+TÀI LIỆU THAM KHẢO . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         86
+
+
+
+
+                                          6
+                           DANH MỤC HÌNH ẢNH
+
+Hình 2.1: Sơ đồ tổng quát AdventureWorks OLTP 2008 (nguồn: SQL Server
+     Samples at CodePlex, 2008). . . . . . . . . . . . . . . . . . . . . . . .      21
+Hình 2.2: Danh sách query Dataflow Bronze–STG được dùng để xác định
+     phạm vi khám phá dữ liệu. . . . . . . . . . . . . . . . . . . . . . . . .      23
+Hình 2.3: Doanh thu dòng hàng theo tháng đặt hàng; hai điểm màu cam là
+     tháng chưa đủ dữ liệu. . . . . . . . . . . . . . . . . . . . . . . . . . . .   25
+Hình 2.4: Phân phối giá trị đơn hàng theo kênh; trục tung dùng thang log. . .       26
+Hình 2.5: Doanh thu dòng hàng theo danh mục sản phẩm. . . . . . . . . . . .         27
+Hình 2.6: Doanh thu dòng hàng theo lãnh thổ bán hàng. . . . . . . . . . . . .       28
+Hình 3.1: Kiến trúc Medallion của giải pháp trên Microsoft Fabric. . . . . . .      32
+Hình 3.2: Danh sách các item trong workspace Microsoft Fabric . . . . . . .         34
+Hình 3.3: Nguồn dữ liệu: các tệp CSV AdventureWorks được nạp vào Azure
+     SQL Database. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      37
+Hình 3.4: Cấu hình kết nối từ Microsoft Fabric đến Azure SQL Database . .           37
+Hình 3.5: Canvas minh họa các chặng xử lý dữ liệu trên Microsoft Fabric . .         38
+Hình 3.6: Luồng xử lý tổng quát của Dataflow Gen2 từ STG đến các bảng INT           39
+Hình 3.7: Danh mục bảng và số dòng tại Lakehouse Bronze . . . . . . . . . .         41
+Hình 3.8: Cấu trúc STG và INT trong Lakehouse Silver . . . . . . . . . . . .        43
+Hình 3.9: Danh mục dimension, fact và data mart trong Warehouse Gold . . .          46
+Hình 3.10: Các bảng dữ liệu dạng rộng trong Lakehouse Gold . . . . . . . .          47
+Hình 3.11: Mô hình hình sao của Data Warehouse bán hàng tầng Gold . . . .           53
+Hình 3.12: Pipeline điều phối quá trình nạp và kiểm tra dữ liệu từ Silver sang
+     Gold . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   54
+Hình 3.13: Danh sách bảng trong Semantic Model . . . . . . . . . . . . . . .        56
+Hình 3.14: Danh sách measure trong Semantic Model . . . . . . . . . . . . .         58
+Hình 3.15: Relationships giữa các bảng trong Semantic Model . . . . . . . .         60
+Hình 3.16: Trang tổng quan bán hàng trong Power BI . . . . . . . . . . . . .        62
+Hình 4.1: Mã giả huấn luyện mô hình dự báo lượng bán 7 ngày . . . . . . . .         66
+Hình 4.2: Mã giả huấn luyện mô hình mua lại trong 30 ngày . . . . . . . . .         67
+Hình 4.3: Mã giả huấn luyện mô hình nhóm sản phẩm tiếp theo trong 60 ngày           69
+Hình 5.1: Dashboard tổng quan hoạt động bán hàng . . . . . . . . . . . . . .        71
+Hình 5.2: Dashboard phân tích kết quả theo sản phẩm . . . . . . . . . . . . .       72
+Hình 5.3: Dashboard theo dõi hoạt động giao hàng theo lãnh thổ . . . . . . .        73
+Hình 5.4: Dashboard đối chiếu doanh số thực tế với hạn ngạch theo quý . . .         73
+
+
+                                        7
+Hình 5.5: Dashboard theo dõi tồn kho và nhu cầu đặt hàng lại . . . . . . . . .   74
+Hình 5.6: Dashboard theo dõi thời điểm công bố và chất lượng dữ liệu . . . .     75
+Hình 5.7: Dashboard theo dõi dữ liệu phục vụ các bài toán học máy . . . . .      75
+Hình 5.8: Dashboard kết quả dự báo nhu cầu . . . . . . . . . . . . . . . . . .   76
+Hình 5.9: Giao diện Data Agent truy vấn dữ liệu bán hàng theo năm . . . . .      77
+Hình 5.10: Sequence diagram xử lý một câu hỏi trong Data Agent . . . . . .       79
+Hình 5.11: Mã giả xử lý truy vấn của Data Agent . . . . . . . . . . . . . . .    80
+
+
+
+
+                                       8
+                         DANH MỤC BẢNG BIỂU
+
+Bảng 2.1: Các lược đồ nghiệp vụ trong AdventureWorks OLTP . . . . . . . .        21
+Bảng 2.2: Nhóm bảng được lựa chọn trong Dataflow Bronze–STG . . . . . .          23
+Bảng 2.3: Kết quả kiểm tra dữ liệu lõi trước khi trực quan hóa . . . . . . . .   24
+Bảng 2.4: Tổng hợp đơn hàng và doanh thu theo kênh bán hàng . . . . . . .        26
+Bảng 3.1: Các nhóm item chính trong workspace Microsoft Fabric . . . . . .       35
+Bảng 3.2: Các hoạt động pipeline trong giải pháp . . . . . . . . . . . . . . .   38
+Bảng 3.3: Tổng hợp các tầng trong kiến trúc Medallion . . . . . . . . . . . .    40
+Bảng 3.4: Quy mô dữ liệu tại tầng Bronze theo lược đồ nguồn . . . . . . . .      40
+Bảng 3.5: Danh mục bảng và số dòng tại tầng Silver . . . . . . . . . . . . . .   42
+Bảng 3.6: Danh mục bảng chiều và bảng sự kiện tại Gold . . . . . . . . . . .     44
+Bảng 3.7: Danh mục data mart và bảng dữ liệu học máy tại Gold . . . . . . .      45
+Bảng 3.8: Mức hạt của các nhóm dữ liệu nghiệp vụ . . . . . . . . . . . . . .     49
+Bảng 3.9: Bus Matrix của Data Warehouse tầng Gold . . . . . . . . . . . . .      50
+Bảng 3.10: Các nhóm bảng chiều tại tầng Gold . . . . . . . . . . . . . . . .     51
+Bảng 3.11: Các nhóm bảng sự kiện tại tầng Gold . . . . . . . . . . . . . . .     52
+Bảng 3.12: Các cổng kiểm soát chất lượng trong quá trình nạp Gold . . . . .      55
+Bảng 3.13: Các bảng trong Semantic Model . . . . . . . . . . . . . . . . . .     56
+Bảng 3.14: Các nhóm measure trong Semantic Model . . . . . . . . . . . . .       57
+Bảng 3.15: Cấu trúc relationships trong Semantic Model . . . . . . . . . . .     59
+Bảng 3.16: Cấu trúc các trang báo cáo Power BI . . . . . . . . . . . . . . . .   61
+Bảng 4.1: Phạm vi ba bài toán học máy . . . . . . . . . . . . . . . . . . . .    63
+Bảng 4.2: Đặc trưng sử dụng cho ba bài toán học máy . . . . . . . . . . . . .    64
+Bảng 4.3: Quy mô dữ liệu và kết quả baseline của bài toán lượng bán 7 ngày .     66
+Bảng 4.4: Tổng hợp thiết kế đánh giá ba mô hình . . . . . . . . . . . . . . .    70
+Bảng 5.1: Vai trò của các thành phần trong Data Agent . . . . . . . . . . . .    78
+Bảng 5.2: Các guardrail chính của Data Agent . . . . . . . . . . . . . . . . .   81
+
+
+
+
+                                       9
+                        DANH MỤC TỪ VIẾT TẮT
+
+
+
+Từ viết tắt         Cụm từ đầy đủ               Diễn giải tiếng Việt
+  OLTP        Online Transaction Processing   Xử lý giao dịch trực tuyến
+   DW               Data Warehouse                   Kho dữ liệu
+    BI            Business Intelligence          Trí tuệ kinh doanh
+
+
+
+
+                                     10
+            DANH MỤC THUẬT NGỮ
+
+
+
+STT   Thuật ngữ gốc                      Ý nghĩa
+ 1    Data Warehouse          Kho dữ liệu phục vụ phân tích
+ 2      Lakehouse           Nền tảng kết hợp lưu trữ hồ dữ liệu
+                                và khả năng quản lý bảng
+ 3     Star Schema          Mô hình hình sao gồm bảng sự kiện
+                                    và các bảng chiều
+
+
+
+
+                       11
+                     CHƯƠNG 1: GIỚI THIỆU TỔNG QUAN
+
+1.1 Bối cảnh thực tế
+
+       Dữ liệu bán hàng được ghi nhận qua từng đơn hàng và dòng sản phẩm, còn người
+quản lý cần nhìn thấy doanh thu thay đổi ra sao theo thời gian, sản phẩm và khu vực.
+Để trả lời những câu hỏi đó, dữ liệu giao dịch phải được tổng hợp và đặt trong một cấu
+trúc có thể tra cứu theo nhiều góc nhìn. Chaudhuri và Dayal (1997) cho thấy kho dữ liệu
+phục vụ phân tích cần dữ liệu lịch sử, được tích hợp và tổ chức phù hợp với các truy vấn
+tổng hợp.
+      Adventure Works Cycles là doanh nghiệp giả định trong một tình huống hướng
+dẫn của Microsoft. Trong tình huống này, dữ liệu giao dịch và thông tin ngoài giao dịch
+như hạn mức doanh số từ bảng tính đã được tập hợp vào kho dữ liệu quan hệ Adven-
+tureWorksDW2019. Microsoft mô tả các hạn chế ở tầng khai thác: báo cáo tĩnh khó cho
+phép đi sâu vào dữ liệu, người dùng mất thời gian tạo truy vấn do cấu trúc phức tạp và
+cách tính được viết riêng cho từng báo cáo có thể làm số liệu tổng hợp khác nhau. Tài
+liệu đánh giá kho dữ liệu này được thiết kế tốt và không có vấn đề lớn ở khâu nạp dữ
+liệu. Microsoft lựa chọn bổ sung Analysis Services để cải thiện truy vấn và tái sử dụng
+cách tính (Microsoft, n.d.-a).
+       Tình huống hướng dẫn bắt đầu từ một kho dữ liệu đã có và tập trung khai thác dữ
+liệu bằng Analysis Services. Đồ án này sử dụng Adventure Works làm bối cảnh để thực
+hành thiết kế kho dữ liệu từ các bảng giao dịch của bộ dữ liệu. Công việc bao gồm xác
+định mức chi tiết của bảng sự kiện, thiết kế các chiều phân tích và thống nhất quy tắc
+tính chỉ tiêu, nhằm giải quyết hai hạn chế mà tình huống mẫu nêu ra là khó truy vấn theo
+nhiều góc nhìn và số liệu khác nhau giữa các báo cáo, trước khi kiểm tra kết quả trên báo
+cáo.
+       Microsoft Fabric được chọn làm nền tảng triển khai vì tài liệu tổng quan của
+Microsoft mô tả khả năng nạp, chuyển đổi, lưu trữ, phân tích và báo cáo trong cùng môi
+trường (Microsoft, n.d.-b). Trong đó, mục Warehouse cho phép tổ chức dữ liệu theo cấu
+trúc phân tích; Microsoft (n.d.-c) nêu mô hình hình sao và hình tuyết là các trường hợp
+phù hợp với Fabric Data Warehouse. Trên nền tảng này, đồ án xây dựng kho dữ liệu,
+quy trình cập nhật, báo cáo Power BI, Data Agent và các mô hình học máy hỗ trợ dự báo
+lượng bán và hành vi khách hàng.
+
+
+
+
+                                           12
+1.2 Lý do chọn đề tài
+
+       Bài toán bán hàng của Adventure Works Cycles được chọn vì dữ liệu có thể liên
+kết giao dịch với sản phẩm, khách hàng, thời gian và khu vực. Các mối liên kết này cho
+phép thiết kế bảng sự kiện, bảng chiều và kiểm tra những chỉ tiêu cụ thể như doanh thu,
+số lượng bán và số đơn hàng. Nhờ vậy, số liệu trên báo cáo có thể được đối chiếu ngược
+với dữ liệu nguồn.
+       Để các chỉ tiêu được tính nhất quán, dữ liệu cần được chuẩn hóa trong một quy
+trình có thể chạy lại. Fabric cho phép triển khai quy trình đó cùng với kho dữ liệu và lớp
+báo cáo trong một môi trường. Dữ liệu bán hàng đã xử lý trong kho đồng thời là đầu vào
+cho các bài toán dự báo lượng bán, khả năng mua lại và nhóm sản phẩm khách hàng có
+thể mua tiếp.
+       Trong phạm vi đồ án môn học, mỗi quyết định thiết kế có thể được kiểm tra bằng
+kết quả cụ thể: dữ liệu sau xử lý có khớp nguồn hay không, các chỉ tiêu có cho cùng kết
+quả khi đối chiếu, và quy trình cập nhật có chạy ổn định. Những kết quả này cũng cho
+thấy các khâu cần điều chỉnh.
+
+1.3 Mục tiêu dự án
+
+1.3.1 Mục tiêu tổng quan
+
+       Mục tiêu tổng quan của dự án là xây dựng giải pháp kho dữ liệu trên nền tảng
+Microsoft Fabric phục vụ việc tích hợp, quản lý và khai thác dữ liệu bán hàng của Ad-
+venture Works Cycles. Giải pháp hướng đến việc tổ chức dữ liệu thành một hệ thống
+tập trung, nhất quán và thuận tiện cho phân tích đa chiều, từ đó hỗ trợ theo dõi tình hình
+kinh doanh, đánh giá hiệu quả bán hàng và nhận diện các xu hướng từ dữ liệu lịch sử.
+       Trên cơ sở kho dữ liệu được xây dựng, dự án kết hợp ứng dụng học máy, các
+quy trình xử lý dữ liệu theo từng chặng và trực quan hóa kết quả phân tích nhằm hỗ trợ
+ra quyết định trong hoạt động bán hàng. Đồng thời, thông qua quá trình triển khai, thử
+nghiệm và đánh giá, dự án làm rõ khả năng ứng dụng nền tảng Microsoft Fabric trong
+việc xây dựng một giải pháp dữ liệu từ tích hợp dữ liệu nguồn đến khai thác thông tin
+phục vụ nhu cầu kinh doanh.
+
+1.3.2 Mục tiêu cụ thể
+
+       Để đạt được mục tiêu tổng quan, dự án hướng đến các mục tiêu cụ thể sau:
+
+
+                                           13
+        Thứ nhất, khảo sát, mô tả và phân tích dữ liệu bán hàng của Adventure Works
+Cycles nhằm xác định cấu trúc dữ liệu, mối quan hệ giữa các bảng và các thông tin cần
+thiết cho bài toán phân tích. Đồng thời, đánh giá chất lượng dữ liệu, nhận diện các vấn
+đề về dữ liệu thiếu, trùng lặp hoặc không nhất quán để làm cơ sở xây dựng quy trình xử
+lý phù hợp.
+       Thứ hai, xây dựng quy trình tích hợp và xử lý dữ liệu trên nền tảng Microsoft
+Fabric, bao gồm thu thập, nạp, làm sạch, chuẩn hóa và chuyển đổi dữ liệu. Quy trình này
+hướng đến việc bảo đảm tính đầy đủ, nhất quán và toàn vẹn của dữ liệu trước khi đưa
+vào kho dữ liệu phục vụ phân tích và khai thác.
+       Thứ ba, thiết kế và triển khai kho dữ liệu theo mô hình đa chiều, tổ chức các bảng
+sự kiện và bảng chiều phù hợp với đặc điểm dữ liệu bán hàng. Kho dữ liệu cần đáp ứng
+nhu cầu phân tích các chỉ tiêu như doanh thu, số lượng sản phẩm bán ra và số lượng đơn
+hàng theo những chiều phân tích chủ yếu, bao gồm thời gian, sản phẩm, khách hàng và
+khu vực bán hàng.
+       Thứ tư, xây dựng và đánh giá ba mô hình học máy phục vụ hoạt động bán hàng
+trên cơ sở dữ liệu đã được xử lý và tổ chức trong kho dữ liệu. Ba bài toán lần lượt dự
+báo lượng bán của sản phẩm trong 7 ngày, khả năng khách hàng mua lại trong 30 ngày
+và nhóm sản phẩm khách hàng có thể mua tiếp trong 60 ngày. Kết quả cung cấp thêm
+thông tin tham khảo cho việc chuẩn bị hàng hóa và chăm sóc khách hàng.
+      Thứ năm, xây dựng và kiểm tra các quy trình xử lý dữ liệu cho từng chặng, gồm
+nạp dữ liệu vào Bronze, chuyển đổi sang Silver, công bố dữ liệu Gold và chuẩn bị dữ
+liệu học máy. Kết quả triển khai là cơ sở đánh giá khả năng hợp nhất các quy trình này
+thành một luồng điều phối đầu cuối trong giai đoạn tiếp theo.
+       Thứ sáu, xây dựng các báo cáo và dashboard trực quan phục vụ theo dõi, phân
+tích và đánh giá tình hình bán hàng. Các báo cáo hướng đến việc thể hiện những chỉ tiêu
+kinh doanh chủ yếu, hỗ trợ so sánh kết quả giữa các thời kỳ, sản phẩm và khu vực, đồng
+thời trình bày kết quả dự báo để người sử dụng thuận tiện khai thác thông tin.
+       Thứ bảy, thử nghiệm và đánh giá giải pháp dựa trên các tiêu chí về chất lượng
+dữ liệu, tính chính xác của kết quả tổng hợp, hiệu quả truy vấn, khả năng thực thi của
+từng quy trình dữ liệu và mức độ đáp ứng của mô hình học máy. Trên cơ sở kết quả thực
+nghiệm, xác định những hạn chế của giải pháp và đề xuất hướng hoàn thiện, mở rộng
+trong tương lai.
+
+
+
+
+                                           14
+1.4 Đối tượng và phạm vi dự án
+
+1.4.1 Đối tượng nghiên cứu
+
+       Đối tượng nghiên cứu của dự án là dữ liệu bán hàng của Adventure Works Cycles
+và quy trình xây dựng giải pháp kho dữ liệu trên nền tảng Microsoft Fabric phục vụ khai
+thác dữ liệu này. Dự án tập trung vào các thông tin liên quan đến đơn hàng, chi tiết bán
+hàng, sản phẩm, khách hàng, thời gian và khu vực bán hàng, cùng với mối quan hệ giữa
+các đối tượng dữ liệu trong quá trình phân tích.
+       Dự án nghiên cứu mô hình tổ chức dữ liệu trong kho dữ liệu, các quy trình tích
+hợp và chuyển đổi theo từng chặng, cùng phương pháp ứng dụng học máy cho bài toán
+bán hàng. Các báo cáo và dashboard được xây dựng hướng đến nhu cầu sử dụng của bộ
+phận quản lý và phân tích bán hàng, phục vụ theo dõi kết quả kinh doanh và tham khảo
+thông tin dự báo.
+
+1.4.2 Phạm vi nghiệp vụ bán hàng
+
+       Dự án tập trung vào đơn hàng, chi tiết đơn hàng, sản phẩm, khách hàng và khu
+vực bán hàng. Các chỉ tiêu được xem xét gồm doanh thu, số lượng bán và số đơn hàng
+theo thời gian, sản phẩm, khách hàng và khu vực.
+
+1.4.3 Phạm vi dữ liệu
+
+       Về phạm vi dữ liệu, dự án sử dụng dữ liệu Adventure Works được nhóm lựa chọn
+để triển khai, tập trung vào các bảng liên quan đến hoạt động bán hàng và những bảng
+nghiệp vụ cần thiết để bổ sung thông tin phân tích. Phạm vi thời gian được giới hạn trong
+khoảng dữ liệu lịch sử có sẵn của bộ dữ liệu sử dụng. Việc phân tích và đánh giá được
+thực hiện trên bộ dữ liệu này trong bối cảnh doanh nghiệp giả định.
+
+1.4.4 Phạm vi triển khai
+
+       Về phạm vi xây dựng hệ thống, dự án triển khai các quy trình thu thập, nạp, làm
+sạch, chuẩn hóa và chuyển đổi dữ liệu trên nền tảng Microsoft Fabric. Dữ liệu sau xử lý
+được tổ chức thành kho dữ liệu theo mô hình đa chiều, gồm các bảng sự kiện và bảng
+chiều phù hợp với yêu cầu phân tích bán hàng. Mỗi chặng được triển khai và kiểm tra
+riêng; một pipeline điều phối thống nhất cho toàn bộ luồng chưa thuộc kết quả hoàn
+thành của phiên bản hiện tại.
+
+
+
+                                           15
+       Về phạm vi phân tích, dự án tập trung vào các chỉ tiêu chủ yếu như doanh thu,
+số lượng sản phẩm bán ra và số lượng đơn hàng. Các chỉ tiêu được khai thác theo thời
+gian, sản phẩm, khách hàng và khu vực bán hàng nhằm theo dõi xu hướng, so sánh kết
+quả và nhận diện những đặc điểm đáng chú ý trong dữ liệu. Kết quả phân tích được thể
+hiện thông qua các báo cáo và dashboard trực quan.
+      Về phạm vi học máy, dự án triển khai ba bài toán ở hai mức hạt. Bài toán thứ nhất
+dự báo lượng bán 7 ngày tới cho từng sản phẩm tại từng ngày chốt. Hai bài toán còn
+lại được xây dựng theo khách hàng và ngày chốt, nhằm dự đoán khả năng mua lại trong
+30 ngày và nhóm sản phẩm của lần mua tiếp theo trong 60 ngày. Các tập huấn luyện và
+kiểm tra được tách theo thời gian để phản ánh tình huống dự báo trên dữ liệu tương lai.
+       Về phạm vi thử nghiệm và đánh giá, dự án kiểm tra chất lượng dữ liệu sau xử lý,
+tính chính xác của các chỉ tiêu tổng hợp, khả năng truy vấn và khả năng thực thi của từng
+quy trình dữ liệu đơn lẻ. Đối với mô hình học máy, việc đánh giá được thực hiện trên dữ
+liệu kiểm tra theo trình tự thời gian để xem xét mức độ phù hợp của kết quả dự báo. Kết
+quả thử nghiệm là cơ sở xác định những hạn chế và đề xuất hướng phát triển của giải
+pháp.
+       Dự án được triển khai ở quy mô đồ án môn học, tập trung mô phỏng và đánh giá
+giải pháp trong môi trường thử nghiệm. Các nội dung như vận hành hệ thống ở quy mô
+doanh nghiệp, tích hợp dữ liệu giao dịch thời gian thực, tối ưu toàn bộ hoạt động sản
+xuất và quản lý chuỗi cung ứng nằm ngoài phạm vi triển khai của đồ án.
+
+1.5 Công nghệ và nền tảng sử dụng
+
+      Kiến trúc của dự án được thiết kế với nguồn dữ liệu Azure SQL Database, các
+tầng xử lý trong Microsoft Fabric và lớp khai thác dữ liệu. Mỗi công nghệ được chọn
+cho một phần của luồng dữ liệu, từ tiếp nhận dữ liệu giao dịch đến lưu trữ, mô hình hóa,
+học máy và báo cáo.
+
+1.5.1 Azure SQL Database
+
+       Azure SQL Database được dùng để mô phỏng hệ thống giao dịch của Adventure
+Works Cycles. Dữ liệu CSV của bộ AdventureWorks được nạp vào cơ sở dữ liệu và giữ
+cấu trúc theo năm lược đồ nghiệp vụ: HumanResources, Person, Production, Purchasing
+và Sales. Trong kiến trúc, Azure SQL Database là nguồn OLTP; dữ liệu từ đây được sao
+chép vào Fabric để xử lý mà không dùng trực tiếp cho các truy vấn phân tích.
+
+
+
+                                           16
+1.5.2 Microsoft Fabric và OneLake
+
+       Microsoft Fabric là môi trường được chọn để triển khai các thành phần tích hợp,
+lưu trữ, xử lý và khai thác dữ liệu của dự án (Microsoft, n.d.-b). Theo thiết kế, các
+Lakehouse, Warehouse, pipeline và công cụ học máy được tổ chức trong một workspace.
+Semantic model nối dữ liệu tầng Gold với lớp khai thác. Bên dưới các đối tượng Fabric,
+OneLake cung cấp lớp lưu trữ dùng chung, cho phép các thành phần truy cập dữ liệu
+trong một không gian lưu trữ thống nhất (Microsoft, n.d.-f).
+
+1.5.3 Lakehouse và Medallion Architecture
+
+       Lakehouse được bố trí tại các tầng Bronze, Silver và nhánh học máy của tầng
+Gold. Tầng Bronze sẽ lưu các bảng nguồn ở dạng thô để phục vụ đối chiếu và chạy lại
+quy trình. Tầng Silver gồm vùng STG để chuẩn hóa dữ liệu và vùng INT để tích hợp các
+bảng, áp dụng quy tắc nghiệp vụ. Tại tầng Gold, một Lakehouse riêng được dành cho
+tập đặc trưng, biến mục tiêu và kết quả dự báo. Cách phân lớp này bám theo Medallion
+Architecture, trong đó dữ liệu được nâng dần về chất lượng và mức độ sẵn sàng qua từng
+tầng (Microsoft, n.d.-e).
+
+1.5.4 Fabric Data Factory
+
+      Fabric Data Factory được chọn để di chuyển và điều phối dữ liệu giữa các thành
+phần của kiến trúc. Theo luồng thiết kế, Data Pipeline sẽ sao chép dữ liệu từ Azure SQL
+Database vào Lakehouse tầng Bronze, gọi Dataflow Gen2 để xử lý dữ liệu từ Bronze
+sang Silver và thực thi các script nạp dữ liệu từ Silver vào Warehouse tầng Gold. Việc
+gom các bước này vào pipeline xác định thứ tự phụ thuộc và tạo cơ sở cho việc lập lịch,
+theo dõi trạng thái chạy và xử lý lỗi.
+
+1.5.5 Fabric Data Warehouse và Semantic Model
+
+       Fabric Data Warehouse được bố trí tại tầng Gold để lưu dữ liệu đã tổ chức theo
+mô hình chiều. Warehouse sẽ chứa các bảng chiều, bảng sự kiện và data mart phục vụ
+phân tích bán hàng; đây cũng là nguồn dự kiến của Semantic model (Microsoft, n.d.-c).
+Semantic model sẽ định nghĩa các mối quan hệ và chỉ tiêu dùng chung trước khi dữ liệu
+được Power BI hoặc Data Agent truy vấn. Cách tổ chức này tách phần xử lý, lưu trữ dữ
+liệu khỏi phần trình bày báo cáo.
+
+
+
+
+                                          17
+1.5.6 Fabric Data Science và Machine Learning
+
+       Nhánh học máy nhận các bảng đặc trưng từ Lakehouse tầng Gold. Ba notebook
+huấn luyện mô hình cố định, theo dõi thí nghiệm bằng MLflow và đăng ký ba ML Model
+tương ứng trong workspace. Kết quả chấm điểm được ghi trở lại Lakehouse tầng Gold
+để kết hợp với dữ liệu lịch sử khi phân tích. Biến đầu vào, biến mục tiêu, phương pháp
+tách tập dữ liệu và chỉ số đánh giá sẽ được trình bày tại chương xây dựng mô hình học
+máy.
+
+1.5.7 Power BI và Data Agent
+
+       Power BI và Data Agent được xác định là hai đối tượng khai thác dữ liệu ở cuối
+kiến trúc. Power BI sẽ sử dụng Semantic model để xây dựng dashboard theo dõi doanh
+thu, số lượng bán, số đơn hàng và các chiều phân tích. Data Agent sẽ khai thác cùng
+mô hình để hỗ trợ truy vấn dữ liệu theo ngữ cảnh nghiệp vụ. Việc dùng chung lớp ngữ
+nghĩa giúp các quan hệ và cách tính chỉ tiêu không phải định nghĩa lại cho từng công
+cụ (Microsoft, n.d.-b).
+
+
+
+
+                                         18
+         CHƯƠNG 2: MÔ TẢ VÀ PHÂN TÍCH DỮ LIỆU BÁN HÀNG
+
+2.1 Tổng quan về Adventure Works Cycles
+
+        Adventure Works Cycles là một doanh nghiệp hư cấu do Microsoft dựng nên làm
+bối cảnh cho bộ cơ sở dữ liệu mẫu AdventureWorks và các bài hướng dẫn về công cụ
+phân tích của hãng. Theo mô tả của Microsoft, đây là một công ty sản xuất đa quốc gia
+quy mô lớn, chế tạo và phân phối xe đạp khung kim loại lẫn vật liệu composite cho các
+thị trường thương mại ở Bắc Mỹ, châu Âu và châu Á (Microsoft, n.d.-a). Trụ sở đặt tại
+Bothell, bang Washington, nơi công ty sử dụng 500 lao động, và đi kèm là nhiều nhóm
+bán hàng khu vực phân bố khắp địa bàn kinh doanh (Microsoft, n.d.-a).
+      Ở khâu sản xuất, công ty từng mua lại một cơ sở nhỏ tại Mexico là Importadores
+Neptuno, chuyên làm các linh kiện quan trọng rồi chuyển về Bothell để lắp ráp thành
+phẩm. Sau một năm tài chính thuận lợi, ban lãnh đạo muốn mở rộng thị phần theo ba
+hướng: nhắm quảng cáo vào nhóm khách hàng tốt nhất, mở rộng khả năng tiếp cận sản
+phẩm qua một website bên ngoài, và giảm chi phí bán hàng bằng cách hạ chi phí sản
+xuất. Cả ba hướng đều cần phân tích doanh số theo khách hàng, kênh bán và sản phẩm.
+Đó cũng là lý do hoạt động bán hàng được chọn làm trọng tâm của đồ án này.
+        Adventure Works Cycles phù hợp với đề tài là do chính Microsoft đã mô tả một
+môi trường phân tích tương tự. Trong kịch bản của hãng, dữ liệu giao dịch từ cơ sở
+dữ liệu AdventureWorks2012 được kết hợp với các thông tin phi giao dịch như chỉ tiêu
+doanh số lấy từ bảng tính, rồi hợp nhất vào kho dữ liệu AdventureWorksDW2019. Nhóm
+phụ trách kho dữ liệu của công ty đánh giá kho này là cơ sở dữ liệu chiều được thiết kế
+tốt, có chiều dùng chung và khóa thay thế. Nhờ vậy, bộ dữ liệu vừa cho ta nguồn giao
+dịch để xử lý, vừa cho một mô hình chiều hoàn chỉnh để đối chiếu khi thiết kế kho trên
+Microsoft Fabric (Microsoft, n.d.-a).
+
+2.2 Tổng quan hoạt động bán hàng
+
+2.2.1 Quy trình bán hàng
+
+      Trong dữ liệu nguồn, một đơn hàng gồm bản ghi đầu đơn tại Sales.
+SalesOrderHeader và các dòng hàng tại Sales.SalesOrderDetail. Đầu đơn lưu
+ngày đặt hàng, khách hàng, khu vực, kênh đặt hàng và trạng thái; dòng hàng lưu sản
+phẩm, số lượng, đơn giá và chiết khấu. Quan hệ này cho phép đi từ giao dịch phát sinh
+đến số đo doanh thu ở mức từng sản phẩm trong đơn (Microsoft, n.d.-d).
+
+
+                                          19
+2.2.2 Các đối tượng tham gia hoạt động bán hàng
+
+       Các đối tượng chính trong phạm vi phân tích là đơn hàng, sản phẩm, khách hàng
+và lãnh thổ bán hàng. Dữ liệu sản phẩm nối tiếp tới phân nhóm và danh mục; khách
+hàng có thể gắn với cá nhân hoặc cửa hàng. Quan hệ giữa các đối tượng được thể hiện ở
+Hình 2.1.
+
+2.2.3 Các chỉ tiêu đánh giá hoạt động bán hàng
+
+       Các chỉ tiêu dự kiến gồm doanh thu dòng hàng, số lượng sản phẩm bán và số
+đơn hàng. LineTotal của dòng hàng được định nghĩa từ đơn giá, tỷ lệ chiết khấu và số
+lượng; TotalDue ở đầu đơn gồm tạm tính, thuế và phí vận chuyển. Khi so sánh hai mức
+số đo phải nêu rõ có cộng thuế và phí vận chuyển hay không (Microsoft, n.d.-d).
+
+2.3 Nguồn gốc và cấu trúc dữ liệu
+
+2.3.1 Nguồn dữ liệu Adventure Works
+
+       Bộ AdventureWorks do Microsoft công bố ban đầu để minh họa cách thiết kế cơ
+sở dữ liệu trên SQL Server 2008. Trong đó, AdventureWorks là mẫu xử lý giao dịch trực
+tuyến (OLTP), còn AdventureWorksDW là mẫu kho dữ liệu. Về sau Microsoft tiếp tục
+phát hành phiên bản mới theo từng đời SQL Server, hiện trải từ 2008 R2 đến 2025, và
+chia thành ba biến thể: OLTP cho các khối lượng công việc giao dịch thông thường, DW
+cho kho dữ liệu, và LT là bản gọn nhẹ rút ra từ OLTP (Microsoft, n.d.-d).
+       Đồ án lấy bộ dữ liệu thô OLTP làm đại diện cho nguồn dữ liệu, với bộ script và tệp
+dữ liệu được lấy từ kho mã nguồn sql-server-samples của Microsoft trên GitHub. Nhóm
+có lựa chọn này xuất phát từ bản chất của dữ liệu OLTP, vì đây là dữ liệu phát sinh trực
+tiếp từ vận hành, chưa được mô hình hóa cho mục đích phân tích, đúng với dạng đầu vào
+mà một kho dữ liệu trong thực tế phải tiếp nhận. Từ nguồn này, dữ liệu sẽ lần lượt đi qua
+quy trình Medallion chuẩn trên Microsoft Fabric để hình thành mô hình phục vụ phân
+tích. Bộ script kho dữ liệu cùng kho mã nguồn được dùng làm mô hình tham chiếu khi
+thiết kế lớp đích. Biến thể LT không được sử dụng vì đây chỉ là bản rút gọn của OLTP.
+
+2.3.2 Cấu trúc dữ liệu nguồn
+
+       Nguồn dữ liệu OLTP mô hình hóa hoạt động của AdventureWorks Cycles theo
+hướng ghi nhận giao dịch, với lược đồ chuẩn hóa ở mức cao. Ở dạng này, mỗi loại thông
+tin được tách thành bảng riêng và liên kết với nhau qua khóa, nhằm hạn chế dư thừa và
+
+                                           20
+giữ tính nhất quán khi dữ liệu liên tục được ghi và sửa.
+      Toàn bộ cơ sở dữ liệu được chia thành năm lược đồ. Cách chia này bám theo các
+bộ phận chính của một doanh nghiệp sản xuất, nên dữ liệu về cùng một đối tượng thường
+nằm rải rác ở nhiều lược đồ, mỗi lược đồ ứng với một mảng nghiệp vụ được mô tả trong
+bảng dưới đây:
+
+            Bảng 2.1: Các lược đồ nghiệp vụ trong AdventureWorks OLTP
+
+ Lược đồ             Vai trò
+ HumanResources      Thông tin nhân sự
+ Person              Thông tin cá nhân, liên hệ và địa chỉ
+ Production          Sản phẩm và hoạt động sản xuất
+ Purchasing          Mua hàng và nhà cung cấp
+ Sales               Bán hàng và khách hàng
+
+       Ngoài năm lược đồ trên còn có một số bảng hệ thống dùng để ghi nhận lỗi và lịch
+sử thay đổi cấu trúc cơ sở dữ liệu. Các bảng này nằm ở lược đồ dbo và không mang
+thông tin nghiệp vụ, nên nằm ngoài phạm vi khai thác của đồ án.
+
+
+
+
+ Hình 2.1: Sơ đồ tổng quát AdventureWorks OLTP 2008 (nguồn: SQL Server Samples
+                                at CodePlex, 2008).
+
+
+       Khác với OLTP, AdventureWorksDW được tổ chức theo mô hình chiều và gồm
+
+                                           21
+hai nhóm bảng. Nhóm thứ nhất là bảng sự kiện, có tiền tố Fact, chứa các số đo định
+lượng phát sinh từ nghiệp vụ. Nhóm thứ hai là bảng chiều, có tiền tố Dim, chứa các
+thông tin mô tả ngữ cảnh như khách hàng, sản phẩm, thời gian hay lãnh thổ. Các bảng
+liên kết với nhau bằng khóa thay thế có hậu tố Key, thay vì dùng trực tiếp mã nghiệp vụ
+của hệ thống nguồn.
+      Sự khác biệt giữa hai cách tổ chức này chính là lý do đồ án cần một quy trình
+chuyển đổi. OLTP được tối ưu cho việc ghi nhận giao dịch, còn mô hình chiều được tối
+ưu cho truy vấn và phân tích. Việc đưa dữ liệu từ nguồn thô đến mô hình chiều là nội
+dung của các chương sau.
+
+2.3.3 Các bảng dữ liệu phục vụ hoạt động bán hàng
+
+       Nhóm bảng lõi gồm SalesOrderHeader, SalesOrderDetail, Customer,
+SalesTerritory, Product, ProductSubcategory và ProductCategory. Các bảng
+Person và Store bổ sung thông tin mô tả khách hàng. Khi triển khai cần kiểm tra khả
+năng nối từng bảng và cách xử lý khóa ngoại thiếu giá trị trước khi dùng làm chiều phân
+tích (Microsoft, n.d.-d).
+
+2.3.4 Mối quan hệ giữa các bảng dữ liệu
+
+      SalesOrderDetail.SalesOrderID          nối     với     SalesOrderHeader.
+SalesOrderID; ProductID nối dòng hàng với sản phẩm.               CustomerID và
+TerritoryID ở đầu đơn dẫn đến khách hàng và lãnh thổ. Từ sản phẩm có thể đi qua
+ProductSubcategoryID rồi ProductCategoryID để phân tích theo nhóm. Đây là
+đường nối dự kiến cho mô hình phân tích; số bản ghi mất liên kết cần được kiểm tra
+trên dữ liệu đã nạp.
+
+2.4 Khám phá và trực quan hóa dữ liệu
+
+2.4.1 Phạm vi dữ liệu và phương pháp khám phá
+
+       Quá trình khám phá tập trung vào ba nội dung: kiểm tra chất lượng và khả năng
+liên kết giữa các bảng, mô tả đặc điểm phân phối của các chỉ tiêu bán hàng, và xác định
+những yêu cầu cần thiết cho mô hình kho dữ liệu. Dữ liệu được xem xét ở cả mức đầu
+đơn và dòng hàng, sau đó phân tích theo thời gian, kênh bán, sản phẩm, khách hàng và
+lãnh thổ. Cách tổ chức này bảo đảm các nhận xét mô tả gắn trực tiếp với phạm vi nghiệp
+vụ bán hàng của dự án.
+
+
+                                          22
+      Danh sách query Dataflow trong Hình 2.2 cho thấy 24 bảng đã được chọn cho
+luồng Bronze–STG. Hai query còn lại là fnSnakeCaseColumns và fnDQGate, phục vụ
+chuẩn hóa tên cột và kiểm soát chất lượng. Bảng 2.2 lược bỏ tiền tố stg_ để thể hiện tên
+thực thể nguồn. Phạm vi này rộng hơn bảy bảng lõi của mô hình doanh thu vì còn giữ
+dữ liệu lịch sử giá, chi phí, tồn kho, khuyến mại, tiền tệ và địa chỉ để phục vụ các bước
+tích hợp tiếp theo.
+
+
+
+
+  Hình 2.2: Danh sách query Dataflow Bronze–STG được dùng để xác định phạm vi
+                               khám phá dữ liệu.
+
+
+          Bảng 2.2: Nhóm bảng được lựa chọn trong Dataflow Bronze–STG
+
+ Nhóm dữ liệu        Các bảng được lựa chọn
+ Giao dịch      và SalesOrderHeader, SalesOrderDetail, Customer, Person, Store,
+ khách hàng        SalesPerson, SalesPersonQuotaHistory
+ Sản phẩm và tồn Product, ProductCategory, ProductSubcategory, ProductCostHis-
+ kho                 tory, ProductListPriceHistory, ProductInventory, Location, Spe-
+                     cialOffer, SpecialOfferProduct
+ Địa lý và lãnh thổ SalesTerritory,    SalesTerritoryHistory,          CountryRegion,
+                    StateProvince, Address
+ Danh mục tham ShipMethod, Currency, CurrencyRate
+ chiếu
+
+                                           23
+      Trong phân tích, doanh thu được định nghĩa là tổng SalesOrderDetail.
+LineTotal, tức giá trị dòng hàng sau chiết khấu nhưng chưa cộng thuế và phí vận
+chuyển. OrderDate được dùng làm ngày nghiệp vụ, SalesOrderID dùng để đếm đơn
+phân biệt và OrderQty dùng để đo số lượng bán. Việc cố định định nghĩa ngay từ bước
+khám phá giúp tránh cộng lặp TaxAmt và Freight, vốn được lưu ở mức đầu đơn.
+
+2.4.2 Kiểm tra chất lượng và khả năng liên kết
+
+       Dữ liệu gồm 31 465 đầu đơn và 121 317 dòng hàng, phát sinh từ ngày 30/05/2022
+đến 29/06/2025. Không phát hiện khóa chính trùng trong bảy bảng lõi được dùng cho
+phân tích. Sáu quan hệ từ dòng hàng đến đầu đơn và sản phẩm, từ đầu đơn đến khách
+hàng và lãnh thổ, cùng chuỗi sản phẩm–phân nhóm–danh mục đều không có khóa ngoại
+mất liên kết. Tổng LineTotal lệch tổng SubTotal dưới 0,01 đơn vị do sai số làm tròn
+khi tổng hợp; về mặt nghiệp vụ hai số đo được đối soát là nhất quán.
+
+            Bảng 2.3: Kết quả kiểm tra dữ liệu lõi trước khi trực quan hóa
+
+ Nội dung kiểm tra                    Kết quả Diễn giải
+ Khóa chính trùng ở bảy bảng lõi              0 Không phát hiện bản ghi trùng theo
+                                                khóa nghiệp vụ được kiểm tra
+ Khóa ngoại mất liên kết ở sáu quan           0 Có thể nối dữ liệu bán hàng với sản
+ hệ lõi                                         phẩm, khách hàng và lãnh thổ
+ Giá trị trạng thái đơn phân biệt             1 Toàn bộ bản ghi hiện có mang mã
+                                                trạng thái 5
+ SalesPersonID thiếu                    27 659 Bằng đúng số đơn trực tuyến; đây là
+                                               thiếu có cấu trúc, không nên tự động
+                                               loại bản ghi
+ CurrencyRateID thiếu                   17 489 Cột cho phép rỗng; cần quy tắc riêng
+                                               khi chuẩn hóa tiền tệ
+ Khách hàng chưa phát sinh đơn             701 Nên giữ trong chiều khách hàng
+                                               nhưng không xuất hiện trong sự kiện
+                                               bán hàng hiện tại
+ Sản phẩm chưa có phân nhóm                209 Cần thành viên “chưa xác định” khi
+                                               xây dựng chiều sản phẩm
+
+
+     Các giá trị thiếu trên không được thay thế hoặc loại bỏ trong giai đoạn khám phá.
+Chúng được xem là tín hiệu để thiết kế quy tắc STG: phân biệt thiếu hợp lệ theo nghiệp
+
+                                         24
+vụ với lỗi chất lượng, đồng thời tạo thành viên mặc định trong các chiều nhằm bảo toàn
+dòng sự kiện nếu dữ liệu mới xuất hiện.
+
+2.4.3 Phân tích doanh thu theo thời gian
+
+      Hình 2.3 tổng hợp doanh thu dòng hàng theo tháng đặt hàng. Tháng 05/2022 chỉ
+có dữ liệu từ ngày 30 và tháng 06/2025 kết thúc ở ngày 29, vì vậy hai điểm biên được
+đánh dấu riêng và không dùng để so sánh trực tiếp với tháng đầy đủ. Trong 36 tháng đầy
+đủ, doanh thu biến động đáng kể; tháng 04/2025 đạt mức cao nhất, khoảng 5,22 triệu
+đơn vị tiền tệ. Chuỗi cũng cho thấy mức doanh thu ở giai đoạn sau nhìn chung cao hơn
+giai đoạn đầu, nhưng vẫn có dao động giữa các tháng. Vì vậy, bài toán dự báo cần tách
+tập theo trình tự thời gian và xem xét yếu tố mùa vụ thay vì chia mẫu ngẫu nhiên.
+
+
+
+
+Hình 2.3: Doanh thu dòng hàng theo tháng đặt hàng; hai điểm màu cam là tháng chưa
+                                    đủ dữ liệu.
+
+
+2.4.4 Phân tích kênh bán hàng và khách hàng
+
+       OnlineOrderFlag tách dữ liệu thành kênh trực tuyến và kênh không trực tuyến,
+được gọi là kênh đại lý trong phần phân tích. Bảng 2.4 cho thấy số đơn và doanh thu
+không phân bổ cùng một tỷ lệ. Trực tuyến tạo 87,90% số đơn nhưng chỉ chiếm 26,73%
+doanh thu. Đại lý chỉ chiếm 12,10% số đơn nhưng tạo 73,27% doanh thu; trung vị giá
+trị đơn của kênh này cao hơn khoảng 13,9 lần so với trực tuyến. Do đó, chỉ tiêu số đơn
+
+                                         25
+không thể thay thế doanh thu khi đánh giá hiệu quả kênh.
+
+             Bảng 2.4: Tổng hợp đơn hàng và doanh thu theo kênh bán hàng
+
+    Kênh          Số đơn Tỷ trọng đơn DT (triệu) Tỷ trọng DT Trung vị
+    Trực tuyến     27 659         87,90%          29,36         26,73%       594,97
+    Đại lý            3 806       12,10%          80,49         73,27%     8 257,08
+
+
+       Phân phối trong Hình 2.4 được trình bày trên thang log vì giá trị đơn trải rộng từ
+vài đơn vị đến hơn 100 nghìn đơn vị tiền tệ. Biểu đồ giữ trung vị và khoảng tứ phân vị
+thay vì chỉ dùng trung bình, qua đó cho thấy khác biệt về quy mô giao dịch giữa hai kênh
+mà không để một số đơn rất lớn che khuất phần lớn quan sát.
+
+
+
+
+      Hình 2.4: Phân phối giá trị đơn hàng theo kênh; trục tung dùng thang log.
+
+
+       Trong 19 820 khách hàng nguồn, có 19 119 khách hàng đã phát sinh đơn và 701
+khách hàng chưa xuất hiện trong giao dịch. Khách hàng của hai kênh không giao nhau
+trong tập dữ liệu hiện tại. Điều này củng cố nhu cầu giữ CustomerID và thuộc tính loại
+khách hàng trong chiều khách hàng, đồng thời không loại các thành viên chưa có giao
+dịch khi nạp chiều.
+
+
+
+
+                                           26
+2.4.5 Phân tích cơ cấu sản phẩm
+
+      Doanh thu được nối từ dòng hàng qua Product, ProductSubcategory đến
+ProductCategory. Tất cả dòng hàng hiện tại đều tìm được danh mục, dù 209 sản
+phẩm trong bảng nguồn chưa có phân nhóm. Hình 2.5 cho thấy Bikes tạo 94,65 triệu,
+tương đương 86,17% doanh thu dòng hàng. Components đứng thứ hai với 10,74%, còn
+Clothing và Accessories cộng lại chỉ chiếm khoảng 3,09%.
+
+
+
+
+              Hình 2.5: Doanh thu dòng hàng theo danh mục sản phẩm.
+
+
+       Mức tập trung trên cho thấy số lượng bán, số đơn có sản phẩm và doanh thu phải
+được lưu như các số đo riêng. Chẳng hạn, Accessories xuất hiện trong 19 524 đơn nhưng
+chỉ tạo 1,16% doanh thu; vì vậy tần suất xuất hiện cao không đồng nghĩa với đóng góp
+doanh thu lớn. Chiều sản phẩm cần giữ cả cấp sản phẩm, phân nhóm và danh mục để có
+thể chuyển đổi mức phân tích mà không làm mất chi tiết.
+
+2.4.6 Phân tích doanh thu theo lãnh thổ
+
+      Phân tích khu vực sử dụng TerritoryID ghi trên đầu đơn và nối với
+SalesTerritory; không suy ngược lãnh thổ từ địa chỉ hiện tại của khách hàng.
+Hình 2.6 cho thấy Southwest dẫn đầu với 24,18 triệu, tương đương 22,02% doanh thu.
+Canada và Northwest lần lượt đóng góp 14,89% và 14,64%; ba lãnh thổ này cộng lại
+chiếm khoảng 51,55% doanh thu. Tuy vậy, cả mười lãnh thổ đều có giao dịch nên
+
+
+                                         27
+không có cơ sở loại bỏ lãnh thổ nào khỏi chiều phân tích.
+
+
+
+
+               Hình 2.6: Doanh thu dòng hàng theo lãnh thổ bán hàng.
+
+
+2.4.7 Kết luận từ khám phá dữ liệu
+
+       Kết quả khám phá xác nhận mức hạt phù hợp của bảng sự kiện là một dòng cho
+mỗi SalesOrderDetailID. Ở mức này có thể cộng đúng số lượng và doanh thu dòng
+hàng, đồng thời đếm đơn phân biệt qua SalesOrderID. Các chiều tối thiểu gồm ngày
+đặt hàng, sản phẩm, khách hàng, lãnh thổ và kênh bán. Thuế, phí vận chuyển và tổng
+phải trả vẫn thuộc mức đầu đơn, nên nếu đưa vào bảng sự kiện dòng hàng phải có quy
+tắc phân bổ hoặc một bảng sự kiện đầu đơn riêng.
+         Quá trình khám phá cũng chỉ ra ba yêu cầu xử lý cho tầng Silver: bảo toàn các
+giá trị thiếu có ý nghĩa nghiệp vụ, tạo thành viên “chưa xác định” cho khóa chiều không
+đầy đủ và chuẩn hóa tiền tệ trước khi so sánh các giao dịch có tỷ giá. Những kết luận
+này được chuyển thành yêu cầu dữ liệu ở mục tiếp theo và là cơ sở cho thiết kế kho ở
+Chương 3.
+
+
+
+
+                                          28
+2.5 Xác định yêu cầu dữ liệu cho giải pháp
+
+2.5.1 Xác định quy trình nghiệp vụ
+
+      Quy trình được chọn là bán hàng, gồm thông tin đầu đơn và các dòng sản phẩm.
+Đầu đơn cung cấp ngày đặt hàng, khách hàng, lãnh thổ và kênh bán; dòng hàng cung cấp
+sản phẩm, số lượng, đơn giá và chiết khấu. Phạm vi này hỗ trợ theo dõi doanh thu, số
+lượng bán và số đơn hàng.
+
+2.5.2 Xác định mức độ chi tiết dữ liệu
+
+        Bảng sự kiện bán hàng dự kiến có một dòng cho mỗi SalesOrderDetailID. Mức
+chi tiết này giữ được liên hệ với sản phẩm, số lượng, giá và chiết khấu của từng dòng;
+các thuộc tính đầu đơn được đưa vào qua SalesOrderID. Khi tổng hợp lên mức đơn
+hàng, SalesOrderID phải được đếm phân biệt để một đơn có nhiều sản phẩm không bị
+tính lặp.
+
+2.5.3 Xác định các chiều phân tích
+
+      Những chiều tối thiểu gồm ngày đặt hàng, sản phẩm, khách hàng, lãnh thổ và
+kênh bán. Chiều sản phẩm giữ cấu trúc sản phẩm–phân nhóm–danh mục; chiều khách
+hàng phân biệt cá nhân và cửa hàng. Lãnh thổ được lấy theo đơn hàng, còn kênh bán
+được xác định từ OnlineOrderFlag.
+
+2.5.4 Xác định các chỉ tiêu đo lường
+
+       Các số đo tối thiểu gồm số lượng bán, doanh thu dòng hàng và số đơn hàng phân
+biệt. Số lượng và doanh thu có thể cộng theo các chiều phân tích, trong khi số đơn phải
+được tính phân biệt theo SalesOrderID. Thuế, phí vận chuyển và tổng phải trả thuộc
+mức đầu đơn nên được trình bày riêng để tránh cộng lặp khi một đơn có nhiều dòng.
+
+
+
+
+                                          29
+2.5.5 Xác định yêu cầu dữ liệu cho Machine Learning
+
+       Nhánh học máy cần ba tập dữ liệu có mức hạt và cửa sổ dự báo riêng. Tập thứ
+nhất có một dòng cho mỗi sản phẩm tại một ngày chốt, với biến mục tiêu là tổng lượng
+bán trong 7 ngày kế tiếp. Các đặc trưng mô tả lượng bán trong 7, 14 và 28 ngày gần nhất,
+mức dao động trong 28 ngày, số ngày có phát sinh bán và thứ trong tuần của ngày chốt.
+        Hai tập còn lại có một dòng cho mỗi khách hàng tại một ngày chốt. Bài toán mua
+lại sử dụng nhãn nhị phân cho biết khách hàng có tiếp tục mua trong 30 ngày kế tiếp hay
+không. Bài toán nhóm sản phẩm sử dụng nhãn BIKES, ACCESSORIES hoặc OTHER cho
+nhóm chính của lần mua tiếp theo trong 60 ngày, với điều kiện khách hàng có phát sinh
+giao dịch trong cửa sổ dự báo. Đặc trưng chung gồm số ngày từ lần mua gần nhất, số
+ngày có mua, số đơn, số lượng và giá trị mua trong 90 ngày, cùng nhóm sản phẩm chính
+của lần mua gần nhất.
+      Các tập dữ liệu phải giữ ngày chốt và khóa sản phẩm hoặc khách hàng để đối
+soát, nhưng không đưa các khóa này vào huấn luyện. Dữ liệu huấn luyện và holdout
+được tách theo thời gian; mọi bước xử lý giá trị thiếu chỉ được xác định trên tập huấn
+luyện rồi áp dụng lại cho holdout. Chỉ tiêu đánh giá tương ứng là MAE cho dự báo lượng
+bán, Average Precision và log loss cho dự đoán mua lại, Macro F1 và log loss cho dự
+đoán nhóm sản phẩm.
+
+
+
+
+                                          30
+   CHƯƠNG 3: XÂY DỰNG KHO DỮ LIỆU TRÊN MICROSOFT FABRIC
+
+3.1 Kiến trúc tổng thể của giải pháp
+
+       Giải pháp được triển khai hoàn toàn trong một workspace của Microsoft Fabric,
+nhận dữ liệu từ một cơ sở dữ liệu Azure SQL mô phỏng hệ thống giao dịch và đưa dữ
+liệu qua ba tầng Bronze, Silver, Gold theo kiến trúc Medallion. Kiến trúc Medallion tổ
+chức dữ liệu thành nhiều tầng liên tiếp, mỗi tầng nâng dần chất lượng và mức độ sẵn
+sàng cho phân tích so với tầng trước (Microsoft, n.d.-e). Hình 3.1 mô tả toàn bộ kiến
+trúc, từ nguồn dữ liệu bên trái, các tầng xử lý trong workspace ở giữa, đến các đối tượng
+khai thác ở bên phải.
+
+
+
+
+                                           31
+32
+
+
+
+
+     Hình 3.1: Kiến trúc Medallion của giải pháp trên Microsoft Fabric.
+3.1.1 Kiến trúc Microsoft Fabric
+
+      Kiến trúc gồm ba khối chính. Khối thứ nhất là nguồn dữ liệu: cơ sở dữ liệu
+Azure SQL AdventureWorks, chứa năm lược đồ nguồn là HumanResources, Person,
+Production, Purchasing và Sales. Khối thứ hai là workspace Microsoft Fabric, nơi toàn
+bộ quá trình tích hợp, chuyển đổi và lưu trữ diễn ra qua các tầng:
+   • Tầng Bronze: một Lakehouse lưu các bảng nguồn ở dạng thô (Raw Source Tables).
+   • Tầng Silver: một Lakehouse gồm hai vùng xử lý là STG (chuẩn hóa dữ liệu) và
+     INT (tích hợp dữ liệu và áp dụng quy tắc nghiệp vụ).
+   • Tầng Gold: một Warehouse chứa các bảng chiều, bảng sự kiện và data mart, cùng
+     một Lakehouse chứa đặc trưng và biến mục tiêu cho học máy (ML Features, Tar-
+     gets).
+      Khối thứ ba là các đối tượng khai thác dữ liệu (Consumers). Warehouse tầng Gold
+được công bố qua một Semantic model, từ đó phục vụ báo cáo Power BI và Data Agent.
+Ngoài luồng chính, kiến trúc còn có một nhánh học máy: dữ liệu huấn luyện được chuẩn
+bị trong Lakehouse tầng Gold, xử lý bởi các notebook và đăng ký thành ML Model; kết
+quả dự báo sau đó được ghi trở lại Lakehouse tầng Gold.
+       Các item đang được tổ chức trong workspace theo những nhóm ở Bảng 3.1. Lake-
+house tự có SQL analytics endpoint cùng tên; các endpoint này là giao diện truy vấn của
+Lakehouse nên không được xem là một tầng dữ liệu riêng. Tương tự, mỗi bài toán học
+máy được tính là một cụm logic gồm notebook, experiment và model đăng ký. Các bản
+notebook có hậu tố số và experiment cũ là bản lặp trong quá trình thử nghiệm, không
+được tính thành mô hình độc lập.
+
+
+
+
+                                           33
+Hình 3.2: Danh sách các item trong workspace Microsoft Fabric
+
+
+
+
+                             34
+            Bảng 3.1: Các nhóm item chính trong workspace Microsoft Fabric
+
+ Nhóm             Tên item                         Vai trò
+ Lưu trữ          bronze, silver, lh_gold_ml, Lưu dữ liệu thô, dữ liệu Silver, tập
+                  wh_gold_sales               dữ liệu học máy và mô hình chiều
+                                                   Gold
+ Biến đổi         CopyJob_1, df_01_build_stg, Thu thập dữ liệu nguồn, chuẩn
+                  df_02_build_int             hóa STG và tích hợp INT
+ Điều phối        pl_bronze_to_silver_       Điều phối các chặng Bronze–
+                  sales,        silver_gold, Silver–Gold và nhánh học máy
+                  pl_prepare_gold_ml,
+                  pl_ml_sales_forecast,
+                  pl_publish_ml_predictions
+ Học máy          nb_automl_demand_7d,       Huấn luyện, theo dõi thí nghiệm,
+                  nb_automl_repeat_          đăng ký và chấm điểm ba mô hình
+                  purchase_30d,   nb_automl_
+                  next_category_60d;
+                  ml_model_demand_7d,    ml_
+                  model_repeat_purchase_30d,
+                  ml_model_next_category_
+                  60d
+ Khai thác        sm_gold_sales_inventory,         Cung cấp lớp ngữ nghĩa và báo
+                  pt_gold_operations               cáo Power BI
+ Hỗ trợ           sliver, sliver_v2 và các item Cung cấp môi trường thực thi và
+                  staging do Dataflow tạo       vùng tạm kỹ thuật
+
+
+3.1.2 Luồng dữ liệu trong hệ thống
+
+      Dữ liệu đi qua hệ thống theo các bước sau:
+  1. Dữ liệu từ năm lược đồ của Azure SQL Database được sao chép nguyên trạng vào
+     Lakehouse tầng Bronze bằng một Data Pipeline sử dụng hoạt động Copy job.
+  2. Từ Bronze sang Silver, một Data Pipeline gọi Data flow để đọc các bảng thô, chuẩn
+     hóa ở vùng STG rồi tích hợp, áp dụng quy tắc nghiệp vụ ở vùng INT.
+  3. Từ Silver sang Gold, một Data Pipeline chạy các Script để nạp dữ liệu INT vào các
+     bảng chiều và bảng sự kiện của Warehouse.
+  4. Từ Warehouse, dữ liệu được chuyển tiếp sang Lakehouse tầng Gold để tạo tập đặc
+
+
+                                         35
+     trưng cho học máy.
+  5. Ba notebook nhận dữ liệu huấn luyện từ Lakehouse tầng Gold, huấn luyện mô hình
+     cố định, ghi nhận thí nghiệm và đăng ký các ML Model tương ứng; kết quả chấm
+     điểm được trả về cùng Lakehouse.
+  6. Warehouse tầng Gold được mô hình hóa thành Semantic model để Power BI và
+     Data Agent truy vấn.
+
+3.1.3 Vai trò của OneLake
+
+        OneLake là lớp lưu trữ dùng chung của Microsoft Fabric, đóng vai trò một data
+lake logic duy nhất cho toàn bộ tổ chức. Các Lakehouse và Warehouse trong workspace
+đều lưu dữ liệu tại OneLake ở định dạng Delta Parquet (Microsoft, n.d.-f). Nhờ vậy, dữ
+liệu đi từ tầng này sang tầng khác trong cùng nền tảng mà không cần một hệ thống lưu
+trữ riêng cho từng tầng, Warehouse tầng Gold và Lakehouse tầng Silver cùng truy cập
+được một kho lưu trữ thống nhất, và Semantic model đọc dữ liệu trực tiếp từ nơi chúng
+đã được lưu.
+
+3.1.4 Vai trò của Lakehouse và Data Warehouse
+
+      Giải pháp kết hợp cả hai loại đối tượng lưu trữ, mỗi loại đảm nhận phần việc phù
+hợp với đặc điểm của nó. Lakehouse được dùng ở tầng Bronze và Silver, nơi dữ liệu
+còn thay đổi cấu trúc và cần được xử lý linh hoạt bằng pipeline, dataflow hoặc notebook.
+Lakehouse cũng được dùng ở tầng Gold để chứa đặc trưng, biến mục tiêu và kết quả
+chấm điểm, vì dữ liệu này phục vụ trực tiếp cho các notebook học máy thay vì truy vấn
+báo cáo thông thường.
+       Data Warehouse được dùng ở tầng Gold cho dữ liệu đã chuẩn hóa theo mô hình
+chiều. Fabric Data Warehouse là lớp dữ liệu quan hệ, hỗ trợ đầy đủ T-SQL và phù hợp
+với mô hình hình sao (Microsoft, n.d.-c), nên thích hợp để chứa bảng sự kiện bán hàng
+cùng các bảng chiều làm nguồn cho Semantic model.
+
+3.2 Tích hợp dữ liệu với Microsoft Fabric
+
+3.2.1 Kết nối và thu thập dữ liệu nguồn
+
+      Dữ liệu gốc của AdventureWorks ở dạng tệp CSV, được chia theo năm lược đồ
+nghiệp vụ là HumanResources, Person, Production, Purchasing và Sales. Để mô phỏng
+một hệ thống giao dịch thực tế, nhóm nạp các tệp CSV này vào một cơ sở dữ liệu Azure
+
+
+                                          36
+SQL, dùng cơ sở dữ liệu đó làm nguồn OLTP cho toàn bộ giải pháp (Hình 3.3). Cách
+làm này giữ đúng điểm xuất phát của một dự án kho dữ liệu trong thực tế là dữ liệu nằm
+trong hệ thống vận hành, chưa được mô hình hóa cho phân tích.
+
+
+
+
+   Hình 3.3: Nguồn dữ liệu: các tệp CSV AdventureWorks được nạp vào Azure SQL
+                                     Database.
+
+
+      Từ Azure SQL Database, dữ liệu được đưa vào Fabric bằng CopyJob_1
+và ghi vào Lakehouse bronze.           Kết nối nguồn thuộc loại SQL, sử dụng
+máy chủ adventureworksgroup1.database.windows.net và cơ sở dữ liệu
+adventureworksnhom1. Kết nối dùng tài khoản tổ chức, không qua data gateway và
+bật mã hóa đường truyền; thông tin xác thực không được đưa vào báo cáo.
+
+
+
+
+       Hình 3.4: Cấu hình kết nối từ Microsoft Fabric đến Azure SQL Database
+
+
+3.2.2 Xây dựng Data Pipeline
+
+      Giải pháp sử dụng các pipeline và hoạt động chuyên biệt cho từng chặng, như
+Bảng 3.2 tóm tắt.
+
+
+
+
+                                         37
+                   Bảng 3.2: Các hoạt động pipeline trong giải pháp
+
+ Item                      Chặng                Nhiệm vụ
+ CopyJob_1                 Azure SQL       → Sao chép các bảng nguồn vào Lake-
+                           Bronze            house bronze
+ df_01_build_stg           Bronze → STG         Chuẩn hóa cấu trúc và dữ liệu nguồn
+ df_02_build_int           STG → INT            Tích hợp bảng và áp dụng quy tắc
+                                                nghiệp vụ
+ silver_gold               Silver → Gold        Nạp dữ liệu đã tích hợp vào Warehouse
+                                                wh_gold_sales
+ pl_prepare_gold_          Warehouse      → Chuẩn bị ba bảng đặc trưng và biến
+ ml                        Lakehouse Gold   mục tiêu
+ pl_ml_sales_              Huấn luyện      và Điều phối ba notebook và ba ML
+ forecast                  chấm điểm          Model
+ pl_publish_ml_            ML → Gold            Công bố kết quả dự báo cho lớp khai
+ predictions                                    thác
+
+
+      Ở mức kiến trúc, luồng dữ liệu đi từ các hoạt động thu thập đến Bronze, STG, INT
+và Warehouse Gold. Từ Gold, một nhánh phục vụ Semantic model và báo cáo; nhánh
+còn lại chuẩn bị dữ liệu học máy, thực hiện chấm điểm rồi công bố kết quả trở lại tầng
+Gold. Trong phiên bản hiện tại, quan hệ phụ thuộc được cấu hình bên trong từng quy
+trình riêng lẻ; các chặng chưa được hợp nhất thành một pipeline điều phối đầu cuối.
+
+
+
+
+        Hình 3.5: Canvas minh họa các chặng xử lý dữ liệu trên Microsoft Fabric
+
+
+3.2.3 Xây dựng Dataflow Gen2
+
+       Trong kiến trúc triển khai, Dataflow Gen2 đảm nhiệm chặng xử lý từ vùng STG
+đến vùng INT của Lakehouse Silver. Thay vì mô tả riêng từng dataflow, Hình 3.6 khái
+quát chuỗi biến đổi chung được áp dụng cho các nhóm dữ liệu nghiệp vụ. Dữ liệu đã
+được chuẩn hóa sơ bộ tại STG được đọc vào Dataflow Gen2, kết hợp giữa các bảng liên
+quan, bổ sung thuộc tính và ghi vào vùng INT để xây dựng tầng Gold.
+
+                                           38
+    Hình 3.6: Luồng xử lý tổng quát của Dataflow Gen2 từ STG đến các bảng INT
+
+
+        Luồng xử lý gồm ba nhóm công việc chính. Thứ nhất, bước tích hợp dữ liệu thực
+hiện các phép nối và mở rộng giữa các thực thể có quan hệ nghiệp vụ, chẳng hạn sản
+phẩm, khách hàng, đơn hàng, tồn kho, hạn ngạch và lịch sử giá. Nhờ đó, dữ liệu phân tán
+ở nhiều bảng STG được tổ chức lại thành các tập dữ liệu tích hợp theo chủ đề. Thứ hai,
+Dataflow Gen2 áp dụng các quy tắc tính toán nghiệp vụ. Các phép tính tiêu biểu gồm
+xác định giá niêm yết hiện hành từ lịch sử giá, xác định chi phí tiêu chuẩn hiện hành từ
+lịch sử chi phí và tạo các chỉ tiêu dẫn xuất của giao dịch bán hàng như giá trị đơn hàng,
+giá trị chiết khấu và giá trị thuần. Thứ ba, dữ liệu đầu ra được kiểm tra về khóa, kiểu dữ
+liệu, tính nhất quán và khả năng trùng lặp trước khi ghi vào vùng INT.
+       Kết quả của quá trình là 17 bảng INT chứa dữ liệu đã được tích hợp, làm giàu
+và sẵn sàng cho nghiệp vụ. Các khối int_sales, int_product, int_customer, int_
+order, int_stock và int_quota trong hình đại diện cho các nhóm dữ liệu chính; tên
+bảng vật lý và số dòng cụ thể được trình bày tại Mục 3.3.2. Cách tổ chức này tạo ranh
+giới rõ ràng giữa vùng STG, nơi dữ liệu được chuẩn hóa theo nguồn, và vùng INT, nơi
+dữ liệu được áp dụng quy tắc nghiệp vụ để làm đầu vào thống nhất cho các bảng chiều
+và bảng sự kiện tại Gold.
+
+3.2.4 Phạm vi điều phối các quy trình tích hợp dữ liệu
+
+       Các pipeline hiện được xây dựng theo từng nhiệm vụ chuyên biệt: sao chép dữ
+liệu nguồn vào Bronze, gọi Dataflow để tạo Silver, thực thi các script nạp Gold và xử
+lý dữ liệu học máy. Cách tách này cho phép kiểm tra từng chặng, nhưng chưa có một
+pipeline cấp cao để truyền tham số dùng chung, áp dụng lịch chạy thống nhất, quản lý
+phụ thuộc giữa các chặng và tổng hợp trạng thái lỗi. Đây là giới hạn về tự động hóa đầu
+
+                                           39
+cuối của phiên bản hiện tại và được tổng hợp tại Mục 7.3.
+
+3.3 Xây dựng Lakehouse theo Medallion Architecture
+
+        Bảng 3.3 tổng hợp vai trò của từng tầng trong kiến trúc Medallion của giải pháp.
+
+                  Bảng 3.3: Tổng hợp các tầng trong kiến trúc Medallion
+
+ Tầng      Đối tượng Fabric          Nội dung
+ Bronze Lakehouse                    Bảng nguồn thô, giữ nguyên cấu trúc từ Azure
+                                     SQL
+ Silver    Lakehouse (STG, INT) Dữ liệu đã chuẩn hóa và tích hợp, áp dụng quy tắc
+                                nghiệp vụ
+ Gold      Warehouse                 Bảng chiều, bảng sự kiện và data mart phục vụ
+                                     phân tích
+ Gold      Lakehouse                 Đặc trưng và biến mục tiêu cho học máy, cùng kết
+                                     quả dự báo
+
+
+3.3.1 Tầng Bronze – dữ liệu nguồn
+
+       Tầng Bronze là một Lakehouse lưu các bảng nguồn ở dạng thô, giữ nguyên cách
+tổ chức theo các lược đồ nghiệp vụ của AdventureWorks. Ngoài năm lược đồ chính là
+HumanResources, Person, Production, Purchasing và Sales, tầng này còn có nhóm
+dbo chứa các đối tượng dùng chung. Các bảng hệ thống và đối tượng theo dõi truy vấn
+không được đưa vào thống kê. Phạm vi hiện tại gồm 91 đối tượng với tổng cộng 823.130
+dòng; đây là tổng số dòng của danh mục đối tượng, không phải số bản ghi nghiệp vụ phân
+biệt.
+
+             Bảng 3.4: Quy mô dữ liệu tại tầng Bronze theo lược đồ nguồn
+
+          Lược đồ                          Số đối tượng         Tổng số dòng
+          HumanResources                         12                       1.869
+          Person                                 15                   141.441
+          Production                             27                   351.783
+          Purchasing                             7                      13.686
+          Sales                                  26                   294.412
+          dbo                                    4                      19.939
+          Tổng cộng                              91                   823.130
+
+
+                                           40
+       Trong nhóm dữ liệu bán hàng, các bảng có vai trò trực tiếp đối với luồng phân
+tích gồm SalesOrderHeader với 31.465 dòng, SalesOrderDetail với 121.317 dòng,
+Customer với 19.820 dòng và Product với 504 dòng. Việc lưu dữ liệu ở mức chi tiết
+này tạo cơ sở để đối chiếu số lượng bản ghi khi dữ liệu đi qua STG, INT và các bảng sự
+kiện tại Gold.
+
+
+
+
+             Hình 3.7: Danh mục bảng và số dòng tại Lakehouse Bronze
+
+
+3.3.2 Tầng Silver – dữ liệu làm sạch và chuyển đổi
+
+      Tầng Silver là một Lakehouse được chia thành hai vùng xử lý. Vùng STG (Data
+Standardization) gồm 24 bảng, tiếp nhận các thực thể cần thiết từ Bronze và đưa chúng
+về cấu trúc thống nhất. Vùng INT (Data Integration & Business Rules) gồm 17 bảng, tổ
+chức lại dữ liệu theo các chủ đề phục vụ mô hình chiều và phân tích. Tổng số dòng trong
+
+
+                                          41
+danh mục STG là 230.129 và trong danh mục INT là 209.903; chênh lệch giữa hai tổng
+này phản ánh số lượng và phạm vi bảng khác nhau, vì vậy không được hiểu là số dòng
+bị loại bỏ trong một phép tải duy nhất.
+
+                 Bảng 3.5: Danh mục bảng và số dòng tại tầng Silver
+
+                     STG                                       INT
+  Bảng                            Số dòng   Bảng                        Số dòng
+  stg_address                      19.614   int_currency                    105
+  stg_country_region                 238    int_currency_rate            13.532
+  stg_currency                       105    int_customer                 19.820
+  stg_currency_rate                13.532   int_geography                19.614
+  stg_customer                     19.820   int_inventory_by_location     1.069
+  stg_location                        14    int_inventory_by_product        432
+  stg_person                       19.972   int_product                     504
+  stg_product                        504    int_product_cost_history        395
+  stg_product_category                 4    int_product_price_history       395
+  stg_product_cost_history           395    int_product_stock_status        504
+  stg_product_inventory             1.069   int_sales_order_lines       121.317
+  stg_product_list_price_            395    int_sales_orders             31.465
+  history
+  stg_product_subcategory             37    int_sales_person                 17
+  stg_sales_order_detail          121.317   int_sales_person_quota_         163
+                                            history
+  stg_sales_order_header           31.465   int_sales_territory_             17
+                                            history
+  stg_sales_person                    17    int_special_offer_              538
+                                            products
+  stg_sales_person_quota_            163    int_special_offers               16
+  history
+  stg_sales_territory                 10
+  stg_sales_territory_                17
+  history
+  stg_ship_method                      5
+  stg_special_offer                   16
+  stg_special_offer_product          538
+  stg_state_province                 181
+  stg_store                          701
+  Tổng cộng                       230.129   Tổng cộng                   209.903
+
+
+
+
+                                        42
+      Số dòng của các thực thể cốt lõi được duy trì nhất quán qua các vùng tương
+ứng: đơn hàng có 31.465 dòng tại Bronze, stg_sales_order_header và int_sales_
+orders; chi tiết đơn hàng có 121.317 dòng tại Bronze, stg_sales_order_detail và
+int_sales_order_lines. Tương tự, khách hàng duy trì 19.820 dòng và sản phẩm duy
+trì 504 dòng từ nguồn đến INT. Kết quả này tạo một điểm kiểm soát ban đầu về tính đầy
+đủ của dữ liệu trước khi nạp sang Gold, nhưng chưa thay thế các kiểm tra về khóa, giá
+trị null, trùng lặp và tính đúng đắn của quy tắc nghiệp vụ.
+
+
+
+
+                Hình 3.8: Cấu trúc STG và INT trong Lakehouse Silver
+
+
+      [Bổ sung quy tắc chuẩn hóa tên cột, kiểu dữ liệu, giá trị null, bản ghi trùng lặp;
+các phép join và quy tắc nghiệp vụ tại INT sau khi hoàn thiện tài liệu xử lý.]
+
+3.3.3 Tầng Gold – dữ liệu được chuẩn hóa phục vụ phân tích
+
+      Tầng Gold gồm hai đối tượng với hai mục đích khác nhau. Warehouse wh_gold_
+sales có 77 đối tượng nghiệp vụ với tổng cộng 1.842.655 dòng, trong đó phần lõi của
+mô hình chiều gồm 10 bảng chiều, 11 bảng sự kiện và 10 data mart chính. Lakehouse
+lh_gold_ml lưu ba bảng dữ liệu dạng rộng với tổng cộng 482.554 dòng, phục vụ ba bài
+toán học máy. Các bảng hệ thống và đối tượng theo dõi truy vấn không được đưa vào
+thống kê. Tương tự các tầng trước, tổng số dòng tại Warehouse là số liệu kiểm kê trên
+nhiều bảng và khung nhìn có quan hệ với nhau, không phải số bản ghi nghiệp vụ phân
+biệt.
+
+
+                                          43
+            Bảng 3.6: Danh mục bảng chiều và bảng sự kiện tại Gold
+
+             Dimension                                   Fact
+Bảng                         Số dòng Bảng                            Số dòng
+currency                          105 currency_rate                   13.532
+customer                       19.820 inventory_current                1.069
+date                            1.139 inventory_daily_                    0
+                                      snapshot
+geography                      19.615 inventory_product_                504
+                                      current
+location                           14 offer_product                     538
+product                           504 product_cost_history              395
+product_eligibility               504 product_price_history             395
+sales_person                       18 sales_order                     31.465
+special_offer                      16 sales_order_line               121.317
+territory                          11 sales_quota                       163
+                                        sales_territory_                 17
+                                        assignment
+Tổng cộng                      41.746 Tổng cộng                      169.395
+
+
+
+
+                                     44
+           Bảng 3.7: Danh mục data mart và bảng dữ liệu học máy tại Gold
+
+                Data mart                             Bảng dữ liệu học máy
+ Đối tượng                        Số dòng Bảng                                Số dòng
+ customer_performance              19.119 ml_wide_demand_7d                   141.457
+ customer_rfm_current              19.119 ml_wide_next_category_               37.261
+                                          60d
+ data_health                             1 ml_wide_repeat_30d                 303.836
+ inventory_product_                    504
+ current
+ offer_performance                      12
+ order_operations                  31.465
+ price_realization                121.317
+ quota_performance                     192
+ sales_line_approved              121.317
+ sales_product_day                 69.202
+ Tổng cộng                        382.248 Tổng cộng                           482.554
+
+
+       Các bảng sales_order và sales_order_line lần lượt có 31.465 và 121.317
+dòng, tương ứng với số dòng của thực thể đơn hàng và chi tiết đơn hàng tại INT. Bảng
+inventory_daily_snapshot hiện chưa có dữ liệu; trạng thái này được ghi nhận như
+hiện trạng của danh mục, không được xem là lỗi tải khi chưa có thông tin về lịch tạo ảnh
+chụp tồn kho. Tổng số dòng của các data mart và bảng dữ liệu học máy cũng là số liệu
+kiểm kê theo từng đối tượng, không đại diện cho số giao dịch phân biệt vì một giao dịch
+có thể xuất hiện trong nhiều tập dữ liệu phục vụ các mục tiêu phân tích khác nhau.
+
+
+
+
+                                          45
+Hình 3.9: Danh mục dimension, fact và data mart trong Warehouse Gold
+
+
+
+
+                                46
+            Hình 3.10: Các bảng dữ liệu dạng rộng trong Lakehouse Gold
+
+
+3.3.4 Luồng chuyển đổi dữ liệu giữa các tầng
+
+      Dữ liệu đi theo một chiều chính từ Bronze sang STG, tiếp tục qua INT và được
+nạp vào Warehouse Gold. Bronze duy trì dữ liệu nguồn; STG tạo lớp dữ liệu chuẩn hóa;
+INT tổ chức dữ liệu theo các chủ đề tích hợp; Gold cung cấp mô hình chiều, data mart
+và các bảng dạng rộng cho học máy. Đối với các thực thể bán hàng cốt lõi, số dòng quan
+sát được duy trì xuyên suốt các tầng, nhờ đó có thể đối chiếu phạm vi dữ liệu trước và
+sau từng chặng. Riêng tầng Gold có thêm một nhánh học máy: dữ liệu đầu vào được
+
+                                         47
+chuẩn bị tại Lakehouse Gold và kết quả dự báo được công bố trở lại lớp khai thác.
+       Trên cơ sở cấu trúc này, quá trình chuyển từ Silver sang Gold được thiết kế như
+một lần công bố dữ liệu có kiểm soát. Mỗi lần nạp gắn với một phiên dữ liệu nguồn cụ
+thể, một chính sách nghiệp vụ đã được phê duyệt và một tập các phép kiểm tra bắt buộc.
+Cách tiếp cận này giúp mô hình chiều và các bảng phục vụ báo cáo chỉ được cập nhật
+khi dữ liệu đầu vào và kết quả biến đổi đáp ứng đầy đủ điều kiện chất lượng.
+
+3.4 Thiết kế Data Warehouse cho hoạt động bán hàng
+
+3.4.1 Xác định Business Process và Grain
+
+       Quy trình trung tâm của Data Warehouse là phân tích bán hàng, bắt đầu từ đơn
+hàng và các dòng sản phẩm thuộc đơn. Ngày ghi nhận doanh thu là order date; due date
+và ship date vẫn được lưu để phân tích tiến độ thực hiện đơn hàng. Doanh thu chỉ được
+đưa vào lớp phân tích khi trạng thái đơn đáp ứng chính sách đang có hiệu lực. Với chính
+sách hiện tại, trạng thái 5–Shipped được tính vào doanh thu, còn các trạng thái khác bị
+loại khỏi tập doanh thu được công bố.
+       Hai mức hạt bán hàng được duy trì song song. Mức chi tiết chính là một dòng cho
+mỗi cặp sales order và sales order detail; mức tiêu đề là một dòng cho mỗi đơn hàng.
+Việc tách hai mức hạt giúp các khoản tax, freight và total due được giữ đúng ở cấp đơn,
+tránh lặp lại trên từng dòng sản phẩm. Bên cạnh bán hàng, mô hình còn bao phủ tồn kho
+hiện tại, lịch sử giá và chi phí, khuyến mại, hạn ngạch, phân công lãnh thổ và tỷ giá.
+
+
+
+
+                                          48
+                  Bảng 3.8: Mức hạt của các nhóm dữ liệu nghiệp vụ
+
+ Nhóm dữ liệu          Mức hạt                        Vai trò phân tích
+ Đơn hàng              Một dòng cho mỗi sales or- Theo dõi trạng thái, khách hàng,
+                       der                        các mốc thời gian và tổng tiền ở
+                                                      cấp đơn
+ Chi tiết bán hàng     Một dòng cho mỗi cặp sales Phân tích số lượng, giá, chiết
+                       order–sales order detail   khấu, doanh thu, chi phí ước
+                                                  tính và biên lợi nhuận theo sản
+                                                  phẩm
+ Tồn kho               Một dòng cho mỗi sản Theo dõi số lượng hiện có và
+                       phẩm–địa điểm; đồng thời trạng thái so với ngưỡng tồn kho
+                       có một bản tổng hợp cho
+                       mỗi sản phẩm
+ Lịch sử và chính Một dòng cho mỗi thực thể Phân tích biến động giá, chi phí,
+ sách             và khoảng hiệu lực hoặc lãnh thổ, hạn ngạch và tỷ giá
+                  ngày nghiệp vụ
+
+
+       Các phép tính tiền được chuẩn hóa theo cùng một quy tắc. Ở cấp dòng, net line
+amount bằng gross line amount trừ discount amount và phải khớp với line total của nguồn
+trong sai số cho phép. Ở cấp đơn, subtotal phải bằng tổng tiền thuần của các dòng; total
+due bằng subtotal cộng thuế và phí vận chuyển. Quy tắc xử lý hoàn trả chưa có bằng
+chứng nghiệp vụ đầy đủ nên nằm ngoài phạm vi đã xác nhận của mô hình hiện tại.
+
+3.4.2 Xây dựng Bus Matrix
+
+      Bus Matrix trong Bảng 3.9 thể hiện các chiều dùng chung giữa những quy trình
+chính. Ký hiệu “X” cho biết chiều tham gia trực tiếp vào nhóm dữ liệu tương ứng. Kênh
+bán được giữ bằng thuộc tính online order flag, qua đó phân biệt đơn trực tuyến với đơn
+thuộc kênh bán lại theo ngữ nghĩa của cờ nguồn.
+
+
+
+
+                                          49
+                        Bảng 3.9: Bus Matrix của Data Warehouse tầng Gold
+
+     Quy trình                 Ngày SP           KH       LT       KB       ĐL       NV      ƯĐ       ĐĐ       TT
+     Đơn hàng                    X                X        X        X        X        X
+     Chi tiết bán hàng           X        X       X        X        X                 X        X                 X
+     Tồn kho                     X        X                                                             X
+     Giá và chi phí              X        X                                                                      X
+     Khuyến mại                  X        X                                                    X
+     Hạn ngạch                   X                                                    X
+     Phân công lãnh              X                         X                          X
+     thổ
+
+
+Chú thích: SP – sản phẩm; KH – khách hàng; LT – lãnh thổ; KB – kênh bán; ĐL – địa lý; NV – nhân viên bán hàng; ƯĐ – ưu đãi;
+
+ĐĐ – địa điểm; TT – tiền tệ.
+
+
+
+3.4.3 Thiết kế Dimension Tables
+
+        Các bảng chiều cung cấp ngữ cảnh mô tả ổn định cho dữ liệu sự kiện. Nhóm chiều
+cốt lõi gồm ngày, sản phẩm, khách hàng, lãnh thổ, địa lý, nhân viên bán hàng, ưu đãi đặc
+biệt, địa điểm, điều kiện đủ của sản phẩm và tiền tệ. Chiều ngày bao phủ từ ngày đặt
+hàng nhỏ nhất đến ngày lớn nhất xuất hiện trong đặt hàng, đến hạn, giao hàng hoặc ảnh
+chụp tồn kho. Các thuộc tính sản phẩm, khách hàng và tổ chức bán hàng phục vụ phân
+nhóm trong Semantic Model và các data mart.
+      Trong phiên bản hiện tại, phần lớn cột mang hậu tố key sử dụng lại định danh
+nghiệp vụ từ nguồn, chưa phải khóa thay thế được sinh độc lập. Ba chiều nhân viên bán
+hàng, lãnh thổ và địa lý có thêm thành viên chưa xác định với khóa −1 để tiếp nhận các
+quan hệ bị thiếu mà không làm mất bản ghi sự kiện. Các chiều được nạp lại toàn bộ nên
+phản ánh trạng thái hiện hành, gần với cách xử lý Slowly Changing Dimension loại 1.
+Những thay đổi cần lưu lịch sử như giá sản phẩm, chi phí sản phẩm và phân công lãnh
+thổ được tách sang các bảng lịch sử có khoảng hiệu lực.
+
+
+
+
+                                                           50
+                    Bảng 3.10: Các nhóm bảng chiều tại tầng Gold
+
+ Bảng chiều                Nội dung chính
+ dim.date                  Ngày đầy đủ, năm, quý, tháng và các thuộc tính lịch dùng
+                           chung
+ dim.product,              Thông tin sản phẩm, phân cấp sản phẩm và khoảng thời gian
+ dim.product_              đủ điều kiện phân tích
+ eligibility
+ dim.customer              Thông tin khách hàng và loại khách hàng phục vụ phân đoạn
+ dim.territory, dim. Cấu trúc lãnh thổ bán hàng và địa lý hóa đơn, giao hàng
+ geography
+ dim.sales_person          Nhân viên bán hàng và thông tin tổ chức liên quan
+ dim.special_offer         Loại ưu đãi, mức chiết khấu và khoảng hiệu lực
+ dim.location              Địa điểm lưu kho
+ dim.currency              Danh mục tiền tệ dùng cho quy đổi và báo cáo
+
+
+3.4.4 Thiết kế Fact Tables
+
+        Bảng fact.sales_order_line là trung tâm phân tích doanh thu. Bảng lưu số
+lượng, đơn giá, tỷ lệ chiết khấu, tiền gộp, tiền chiết khấu, tiền thuần và giá trị dòng từ
+nguồn. Chi phí chuẩn tại thời điểm đặt hàng được ghép theo sản phẩm và ngày hiệu lực;
+từ đó tính estimated standard cost amount và estimated standard margin amount. Bảng
+fact.sales_order giữ các chỉ tiêu cấp tiêu đề, còn fact.inventory_current giữ
+tồn kho ở mức sản phẩm–địa điểm.
+       Các bảng sự kiện bổ trợ gồm lịch sử giá, lịch sử chi phí, quan hệ ưu đãi–sản phẩm,
+hạn ngạch bán hàng, lịch sử phân công lãnh thổ, tỷ giá, tồn kho tổng hợp theo sản phẩm
+và ảnh chụp tồn kho theo ngày. Ảnh chụp tồn kho chỉ được tạo cho đúng ngày quan sát
+thực tế; hệ thống không tự suy diễn dữ liệu lịch sử. Chính sách tiền tệ khai báo đồng tiền
+nguồn và đồng tiền báo cáo. Khi hai đồng tiền giống nhau, tỷ giá bằng 1; ngược lại, giá
+trị báo cáo sử dụng average rate theo ngày và cặp tiền tệ.
+
+
+
+
+                                           51
+                  Bảng 3.11: Các nhóm bảng sự kiện tại tầng Gold
+
+ Bảng sự kiện              Số đo hoặc nội dung
+ fact.sales_order          Tiền hàng, thuế, phí vận chuyển, tổng phải thu và các mốc
+                           xử lý đơn
+ fact.sales_order_         Số lượng, giá, chiết khấu, doanh thu thuần, chi phí chuẩn
+ line                      và biên lợi nhuận ước tính
+ fact.inventory_     Số lượng theo địa điểm và tổng hợp trạng thái tồn kho theo
+ current,      fact. sản phẩm
+ inventory_product_
+ current
+ fact.product_             Giá niêm yết và chi phí chuẩn theo khoảng hiệu lực
+ price_history,
+ fact.product_cost_
+ history
+ fact.offer_product,       Phạm vi ưu đãi, hạn ngạch và lịch sử phân công bán hàng
+ fact.sales_quota,
+ fact.sales_
+ territory_
+ assignment
+ fact.currency_rate        Tỷ giá trung bình và tỷ giá cuối ngày theo cặp tiền tệ
+ fact.inventory_           Ảnh chụp tồn kho theo ngày quan sát đã xác nhận
+ daily_snapshot
+
+
+3.4.5 Xây dựng mô hình Star Schema
+
+     Mô hình hình sao được tổ chức quanh hai bảng bán hàng có mức hạt khác nhau.
+fact.sales_order_line liên kết trực tiếp với các chiều ngày, sản phẩm, khách hàng,
+lãnh thổ, nhân viên bán hàng và ưu đãi; fact.sales_order liên kết với ngày đặt, ngày
+đến hạn, ngày giao, khách hàng, lãnh thổ, nhân viên bán hàng và địa lý hóa đơn, giao
+hàng. Các bảng tồn kho, hạn ngạch và lịch sử dùng lại những chiều phù hợp, nhờ đó duy
+trì cách diễn giải nhất quán giữa các chủ đề phân tích.
+
+
+
+
+                                         52
+                             [Chèn ảnh chính thức tại đây]
+
+
+
+
+        Hình 3.11: Mô hình hình sao của Data Warehouse bán hàng tầng Gold
+
+
+3.5 Xây dựng Fabric Data Warehouse
+
+3.5.1 Tạo và cấu hình Data Warehouse
+
+       Warehouse wh_gold_sales được tổ chức thành các schema theo chức năng: src
+cung cấp khung nhìn đến dữ liệu INT; dim và fact chứa mô hình chiều; mart và rpt
+cung cấp dữ liệu đã được định hình cho lớp khai thác; ref lưu chính sách và ánh xạ
+nghiệp vụ; ops theo dõi phiên nạp, manifest, công bố và kết quả kiểm tra chất lượng.
+Các schema ml và agent hỗ trợ kết quả học máy và truy vấn qua Data Agent. Cách tách
+schema giúp phân biệt dữ liệu nguồn, dữ liệu lõi, dữ liệu công bố và dữ liệu vận hành
+trong cùng Warehouse.
+
+3.5.2 Xây dựng các bảng Dimension
+
+       Các bảng chiều được tạo trước các bảng sự kiện để cung cấp miền khóa tham
+chiếu. Khi nạp, chiều ngày được sinh theo khoảng ngày thực tế; các chiều sản phẩm,
+khách hàng, lãnh thổ, địa lý, nhân viên, ưu đãi và địa điểm được tái tạo từ vùng INT. Sau
+khi dữ liệu nguồn được nạp, thành viên −1 được bổ sung cho các chiều cho phép giá
+trị chưa xác định. Chiều điều kiện sản phẩm và chiều tiền tệ được cập nhật trong cùng
+phiên công bố để bảo đảm các phép lọc và quy đổi sử dụng một chính sách nhất quán.
+
+3.5.3 Xây dựng các bảng Fact
+
+       Các bảng sự kiện bán hàng được nạp sau các chiều. Dữ liệu tiêu đề đơn hàng tạo
+fact.sales_order; dữ liệu chi tiết được kết hợp với tiêu đề và lịch sử chi phí để tạo
+fact.sales_order_line. Tồn kho được duy trì ở cả mức sản phẩm–địa điểm và mức
+tổng hợp sản phẩm. Các bảng lịch sử, hạn ngạch, phân công lãnh thổ, tỷ giá và quan hệ
+ưu đãi được nạp tiếp theo, sau đó mới tạo data mart và các bảng báo cáo. Trình tự này
+bảo đảm mọi phép tổng hợp được thực hiện trên một phiên dữ liệu Gold đã đồng nhất.
+
+
+                                           53
+3.5.4 Thiết lập khóa và mối quan hệ
+
+       Khóa nghiệp vụ xác định duy nhất từng mức hạt: sales order id cho tiêu đề; cặp
+sales order id–sales order detail id cho chi tiết; cặp sản phẩm–địa điểm cho tồn kho;
+và tổ hợp thực thể–ngày hoặc khoảng hiệu lực cho dữ liệu lịch sử. Quan hệ logic giữa
+fact và dimension được kiểm tra trong quy trình nạp, bao gồm các khóa ngày, sản phẩm,
+khách hàng, lãnh thổ, nhân viên, địa lý, ưu đãi, địa điểm và tiền tệ. Bản ghi thiếu quan
+hệ ở các trường được phép sẽ quy về thành viên −1; các vi phạm còn lại làm phiên nạp
+thất bại.
+
+3.5.5 Nạp và đồng bộ dữ liệu
+
+        Quá trình Silver–Gold gồm hai bước chính. Trước hết, phiên Silver được đăng ký
+thành một manifest bất biến. Manifest ghi nhận mã phiên nguồn, ngày nghiệp vụ hoàn
+tất, thời điểm quan sát tồn kho và số dòng của đúng 17 bảng INT. Hệ thống từ chối mã
+phiên đã sử dụng, thời điểm quan sát trong tương lai hoặc manifest thiếu nguồn bắt buộc.
+Tiếp theo, phiên Gold chỉ được khởi chạy khi chính sách nghiệp vụ tồn tại duy nhất và
+đã ở trạng thái được phép công bố. Số dòng hiện tại của từng bảng INT phải khớp với
+manifest trước khi biến đổi bắt đầu.
+
+
+
+
+ Hình 3.12: Pipeline điều phối quá trình nạp và kiểm tra dữ liệu từ Silver sang Gold
+
+
+        Như thể hiện trong Hình 3.12, pipeline lần lượt đăng ký Silver, nạp Gold, kiểm
+tra kết quả và kết thúc thành công. Nếu bước xác thực không đạt, nhánh lỗi chuyển sang
+hoạt động kết thúc thất bại. Bên trong bước nạp Gold, dữ liệu chiều, sự kiện, data mart
+và bảng báo cáo được làm mới bằng chiến lược xóa rồi nạp lại trong một giao dịch. Dữ
+liệu chỉ được ghi nhận là đã công bố sau khi toàn bộ cổng chất lượng bắt buộc vượt qua;
+nếu xảy ra lỗi, giao dịch được hoàn tác, phiên chạy mang trạng thái FAILED và lỗi được
+ghi vào lớp vận hành.
+
+
+                                          54
+         Bảng 3.12: Các cổng kiểm soát chất lượng trong quá trình nạp Gold
+
+ Nhóm kiểm tra            Điều kiện kiểm soát
+ Khóa và tính duy nhất    Không có khóa bắt buộc bị null, trùng khóa ở nguồn hoặc
+                          trùng mức hạt trong bảng đích
+ Toàn vẹn quan hệ         Chi tiết phải có tiêu đề; khóa từ fact phải tồn tại trong chiều
+                          tương ứng hoặc dùng thành viên chưa xác định được cho
+                          phép
+ Đối chiếu số dòng        Số dòng của 17 nguồn INT phải khớp manifest; các bảng bán
+                          hàng và tồn kho phải khớp phạm vi nguồn sau nạp
+ Đối chiếu tiền           Tiền gộp trừ chiết khấu bằng tiền thuần; tiền thuần bằng giá
+                          trị dòng nguồn; tổng dòng bằng subtotal; subtotal cộng thuế
+                          và vận chuyển bằng total due
+ Tồn kho                  Tổng số lượng theo địa điểm phải khớp tổng hợp theo sản
+                          phẩm; trạng thái tồn kho phải phù hợp với ngưỡng an toàn
+                          và điểm đặt hàng lại
+ Lịch sử và tỷ giá        Khoảng hiệu lực giá, chi phí, lãnh thổ và hạn ngạch phải hợp
+                          lệ; tỷ giá dương và cặp tiền tệ theo ngày không trùng
+ Công bố                  Chỉ cập nhật bản công bố và các bảng báo cáo sau khi mọi
+                          kiểm tra chặn đã đạt; lỗi bất kỳ làm hoàn tác toàn bộ giao
+                          dịch
+
+
+3.6 Xây dựng Semantic Model
+
+3.6.1 Thiết kế mô hình dữ liệu phân tích
+
+      Semantic Model được xây dựng như lớp ngữ nghĩa dùng chung giữa dữ liệu tầng
+Gold và các công cụ khai thác. Mô hình hiện gồm 18 bảng, bao phủ dữ liệu bán hàng,
+đơn hàng, sản phẩm, khách hàng, tồn kho, hạn ngạch, khuyến mại, dự báo và các tập dữ
+liệu hỗ trợ học máy. Cách tổ chức này cho phép báo cáo sử dụng các thực thể và chỉ tiêu
+đã định nghĩa thống nhất, thay vì thiết lập lại logic phân tích tại từng trang báo cáo.
+
+
+
+
+                                          55
+                     Bảng 3.13: Các bảng trong Semantic Model
+
+ Nhóm dữ liệu           Bảng
+ Chiều phân tích        customer, date, product, sales_person, special_offer,
+                        territory
+ Bán hàng và vận Sales, OrdersHeader, Offer, Price, Quota, Stock
+ hành
+ Phân tích và học máy CustomerRFM, DataHealth, Forecast, MLDemand7d,
+                      MLNextCategoryFeatures, MLRepeatFeatures
+
+
+      Trong đó, Sales cung cấp dữ liệu chi tiết để phân tích doanh thu và số lượng;
+OrdersHeader hỗ trợ các chỉ tiêu ở cấp đơn hàng; các bảng Price, Quota và Stock
+phục vụ phân tích giá, mức độ hoàn thành hạn ngạch và tồn kho. Nhóm bảng còn lại mở
+rộng mô hình sang phân khúc khách hàng, kiểm tra sức khỏe dữ liệu và khai thác kết quả
+học máy.
+
+
+
+
+                   Hình 3.13: Danh sách bảng trong Semantic Model
+
+
+3.6.2 Xây dựng Measures và KPI
+
+      Mô hình định nghĩa 39 measure, được tổ chức theo các chủ đề bán hàng, giao hàng,
+tồn kho, hạn ngạch, chất lượng dữ liệu và học máy. Bảng 3.14 tổng hợp các measure
+
+                                         56
+theo mục đích sử dụng. Các tên measure được giữ nhất quán với lớp báo cáo để người
+sử dụng có thể nhận biết trực tiếp ý nghĩa nghiệp vụ khi xây dựng biểu đồ.
+
+                 Bảng 3.14: Các nhóm measure trong Semantic Model
+
+   Nhóm                 Measure
+   Bán hàng             Net Sales, Report Currency Net Sales, Orders, Total
+                        Orders Header, Quantity, AOV, Discount Rate, Estimated
+                        Standard Margin
+   Giao hàng            Average Days to Ship, Eligible Shipment Orders, Late
+                        Shipment Orders, Late Shipment Orders V2, Late
+                        Shipment Rate, Late Shipment Rate V2, Orders Shipped
+                        After 7 Days
+   Tồn kho              Cost Coverage, Inventory Observed At, No Inventory
+                        Record Products, Reorder Products, Stock Age Hours,
+                        Stock Is Stale, Stock Quantity
+   Hạn ngạch            Quota Actual Sales, Quota Attainment, Total Quota
+   Học máy và dự báo    Average Historical Qty 7D, Average Historical Qty
+                        28D, Average Orders Last 90 Days, Historical Demo
+                        Forecast Qty, Operational Forecast Qty, ML Demand
+                        Records, Products in ML Dataset, Next Category
+                        Customers, Next Category Records, Repeat Purchase
+                        Customers, Repeat Purchase Records
+   Chất lượng và thời   Complete Business Date, Gold Published At, Missing FX
+   điểm dữ liệu         Lines
+
+
+      Tại trang tổng quan bán hàng, bốn KPI chính gồm Net Sales, Orders, AOV và
+Discount Rate. Với phạm vi ngày từ 31/05/2011 đến 12/07/2014 và toàn bộ lãnh thổ,
+báo cáo hiển thị doanh thu thuần 109,85 triệu USD, khoảng 31 nghìn đơn hàng, giá trị
+đơn hàng trung bình 3,49 nghìn USD và tỷ lệ chiết khấu 0,48%. Các con số này mô tả
+trạng thái đang hiển thị trên báo cáo và cần được đối chiếu bằng truy vấn kiểm thử trước
+khi dùng làm số liệu nghiệm thu.
+
+
+
+
+                                          57
+                Hình 3.14: Danh sách measure trong Semantic Model
+
+
+3.6.3 Thiết lập Relationships và Hierarchies
+
+       Semantic Model hiện có 19 quan hệ. Các quan hệ được tổ chức quanh những
+khóa dùng chung của khách hàng, sản phẩm, ngày, nhân viên bán hàng, khuyến mại và
+lãnh thổ. Bảng 3.15 trình bày cấu trúc quan hệ theo nhóm bảng; cách tổng hợp này thể
+hiện đầy đủ 19 liên kết mà không lặp lại tên khóa ở từng dòng.
+
+
+
+
+                                        58
+                Bảng 3.15: Cấu trúc relationships trong Semantic Model
+
+ Bảng phía phân       Khóa liên kết                                Bảng tham chiếu
+ tích
+ Sales                customer_key, order_date_key, product_       customer,
+                      key, sales_person_key, special_offer_        date,    product,
+                      key, territory_key                           sales_person,
+                                                                   special_offer,
+                                                                   territory
+ OrdersHeader         customer_key,          order_date_key,       customer, date,
+                      sales_person_key, territory_key              sales_person,
+                                                                   territory
+ Forecast,            product_key                                  product
+ MLDemand7d,
+ Price, Stock
+ CustomerRFM,         customer_key                                 customer
+ MLNextCategory
+ Features,
+ MLRepeat
+ Features
+ Offer                special_offer_key                            special_offer
+ Quota                sales_person_key                             sales_person
+
+
+      Mô hình này cho phép các chiều dùng chung lọc đồng thời nhiều chủ đề phân tích,
+chẳng hạn chiều sản phẩm được sử dụng cho bán hàng, giá, tồn kho và dự báo; chiều
+khách hàng được sử dụng cho bán hàng, đơn hàng, RFM và các bài toán hành vi. Tuy
+nhiên, bằng chứng hiện có chưa thể hiện rõ cardinality, hướng lọc và các hierarchy được
+cấu hình trong mô hình.
+
+
+
+
+                                          59
+            Hình 3.15: Relationships giữa các bảng trong Semantic Model
+
+
+       [Bổ sung cardinality, hướng lọc và các hierarchy thời gian, sản phẩm, lãnh thổ
+sau khi có ảnh Model view chi tiết.]
+
+3.6.4 Kết nối với Power BI
+
+       Báo cáo Power BI khai thác trực tiếp các bảng, quan hệ và measure đã công bố
+trong Semantic Model. Báo cáo hiện được chia thành tám trang theo các nhóm nhu cầu
+phân tích, như trình bày trong Bảng 3.16. Việc tách trang giúp mỗi nhóm câu hỏi nghiệp
+vụ có không gian trình bày riêng nhưng vẫn dùng chung bộ lọc và định nghĩa chỉ tiêu.
+
+
+                                         60
+                  Bảng 3.16: Cấu trúc các trang báo cáo Power BI
+
+ Trang                    Câu hỏi phân tích chính
+ 01 - Sales               Kết quả bán hàng tổng thể thay đổi như thế nào theo thời
+ Overview                 gian, lãnh thổ và nhóm sản phẩm?
+ 02 - Product             Sản phẩm và nhóm sản phẩm nào đóng góp nhiều vào doanh
+                          thu và sản lượng?
+ 03 - Operations          Tiến độ giao hàng và tỷ lệ giao trễ đang ở mức nào?
+ 04 - Quota               Doanh số thực tế đạt bao nhiêu so với hạn ngạch của lực
+                          lượng bán hàng?
+ 05 - Inventory           Mức tồn kho, độ mới của dữ liệu tồn kho và nhu cầu đặt hàng
+                          lại ra sao?
+ 06 - Prediction          Kết quả dự báo nhu cầu được phân bố như thế nào theo sản
+                          phẩm và thời gian?
+ 07 - Data Health         Dữ liệu đã được cập nhật đầy đủ chưa và còn vấn đề chất
+                          lượng nào cần theo dõi?
+ 08 - ML                  Quy mô tập dữ liệu và kết quả của các bài toán học máy được
+                          thể hiện như thế nào?
+
+
+       Trang 01 - Sales Overview sử dụng bộ lọc khoảng ngày và lãnh thổ, bốn thẻ
+KPI, biểu đồ xu hướng doanh thu và biểu đồ doanh thu theo nhóm sản phẩm. Trong
+phạm vi đang hiển thị, nhóm Bikes chiếm phần lớn doanh thu, tiếp theo là Components,
+trong khi Clothing và Accessories có tỷ trọng thấp hơn. Cấu trúc này hỗ trợ đồng
+thời việc theo dõi quy mô kinh doanh, xu hướng theo thời gian và cơ cấu doanh thu theo
+sản phẩm.
+
+
+
+
+                                         61
+               Hình 3.16: Trang tổng quan bán hàng trong Power BI
+
+
+       [Bổ sung ảnh chính thức của trang 06 - Prediction, công thức DAX, số liệu
+đối chiếu giữa Power BI và truy vấn SQL, cùng kết quả kiểm tra refresh.]
+
+
+
+
+                                      62
+  CHƯƠNG 4: XÂY DỰNG CÁC MÔ HÌNH HỌC MÁY CHO HOẠT ĐỘNG
+                        BÁN HÀNG
+
+4.1 Chuẩn bị dữ liệu cho Machine Learning
+
+4.1.1 Xác định phạm vi bài toán
+
+      Nhánh học máy được xây dựng từ dữ liệu lịch sử tại tầng Gold và gồm ba bài toán
+có đối tượng dự báo, cửa sổ thời gian và dạng biến mục tiêu khác nhau. Bài toán thứ
+nhất dự báo lượng bán của từng sản phẩm trong 7 ngày tiếp theo. Hai bài toán còn lại
+phân tích hành vi khách hàng, lần lượt dự đoán khả năng mua lại trong 30 ngày và nhóm
+sản phẩm chính của lần mua tiếp theo trong 60 ngày.
+
+                       Bảng 4.1: Phạm vi ba bài toán học máy
+
+ Bài toán           Mức hạt             Biến mục tiêu          Dạng bài toán
+ Lượng      bán   7 Một sản phẩm tại Tổng số lượng bán Hồi quy
+ ngày               một ngày chốt    từ ngày t +1 đến t +7
+ Mua lại 30 ngày    Một khách hàng Nhãn 1 nếu có mua Phân loại nhị phân
+                    tại một ngày chốt lại từ t +1 đến t +30,
+                                      ngược lại là 0
+ Nhóm sản phẩm Một khách hàng BIKES,                           Phân loại đa lớp
+ tiếp theo 60 ngày tại một ngày chốt ACCESSORIES
+                                     hoặc OTHER
+
+
+       Ba bài toán không sử dụng cùng một mức hạt. Vì vậy, khóa sản phẩm hoặc khách
+hàng và ngày chốt được giữ lại để nhận diện bản ghi, kiểm tra tính nhất quán và liên
+kết kết quả với dữ liệu nghiệp vụ, nhưng không được đưa vào tập đặc trưng huấn luyện.
+Cách phân tách này giúp mô hình học từ hành vi lịch sử thay vì ghi nhớ mã định danh
+của từng đối tượng.
+
+4.1.2 Xây dựng các tập dữ liệu dạng rộng
+
+      Mỗi bài toán sử dụng một bảng dạng rộng đã được chuẩn bị tại Lakehouse Gold.
+Bảng dự báo lượng bán có 141.457 dòng, bảng mua lại có 303.836 dòng và bảng dự đoán
+nhóm sản phẩm tiếp theo có 37.261 dòng. Các tổng này bao gồm nhiều vai trò dữ liệu
+trong cùng một bảng, như huấn luyện, holdout và thời điểm chấm điểm; do đó không
+được hiểu là toàn bộ các dòng đều có nhãn để huấn luyện.
+
+                                         63
+                  Bảng 4.2: Đặc trưng sử dụng cho ba bài toán học máy
+
+ Bài toán            Đặc trưng                    Ý nghĩa
+ Lượng      bán   7 qty_7, qty_14, qty_28         Tổng lượng bán quan sát được trong 7,
+ ngày                                             14 và 28 ngày gần nhất tính đến ngày
+                                                  chốt
+ Lượng      bán   7 std_28, positive_28, Độ dao động lượng bán trong 28 ngày,
+ ngày               weekday              số ngày có bán trong 28 ngày và thứ
+                                         của ngày chốt
+ Mua lại 30 ngày recency,          buy_days, Độ gần của lần mua cuối, số ngày có
+ và nhóm sản orders_90,            units_90, mua, số đơn, số lượng và giá trị mua
+ phẩm 60 ngày    net_90                      trong 90 ngày gần nhất
+ Mua lại 30 ngày last_bikes,                      Ba biến nhị phân mô tả nhóm sản
+ và nhóm sản last_accessories,                    phẩm chính của lần mua gần nhất
+ phẩm 60 ngày    last_other
+
+
+        Đối với bài toán lượng bán, lịch ngày được dựng liên tục cho các thành phẩm
+trong khoảng thời gian đủ điều kiện bán. Ngày không phát sinh giao dịch được biểu diễn
+bằng lượng bán bằng 0. Một dòng chỉ đủ điều kiện tạo đặc trưng khi có 28 ngày lịch sử
+và chỉ được gán nhãn khi có đủ 7 ngày tương lai. Cách xây dựng này giữ lại cả thời điểm
+không bán được sản phẩm, phù hợp với mục tiêu dự báo lượng bán quan sát được thay
+vì chỉ dự báo trên các ngày đã có giao dịch.
+       Đối với hai bài toán khách hàng, phạm vi đặc trưng là 90 ngày gần nhất. Các
+dòng hàng của cùng khách hàng trong cùng một ngày được tổng hợp thành một giỏ hàng.
+Nhóm chính của giỏ là nhóm có tổng lượng bán lớn nhất; nếu nhiều nhóm bằng nhau thì
+thứ tự chữ cái được dùng để xác định kết quả. Ngoài hai nhóm BIKES và ACCESSORIES,
+các nhóm hợp lệ còn lại được gộp thành OTHER.
+
+4.1.3 Chia dữ liệu theo thời gian và tiền xử lý
+
+      Dữ liệu được chia theo thời gian nhằm mô phỏng tình huống sử dụng lịch sử để
+dự đoán một giai đoạn xảy ra sau đó. Mốc bắt đầu holdout được xác định bằng ngày dữ
+liệu hoàn chỉnh gần nhất trừ đi 89 ngày. Tập huấn luyện chỉ giữ các dòng có nhãn và có
+toàn bộ cửa sổ gán nhãn kết thúc trước mốc holdout. Tập holdout gồm các ngày chốt
+thuộc giai đoạn sau và vẫn phải có đủ tương lai để xác định target. Các dòng có cửa sổ
+nhãn giao nhau với vùng holdout không được dùng để huấn luyện, nhờ đó hạn chế rò rỉ
+
+
+                                          64
+thông tin theo thời gian.
+        Trước khi huấn luyện, biến mục tiêu được tách khỏi tập đặc trưng. Với thuộc tính
+số, giá trị thiếu được điền bằng trung bình khi phân phối có độ lệch không lớn và bằng
+trung vị khi phân phối lệch mạnh; các thuộc tính còn lại sử dụng giá trị xuất hiện nhiều
+nhất. Toàn bộ tham số điền thiếu chỉ được ước lượng trên tập huấn luyện rồi áp dụng lại
+cho holdout. Các thuộc tính đầu vào sau đó được chuyển về dạng số thống nhất. Quy
+trình này bảo đảm thông tin của holdout không tham gia vào bước chuẩn bị mô hình.
+
+4.2 Dự báo lượng bán trong 7 ngày tiếp theo
+
+4.2.1 Biến mục tiêu và đặc trưng đầu vào
+
+       Bài toán được xây dựng ở mức sản phẩm–ngày chốt. Biến mục tiêu là tổng số
+lượng sản phẩm bán được trong 7 ngày sau ngày chốt. Sáu đặc trưng đầu vào gồm ba
+tổng lượng bán trễ qty_7, qty_14, qty_28; độ lệch chuẩn std_28; số ngày có lượng
+bán dương positive_28; và weekday biểu diễn yếu tố chu kỳ trong tuần.
+       Ba cửa sổ 7, 14 và 28 ngày giúp mô hình quan sát đồng thời biến động ngắn hạn
+và mức hoạt động trong khoảng thời gian dài hơn. std_28 phản ánh mức ổn định của
+nhu cầu, trong khi positive_28 phân biệt sản phẩm bán thường xuyên với sản phẩm
+chỉ phát sinh giao dịch ở một số ít ngày. Ngày trong tuần được bổ sung để mô hình nhận
+biết khác biệt có tính chu kỳ.
+
+4.2.2 Huấn luyện mô hình
+
+       Mô hình được chọn là hồi quy tăng cường dựa trên histogram. Cấu hình sử dụng
+tốc độ học 0,05, tối đa 300 vòng lặp, tối đa 31 nút lá, hệ số điều chuẩn L2 bằng 1,0 và
+hạt giống ngẫu nhiên 41. Thuật toán này phù hợp với các quan hệ phi tuyến giữa lịch sử
+bán hàng và lượng bán tương lai, đồng thời có thể mô hình hóa tương tác giữa nhiều cửa
+sổ thời gian mà không cần xây dựng thủ công toàn bộ các biến tương tác.
+       Mô hình được huấn luyện trên toàn bộ train_pool sau khi tiền xử lý. Không sử
+dụng phép chia ngẫu nhiên hoặc tối ưu bằng cross-validation vì holdout theo thời gian
+đã được xác định từ khi xây dựng dữ liệu. Cách thực hiện này duy trì đúng thứ tự thời
+gian và làm cho đánh giá gần hơn với tình huống dự báo trên dữ liệu tương lai.
+
+
+
+
+                                          65
+    LOAD the 7-day demand dataset
+    SELECT labeled rows from train_pool and holdout
+    SEPARATE the target from the six input features
+    FIT the missing-value imputer on train_pool
+    TRANSFORM train_pool and holdout with the fitted imputer
+    INITIALIZE the histogram-based gradient boosting regressor
+    FIT the model on train_pool
+    PREDICT 7-day demand for the holdout set
+    COMPUTE MAE between the target and predicted values
+
+              Hình 4.1: Mã giả huấn luyện mô hình dự báo lượng bán 7 ngày
+
+
+4.2.3 Baseline và tiêu chí đánh giá
+
+        Chỉ tiêu chính là sai số tuyệt đối trung bình (MAE), được tính trên toàn bộ holdout,
+bao gồm cả các dòng có target bằng 0. Việc giữ các dòng không phát sinh bán là cần
+thiết vì đây là trạng thái thường gặp của dữ liệu sản phẩm theo ngày. Bên cạnh MAE
+tổng thể, có thể xem thêm MAE trên nhóm có target dương để đánh giá riêng khả năng
+dự báo khi thực sự phát sinh nhu cầu.
+        Hai baseline được sử dụng để tạo mốc so sánh: luôn dự báo bằng 0 và lấy lượng
+bán 7 ngày gần nhất làm dự báo cho 7 ngày tiếp theo. Bảng 4.3 cho thấy baseline bằng 0
+có MAE thấp hơn baseline qty_7 trên cả tập huấn luyện và holdout. Kết quả này phản
+ánh tỷ lệ lớn các dòng có target bằng 0 và cho thấy một mô hình mới chỉ có ý nghĩa khi
+cải thiện được mốc 9,49 trên đúng tập holdout đã xác định.
+
+     Bảng 4.3: Quy mô dữ liệu và kết quả baseline của bài toán lượng bán 7 ngày
+
+ Tập dữ liệu             Số dòng    Sản phẩm      Target = 0      MAE dự       MAE dùng
+                                                                    báo 0         qty_7
+ Train pool               124.909          295       58,66%           12,46          20,68
+ Holdout                   16.351          197       57,09%            9,49          13,21
+
+
+      Quy trình đánh giá đã xác định cách tính MAE cho mô hình hồi quy tăng cường.
+Tuy nhiên, giá trị MAE của mô hình trên holdout chưa được xác nhận, nên chưa được
+sử dụng để đưa ra kết luận về mức cải thiện so với baseline.
+
+
+
+
+                                            66
+4.3 Dự đoán khả năng mua lại trong 30 ngày
+
+4.3.1 Xác định target và tập đặc trưng
+
+       Bài toán mua lại được xây dựng ở mức khách hàng–ngày chốt. Target bằng 1 khi
+khách hàng phát sinh ít nhất một giao dịch trong 30 ngày tiếp theo và bằng 0 khi không
+phát sinh giao dịch nhưng vẫn có đủ 30 ngày để quan sát. Những ngày chốt không có đủ
+tương lai để xác định hành vi mua lại không được dùng làm dữ liệu có nhãn.
+       Tám đặc trưng được sử dụng gồm recency, buy_days, orders_90, units_90,
+net_90, last_bikes, last_accessories và last_other. Nhóm đặc trưng thứ nhất
+mô tả mức độ gần, tần suất và quy mô mua hàng trong 90 ngày. Nhóm thứ hai mô tả xu
+hướng sản phẩm của lần mua gần nhất. Sự kết hợp này cho phép mô hình xem xét đồng
+thời cường độ quan hệ với khách hàng và nội dung giao dịch gần nhất.
+
+4.3.2 Huấn luyện và đánh giá
+
+       Mô hình được sử dụng là hồi quy logistic với tối đa 1.000 vòng lặp, bộ giải lbfgs,
+hạt giống ngẫu nhiên 41 và trọng số lớp cân bằng. Trọng số lớp được đưa vào để giảm
+ảnh hưởng của chênh lệch số lượng giữa nhóm mua lại và không mua lại. Mô hình sinh
+xác suất thuộc lớp 1 thay vì chỉ tạo nhãn cứng, nhờ đó có thể xếp hạng khách hàng theo
+khả năng quay lại.
+       Average Precision là chỉ tiêu chính vì đánh giá chất lượng xếp hạng lớp dương
+qua nhiều ngưỡng quyết định. Log loss được dùng bổ sung để đánh giá độ phù hợp của
+xác suất dự đoán; một dự đoán sai nhưng quá tự tin sẽ bị phạt mạnh hơn. Tỷ lệ mua lại
+trong tập huấn luyện được dùng làm baseline xác suất hằng để việc so sánh không phụ
+thuộc vào một ngưỡng phân lớp tùy ý.
+
+    LOAD the 30-day repeat-purchase dataset
+    SELECT labeled rows from train_pool and holdout
+    INSPECT the binary class distribution
+    SEPARATE the target from the eight behavioral features
+    FIT the missing-value imputer on train_pool
+    INITIALIZE logistic regression with balanced class weights
+    FIT the model on train_pool
+    PREDICT repeat-purchase probabilities for the holdout set
+    COMPUTE Average Precision and log loss
+
+             Hình 4.2: Mã giả huấn luyện mô hình mua lại trong 30 ngày
+
+
+                                           67
+       Tập dữ liệu dạng rộng của bài toán hiện có 303.836 dòng. Số dòng có nhãn theo
+từng tập, tỷ lệ lớp dương và giá trị metric trên holdout chưa được xác nhận, nên chưa
+được sử dụng để kết luận về chất lượng phân loại.
+
+4.4 Dự đoán nhóm sản phẩm tiếp theo trong 60 ngày
+
+4.4.1 Xác định target và điều kiện gán nhãn
+
+      Bài toán thứ ba dự đoán nhóm chính của giỏ hàng tại ngày mua đầu tiên trong 60
+ngày sau ngày chốt. Target nhận một trong ba giá trị BIKES, ACCESSORIES hoặc OTHER.
+Nếu khách hàng không mua trong cửa sổ 60 ngày, hoặc giỏ hàng đầu tiên không xác định
+được nhóm sản phẩm, dòng dữ liệu không có nhãn và không tham gia huấn luyện.
+      Do chỉ các trường hợp có giao dịch tương lai mới được gán lớp sản phẩm, kết quả
+của mô hình phải được diễn giải theo điều kiện: nhóm nào có khả năng được mua tiếp
+nếu khách hàng quay lại trong 60 ngày. Mô hình không thay thế bài toán mua lại 30 ngày
+và cũng không trực tiếp ước lượng xác suất khách hàng có phát sinh giao dịch.
+       Tập đặc trưng giống bài toán mua lại, gồm năm chỉ tiêu hành vi trong 90 ngày và
+ba biến mô tả nhóm chính của lần mua gần nhất. Bảng dữ liệu dạng rộng hiện có 37.261
+dòng, nhỏ hơn đáng kể so với tập mua lại do yêu cầu phải quan sát được lần mua tiếp
+theo và xác định được nhóm của giỏ hàng tương lai.
+
+4.4.2 Huấn luyện và đánh giá
+
+       Mô hình sử dụng hồi quy logistic đa lớp với tối đa 1.000 vòng lặp, bộ giải lbfgs,
+hạt giống ngẫu nhiên 41 và trọng số lớp cân bằng. Nhãn được giữ ở dạng chuỗi trong
+quá trình huấn luyện. Mô hình đồng thời tạo nhãn dự đoán và phân phối xác suất trên ba
+lớp.
+       Macro F1 là chỉ tiêu chính, trong đó F1 được tính riêng cho từng lớp rồi lấy trung
+bình không trọng số. Cách tính này ngăn lớp có nhiều mẫu chi phối hoàn toàn kết quả
+đánh giá. Log loss đa lớp được sử dụng bổ sung để đánh giá chất lượng xác suất. Baseline
+thứ nhất luôn chọn lớp phổ biến nhất trong tập huấn luyện; baseline xác suất sử dụng
+phân phối lớp của tập huấn luyện cho mọi dòng holdout.
+
+
+
+
+                                           68
+    LOAD the 60-day next-category dataset
+    SELECT labeled rows from train_pool and holdout
+    KEEP the target as string class labels
+    INSPECT the sample count for each class
+    FIT the missing-value imputer on train_pool
+    INITIALIZE multinomial logistic regression with balanced class
+    weights
+    FIT the model on train_pool
+    PREDICT class labels and probabilities for the holdout set
+    COMPUTE Macro F1 and multiclass log loss
+
+    Hình 4.3: Mã giả huấn luyện mô hình nhóm sản phẩm tiếp theo trong 60 ngày
+
+
+       Quy trình đánh giá đã xác định cách tính Macro F1 và log loss. Tuy nhiên, phân
+phối lớp và giá trị metric trên holdout chưa được xác nhận; vì vậy chưa thể kết luận mức
+độ chính xác của mô hình hoặc so sánh định lượng với baseline.
+
+4.5 Tổ chức quy trình huấn luyện trên Microsoft Fabric
+
+       Ba quy trình huấn luyện có cùng một cấu trúc thực thi. Dữ liệu dạng rộng được
+đọc từ Lakehouse Gold, sau đó lọc riêng train_pool và holdout trước khi chuyển sang
+bước xử lý mô hình. Chỉ các cột đặc trưng và target được đưa vào bộ dữ liệu huấn luyện;
+khóa nghiệp vụ, ngày chốt và thông tin phiên dữ liệu được giữ ngoài mô hình để phục
+vụ đối soát.
+       Quy trình sử dụng các mô hình cố định với tham số được khai báo rõ ràng, thay
+cho việc tìm kiếm tự động nhiều thuật toán. Cách tiếp cận này làm cho kết quả có khả
+năng lặp lại và phù hợp với phạm vi đồ án, đồng thời giúp so sánh trực tiếp với baseline
+trên một holdout thời gian duy nhất. Hạn chế là chưa thực hiện tìm kiếm siêu tham số
+hoặc đánh giá nhiều họ mô hình, nên kết quả hiện tại phản ánh một cấu hình triển khai
+cụ thể chứ chưa chứng minh đây là mô hình tối ưu.
+
+
+
+
+                                          69
+                   Bảng 4.4: Tổng hợp thiết kế đánh giá ba mô hình
+
+ Bài toán            Mô hình                   Chỉ tiêu chính     Baseline
+ Lượng      bán   7 Hồi quy tăng cường MAE                        Luôn dự báo 0;
+ ngày                dựa trên histogram                           dùng lượng bán 7
+                                                                  ngày gần nhất
+ Mua lại 30 ngày     Hồi quy logistic nhị Average Precision; Xác suất hằng
+                     phân có trọng số lớp log loss           bằng tỷ lệ lớp
+                                                             dương trong train
+ Nhóm sản phẩm Hồi quy logistic đa lớp Macro F1; log loss         Lớp phổ biến
+ 60 ngày       có trọng số lớp                                    nhất; phân phối
+                                                                  lớp trong train
+
+
+       Trong phạm vi hiện tại, chỉ baseline của bài toán lượng bán đã có số liệu kiểm
+chứng. Hai bài toán hành vi khách hàng đã xác định đầy đủ biến mục tiêu, đặc trưng,
+cách chia dữ liệu, mô hình và chỉ tiêu đánh giá, nhưng chưa có kết quả định lượng được
+xác nhận. Vì vậy, phần đánh giá không suy diễn hiệu năng chỉ từ cấu hình mô hình.
+
+
+
+
+                                          70
+                       CHƯƠNG 5: KHAI THÁC DỮ LIỆU
+
+5.1 Khai thác dữ liệu với Power BI
+
+       Power BI sử dụng Semantic Model làm lớp dữ liệu dùng chung cho các trang báo
+cáo. Các measure về doanh thu, đơn hàng, biên lợi nhuận, giao hàng, hạn ngạch, tồn kho
+và tình trạng dữ liệu được định nghĩa tập trung; dashboard chủ yếu đảm nhiệm việc lọc,
+so sánh và trình bày. Cách tổ chức này giúp số liệu trên các trang khác nhau cùng tuân
+theo một định nghĩa nghiệp vụ, đồng thời cho phép người dùng chuyển từ góc nhìn tổng
+quan sang các nhóm vấn đề cụ thể.
+
+5.1.1 Tổng quan hoạt động bán hàng
+
+       Trang tổng quan kết hợp bộ lọc khoảng ngày và lãnh thổ với bốn KPI gồm doanh
+thu thuần, số đơn hàng, giá trị đơn hàng trung bình và tỷ lệ giảm giá. Hai biểu đồ phía
+dưới lần lượt thể hiện xu hướng doanh thu theo thời gian và cơ cấu doanh thu theo nhóm
+sản phẩm. Trong ngữ cảnh lọc minh họa cho Australia, dashboard hiển thị doanh thu
+thuần 10,66 triệu, khoảng 7 nghìn đơn hàng, AOV 1,56 nghìn và tỷ lệ giảm giá 0,27%.
+Phần cơ cấu cho thấy Bikes đóng góp phần lớn doanh thu trong phạm vi lọc đang chọn.
+
+
+
+
+                 Hình 5.1: Dashboard tổng quan hoạt động bán hàng
+
+
+      Trang này đóng vai trò điểm bắt đầu cho quá trình khai thác. Người dùng có thể
+nhận biết nhanh quy mô bán hàng, sau đó sử dụng bộ lọc thời gian và lãnh thổ để kiểm
+
+
+                                          71
+tra sự thay đổi của KPI hoặc chuyển sang các trang chi tiết.
+
+5.1.2 Phân tích sản phẩm và vận hành giao hàng
+
+      Dashboard sản phẩm trình bày số lượng bán, doanh thu thuần, biên lợi nhuận
+chuẩn ước tính và độ phủ chi phí. Biểu đồ xếp hạng cho phép nhận diện các sản phẩm
+đóng góp doanh thu lớn; bảng chi tiết đặt số lượng, mã sản phẩm, doanh thu, biên lợi
+nhuận ước tính và độ phủ chi phí trên cùng một dòng để hỗ trợ đối chiếu. Toàn bộ phạm
+vi đang hiển thị ghi nhận khoảng 275 nghìn đơn vị sản phẩm, 109,85 triệu doanh thu
+thuần, 12,55 triệu biên lợi nhuận chuẩn ước tính và độ phủ chi phí 99,97%.
+
+
+
+
+                Hình 5.2: Dashboard phân tích kết quả theo sản phẩm
+
+
+       Dashboard vận hành tập trung vào các đơn đủ điều kiện đánh giá giao hàng, số
+đơn giao trễ, tỷ lệ giao trễ và sự khác biệt giữa các lãnh thổ. Ở ảnh minh họa, 31 nghìn
+đơn đủ điều kiện được ghi nhận, chưa phát hiện đơn giao trễ theo quy tắc measure hiện
+hành. Biểu đồ theo lãnh thổ hỗ trợ xác định khu vực cần được xem xét chi tiết khi thời
+gian hoặc khối lượng giao hàng khác biệt đáng kể.
+
+
+
+
+                                           72
+          Hình 5.3: Dashboard theo dõi hoạt động giao hàng theo lãnh thổ
+
+
+5.1.3 Theo dõi hạn ngạch và tồn kho
+
+      Trang hạn ngạch sử dụng ma trận theo nhân viên bán hàng và quý. Mỗi nhóm cột
+đặt hạn ngạch, doanh số thực tế và tỷ lệ hoàn thành cạnh nhau, nhờ đó có thể xem đồng
+thời diễn biến theo thời gian và mức độ đạt mục tiêu của từng nhân viên. Hàng tổng hỗ
+trợ kiểm tra kết quả ở cấp toàn bộ lực lượng bán hàng, trong khi các ô trống phản ánh
+trường hợp không có hạn ngạch hoặc không phát sinh dữ liệu phù hợp trong kỳ.
+
+
+
+
+       Hình 5.4: Dashboard đối chiếu doanh số thực tế với hạn ngạch theo quý
+
+
+      Trang tồn kho kết hợp các KPI về tổng lượng tồn, số sản phẩm cần đặt lại, số sản
+
+
+                                         73
+phẩm không có bản ghi tồn kho, tuổi dữ liệu và cờ dữ liệu cũ. Bảng chi tiết hiển thị
+lượng tồn, mức tồn an toàn, điểm đặt hàng lại, trạng thái cảnh báo và trạng thái độ mới
+cho từng sản phẩm. Ảnh minh họa ghi nhận tổng tồn kho khoảng 336 nghìn đơn vị, 8
+sản phẩm cần đặt lại, 72 sản phẩm thiếu bản ghi tồn kho và tuổi snapshot 292,7 giờ. Cờ
+StockIsStale bằng 1 cho biết số liệu tồn kho cần được đọc cùng thời điểm quan sát,
+không nên xem như trạng thái thời gian thực.
+
+
+
+
+            Hình 5.5: Dashboard theo dõi tồn kho và nhu cầu đặt hàng lại
+
+
+5.1.4 Theo dõi chất lượng dữ liệu và dữ liệu học máy
+
+      Dashboard tình trạng dữ liệu công bố các mốc Gold được phát hành, thời điểm
+quan sát tồn kho, tuổi snapshot và ngày nghiệp vụ hoàn chỉnh. Các chỉ tiêu thiếu tỷ giá
+và thiếu chi phí giúp người dùng nhận biết phạm vi có thể ảnh hưởng đến measure quy
+đổi hoặc biên lợi nhuận. Thông tin phiên chạy, chính sách và phiên bản metric được đặt
+cùng trang để hỗ trợ truy vết bộ số liệu đang được báo cáo.
+
+
+
+
+                                          74
+        Hình 5.6: Dashboard theo dõi thời điểm công bố và chất lượng dữ liệu
+
+
+      Trang học máy mô tả phạm vi dữ liệu được chuẩn bị cho ba bài toán. Biểu đồ
+lượng bán lịch sử 7 ngày cho phép quan sát sự biến động theo ngày chốt và theo sản
+phẩm; phân phối số ngày mua trong 90 ngày mô tả tập khách hàng của bài toán mua lại;
+số bản ghi theo ngày chốt cho thấy quy mô dữ liệu của bài toán nhóm sản phẩm tiếp theo.
+Các biểu đồ này được dùng để kiểm tra độ phủ và phân phối dữ liệu đầu vào, không thay
+thế các metric đánh giá mô hình trên holdout.
+
+
+
+
+         Hình 5.7: Dashboard theo dõi dữ liệu phục vụ các bài toán học máy
+
+                                          75
+       Trang kết quả dự báo nhu cầu đã được xác định trong cấu trúc báo cáo nhưng chưa
+có ảnh chính thức trong bộ minh chứng hiện tại. Vị trí dưới đây được giữ để bổ sung ảnh
+sau khi hoàn thiện phần trình bày kết quả dự báo theo sản phẩm và thời gian.
+
+
+
+
+                            [Chèn ảnh chính thức tại đây]
+
+
+
+
+                    Hình 5.8: Dashboard kết quả dự báo nhu cầu
+
+
+5.2 Xây dựng Data Agent khai thác Semantic Model
+
+        Data Agent được xây dựng dưới dạng ứng dụng hỏi–đáp dữ liệu chỉ đọc, phục vụ
+các câu hỏi về doanh thu, đơn hàng, sản phẩm, tồn kho và kết quả dự báo. Thay vì để
+mô hình ngôn ngữ tự sinh câu lệnh DAX và gửi trực tiếp đến nguồn dữ liệu, hệ thống
+tách quá trình xử lý thành hai nhiệm vụ: mô hình ngôn ngữ lập kế hoạch truy vấn có cấu
+trúc; các thành phần xác định của ứng dụng kiểm tra kế hoạch, biên dịch DAX và thực
+thi trên Semantic Model. Cách tổ chức này giữ các measure và quan hệ trong Semantic
+Model làm định nghĩa nghiệp vụ chuẩn, đồng thời thu hẹp phạm vi mà mô hình ngôn
+ngữ được phép tác động.
+
+5.2.1 Kiến trúc ứng dụng và nguồn dữ liệu
+
+      Giao diện được phát triển bằng Streamlit theo dạng hội thoại. Người dùng có thể
+nhập câu hỏi hoặc chọn các câu hỏi mẫu; kết quả gồm phần diễn giải, bảng dữ liệu, cảnh
+báo nghiệp vụ và vùng kiểm tra chứa kế hoạch truy vấn cùng câu lệnh DAX. Khi khởi
+động, ứng dụng thực hiện health check để xác nhận Semantic Model cấu hình có thể
+được nhìn thấy và thực thi một truy vấn kiểm tra. Trạng thái kết nối, tên mô hình và
+phiên bản semantic catalog được hiển thị trên giao diện như Hình 5.9.
+
+
+
+
+                                          76
+         Hình 5.9: Giao diện Data Agent truy vấn dữ liệu bán hàng theo năm
+
+
+        Phần điều phối trung tâm nhận câu hỏi và lịch sử hội thoại gần nhất, sau đó gọi
+Gemini để tạo đối tượng QueryPlan. Đối tượng này chỉ mô tả hành động, measure,
+dimension, điều kiện lọc, thứ tự sắp xếp và giới hạn số dòng. Semantic catalog cung
+cấp danh sách trường được phép dùng, từ đồng nghĩa tiếng Việt và tiếng Anh, kiểu dữ
+liệu, định dạng measure và các cảnh báo nghiệp vụ. Catalog đồng thời được khóa theo
+workspace và Semantic Model cụ thể; cấu hình sai định danh làm ứng dụng dừng trước
+khi thực hiện truy vấn.
+       Sau bước kiểm tra, bộ biên dịch chuyển kế hoạch hợp lệ thành một tập con DAX
+chỉ đọc dựa trên SUMMARIZECOLUMNS, TOPN và ORDERBY. Ứng dụng lấy access token theo
+luồng client credentials của Microsoft Entra ID và gọi Power BI Execute DAX Queries
+REST API. Kết quả dạng Apache Arrow được chuẩn hóa tên cột, giới hạn số dòng rồi
+mới chuyển đến Gemini để diễn giải. Vì vậy, Gemini không nhận quyền truy cập trực
+tiếp vào Semantic Model và không quyết định câu lệnh DAX cuối cùng.
+
+
+
+
+                                          77
+                Bảng 5.1: Vai trò của các thành phần trong Data Agent
+
+ Thành phần         Vai trò chính              Đầu vào/đầu ra
+ Streamlit UI       Tiếp nhận câu hỏi và Câu hỏi, bảng kết quả, cảnh báo, thông
+                    trình bày kết quả          tin kiểm tra truy vấn
+ Gemini Planner     Chuyển câu hỏi thành Câu hỏi và catalog / QueryPlan
+                    kế hoạch có cấu trúc
+ Semantic catalog Chuẩn hóa tên gọi, QueryPlan ban đầu / kế hoạch hợp lệ
+ và guardrail     kiểm tra allow-list và hoặc thông báo chặn
+                  giới hạn truy vấn
+ DAX compiler       Tạo truy vấn xác định Kế hoạch hợp lệ / một câu lệnh DAX chỉ
+                    từ kế hoạch đã kiểm đọc
+                    tra
+ Microsoft Entra Xác thực danh tính DAX / tập kết quả Apache Arrow
+ và Power BI ứng dụng và thực thi
+ REST API        truy vấn
+ Gemini Summa- Diễn giải tập kết quả Dữ liệu đã giới hạn / câu trả lời tiếng Việt
+ rizer         theo ngữ cảnh câu hỏi
+
+
+5.2.2 Luồng xử lý truy vấn
+
+      Hình 5.10 mô tả trình tự xử lý của một yêu cầu hợp lệ. Luồng lập kế hoạch và
+luồng diễn giải được tách thành hai lần gọi mô hình ngôn ngữ. Giữa hai lần gọi là các
+bước xác định gồm kiểm tra chính sách, biên dịch DAX, xác thực Microsoft Entra và
+truy vấn Semantic Model. Cấu trúc này giúp kết quả trả lời gắn với dữ liệu thực tế thay
+vì dựa trên tri thức sẵn có của mô hình ngôn ngữ.
+
+
+
+
+                                          78
+ Người dùng        Streamlit UI      Agent Service          Gemini         Microsoft Entra   Semantic Model
+
+           Câu hỏi
+                     Câu hỏi và lịch sử gần nhất
+                                        Câu hỏi và semantic catalog
+                                          QueryPlan có cấu trúc
+
+
+                                   Kiểm tra guardrail
+                                   và biên dịch DAX
+                                                    Yêu cầu access token
+                                                          Access token
+                                                                     DAX chỉ đọc
+                                                              Kết quả Apache Arrow
+                                       Câu hỏi, dữ liệu và cảnh báo
+                                          Phần diễn giải có căn cứ
+                      Câu trả lời, bảng và audit
+       Hiển thị kết quả
+
+
+
+
+              Hình 5.10: Sequence diagram xử lý một câu hỏi trong Data Agent
+
+
+       Nếu planner xác định câu hỏi chưa đủ rõ, hệ thống trả lại yêu cầu làm rõ mà không
+truy vấn dữ liệu. Yêu cầu ghi dữ liệu, truy cập thông tin định danh, bí mật hoặc nội dung
+ngoài catalog bị từ chối. Với kế hoạch hợp lệ, kết quả sau khi thực thi được giới hạn và
+chuẩn hóa trước khi tóm tắt; trường hợp không có dòng phù hợp được trả về dưới dạng
+kết quả rỗng thay vì để mô hình tự suy đoán.
+       Do mã nguồn ứng dụng không được công bố trực tiếp, quy trình xử lý cốt lõi được
+trình bày dưới dạng mã giả tại Hình 5.11. Mã giả giữ lại các quyết định kiến trúc quan
+trọng, nhưng không chứa thông tin định danh môi trường, khóa truy cập hoặc chi tiết cấu
+hình bảo mật.
+
+
+
+
+                                                     79
+   INITIALIZE settings and load the curated semantic catalog
+   VERIFY workspace and semantic model identities
+   CHECK that the configured Semantic Model is query-ready
+   RECEIVE the user question and recent conversation context
+   REQUEST a structured QueryPlan from the planner model
+   IF action is CLARIFY THEN RETURN a clarification question
+   IF action is REJECT THEN RETURN the rejection reason
+   VALIDATE measures, dimensions, filters, sorting, data types,
+      and result limits against the semantic catalog
+   COMPILE the validated plan into deterministic read-only DAX
+   ACQUIRE an application access token from Microsoft Entra ID
+   EXECUTE exactly one DAX query against the Semantic Model
+   NORMALIZE column names and CAP the returned rows
+   IF no rows are returned THEN RETURN an empty-result response
+   ADD data-freshness and business-semantics warnings
+   REQUEST a grounded summary using only the returned rows
+   RETURN the summary, result table, warnings, QueryPlan, DAX,
+      and request ID
+   ON EXPECTED ERROR, RETURN a safe message with the request ID
+
+                   Hình 5.11: Mã giả xử lý truy vấn của Data Agent
+
+
+5.2.3 Kiểm soát an toàn và tính nhất quán
+
+      Các biện pháp kiểm soát được đặt tại nhiều lớp. Ở lớp ngữ nghĩa, chỉ measure
+và dimension đã khai báo trong catalog mới được chọn. Phiên bản hiện tại giới hạn tối
+đa ba measure, hai dimension, sáu điều kiện lọc và 200 dòng kết quả cho một truy vấn.
+Việc kết hợp đồng thời nhiều dimension có lực lượng giá trị lớn bị chặn để hạn chế truy
+vấn quá rộng; trường dùng để sắp xếp cũng phải xuất hiện trong kết quả.
+       Ở lớp dữ liệu, tên khách hàng, thư điện tử, địa chỉ và các trường định danh chi tiết
+không được công bố trong catalog. Ứng dụng chỉ thực thi một truy vấn DAX và không
+cung cấp thao tác ghi. Các literal được chuẩn hóa theo kiểu dữ liệu trước khi biên dịch,
+chuỗi được thoát ký tự và kết quả bị cắt theo giới hạn ở cả yêu cầu API lẫn tầng ứng
+dụng. Dữ liệu trả về được xem là nội dung không đáng tin cậy khi chuyển đến mô hình
+tóm tắt, nhờ đó câu lệnh xuất hiện trong ô dữ liệu không được xử lý như chỉ dẫn.
+       Ở lớp nghiệp vụ, một số measure luôn đi kèm thông tin bổ trợ. Ví dụ, biên lợi
+nhuận ước tính được trả cùng độ phủ chi phí; chỉ tiêu tồn kho kèm thời điểm quan sát
+và tuổi dữ liệu; dự báo mô phỏng lịch sử được phân biệt với dự báo vận hành. Những
+
+                                            80
+cảnh báo này giúp người dùng nhận biết phạm vi diễn giải của con số, đặc biệt với dữ
+liệu snapshot và dữ liệu dự báo.
+
+                     Bảng 5.2: Các guardrail chính của Data Agent
+
+ Nhóm kiểm soát        Cơ chế                                  Mục đích
+ Phạm vi ngữ nghĩa     Allow-list measure/dimension, từ Chỉ truy vấn các khái
+                       đồng nghĩa và kiểu dữ liệu trong niệm nghiệp vụ đã
+                       catalog                          được xác nhận
+ Giới hạn truy vấn     Tối đa 3 measure, 2 dimension, 6 filter Hạn chế truy vấn rộng,
+                       và 200 dòng                             chi phí lớn và kết quả
+                                                               khó diễn giải
+ Quyền truy cập        Service principal, token Microsoft En- Không cấp thông tin
+                       tra và quyền chỉ đọc qua API           xác thực trực tiếp cho
+                                                              người dùng hoặc mô
+                                                               hình ngôn ngữ
+ Bảo vệ dữ liệu        Không công bố PII chi tiết; coi ô kết Giảm nguy cơ lộ dữ
+                       quả là dữ liệu không đáng tin cậy     liệu và prompt injec-
+                                                             tion từ nội dung kết quả
+ Tính nhất quán        DAX được biên dịch xác định; mea- Tránh để mô hình ngôn
+                       sure lấy từ Semantic Model        ngữ tự định nghĩa lại
+                                                         công thức nghiệp vụ
+ Khả năng kiểm tra     Lưu request ID, kế hoạch truy vấn, Hỗ trợ đối soát câu trả
+                       DAX và cảnh báo trên giao diện     lời với truy vấn đã thực
+                                                          thi
+
+
+5.2.4 Kết quả thử nghiệm và phạm vi triển khai
+
+     Thử nghiệm cục bộ cho thấy ứng dụng kết nối thành công với Semantic Model
+sm_gold_sales_inventory, lập kế hoạch cho câu hỏi doanh thu thuần và số đơn theo
+năm, trả dữ liệu cho các năm 2011–2014, đồng thời hiển thị bảng kết quả và vùng kiểm
+tra truy vấn. Hình 5.9 là minh chứng cho toàn bộ chuỗi từ kết nối mô hình, gửi câu hỏi
+đến nhận phần diễn giải và dữ liệu tổng hợp.
+       Bộ kiểm thử tự động gồm 20 trường hợp và đã hoàn thành toàn bộ. Các trường
+hợp kiểm tra bao phủ việc đọc catalog, khóa đúng workspace/model, chuẩn hóa alias và
+kiểu filter, thêm measure bổ trợ, chặn dimension lực lượng lớn, thoát literal, biên dịch
+DAX có giới hạn, đọc kết quả Apache Arrow, xử lý lỗi quyền API, chuẩn hóa tên cột
+
+                                          81
+và điều phối yêu cầu từ đầu đến cuối bằng các thành phần mô phỏng. Kết quả này xác
+nhận logic nội bộ của ứng dụng; ảnh giao diện bổ sung bằng chứng rằng luồng truy vấn
+đã hoạt động với Semantic Model trong môi trường thử nghiệm.
+       Phiên bản hiện tại được sử dụng trong phạm vi minh họa cục bộ và chưa công bố
+ra Internet. Lý do chính không nằm ở luồng hỏi–đáp, mà ở yêu cầu phải thiết kế thêm
+xác thực, phân quyền, bảo vệ bí mật và cô lập quyền truy cập Fabric cho người dùng
+công cộng. Giới hạn này được tổng hợp tại Mục 7.3 cùng các hạn chế khác của dự án.
+
+
+
+
+                                        82
+               CHƯƠNG 7: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+
+7.3 Hạn chế của dự án
+
+      Giải pháp được xây dựng trong một Fabric Trial, vì vậy phạm vi thử nghiệm không
+tương đương một môi trường Fabric trả phí dùng cho vận hành. Trial cung cấp phần lớn
+các workload cốt lõi và tối đa 1 TB dung lượng OneLake trong thời hạn 60 ngày, nhưng
+không hỗ trợ toàn bộ nhóm tính năng trí tuệ nhân tạo, bảo mật mạng và quản lý vòng đời
+ở mức doanh nghiệp (Microsoft, n.d.-g). Các giới hạn này không làm thay đổi mô hình
+dữ liệu đã xây dựng, nhưng ảnh hưởng trực tiếp đến những chức năng có thể triển khai
+và kiểm chứng trong đồ án.
+
+7.3.1 Chưa có pipeline điều phối thống nhất
+
+       Các quy trình nạp Bronze, chuyển đổi Silver, công bố Warehouse Gold và chuẩn
+bị dữ liệu học máy đã được xây dựng theo từng nhiệm vụ riêng. Một số quy trình có
+quan hệ phụ thuộc và nhánh xử lý lỗi ở phạm vi nội bộ, nhưng toàn bộ các chặng chưa
+được kết nối bằng một pipeline cấp cao. Vì vậy, phiên bản hiện tại chưa tự động truyền
+cùng một mã phiên chạy và bộ tham số xuyên suốt, chưa kích hoạt các chặng theo một
+lịch chung, và chưa tổng hợp trạng thái thành công hoặc thất bại của toàn bộ luồng tại
+một điểm điều phối.
+      Việc vận hành từng quy trình đơn lẻ phù hợp để kiểm chứng logic xử lý, nhưng
+chưa đủ để kết luận hệ thống đã tự động hóa đầu cuối. Khi một chặng được chạy lại hoặc
+hoàn thành không đồng thời với chặng khác, dữ liệu Bronze, Silver, Gold, Semantic
+Model và kết quả học máy có thể thuộc các thời điểm cập nhật khác nhau. Giải pháp
+cũng chưa kiểm chứng cơ chế retry liên chặng, tiếp tục từ điểm lỗi, cảnh báo tập trung
+và mục tiêu độ mới dữ liệu. Đây là hạn chế vận hành quan trọng cần được xử lý trước
+khi triển khai định kỳ.
+
+7.3.2 Giới hạn công bố Data Agent ra môi trường công cộng
+
+        Data Agent tùy biến của đồ án đã hoạt động trong môi trường cục bộ và có thể
+truy vấn Semantic Model bằng danh tính ứng dụng. Tuy nhiên, phiên bản hiện tại sử
+dụng một service principal dùng chung ở tầng máy chủ. Nếu công bố trực tiếp ứng dụng
+ra Internet, mọi người truy cập có thể gián tiếp sử dụng cùng quyền của danh tính này;
+đây không phải mô hình phù hợp cho một dịch vụ công cộng, ngay cả khi giao diện chỉ
+cho phép gửi câu hỏi bằng ngôn ngữ tự nhiên.
+
+                                         83
+       Việc triển khai công khai vì vậy cần bổ sung một lớp xác thực người dùng, ánh
+xạ quyền của người dùng với quyền truy cập dữ liệu, cơ chế quản lý và luân chuyển bí
+mật, giới hạn tần suất, nhật ký kiểm toán và chính sách cô lập phiên. Đối với hệ sinh thái
+Microsoft, các thành phần này còn phụ thuộc vào Microsoft Entra ID, thiết lập tenant,
+quyền workspace và quyền Read/Build trên Semantic Model. Thiết kế bảo mật trở nên
+phức tạp hơn khi phải bảo đảm người dùng bên ngoài không kế thừa quyền rộng của
+service principal. Do phạm vi đồ án chưa bao gồm đầy đủ kiến trúc định danh và phân
+quyền này, ứng dụng chỉ được chạy để minh họa và kiểm thử có kiểm soát, chưa được
+triển khai như một dịch vụ công khai.
+
+7.3.3 Giới hạn tích hợp Git và công bố mã nguồn
+
+       Git integration không phải là giới hạn cố hữu của Fabric Trial. Microsoft cho
+phép sử dụng trial capacity cho tính năng này, nhưng workspace phải có capacity phù
+hợp, tenant phải bật quyền đồng bộ item với kho Git và người thực hiện phải có quyền
+trên GitHub hoặc Azure DevOps (Microsoft, n.d.-i). Trong môi trường của đồ án, các
+điều kiện quản trị và kết nối kho Git chưa được cấu hình, nên các item Fabric không
+được đồng bộ trực tiếp với một repository.
+       Do đó, mã nguồn xử lý vẫn được quản lý tách rời khỏi workspace và không thể
+trình bày bằng lịch sử commit liên kết trực tiếp từ Fabric. Phạm vi hiện tại cũng chưa
+kiểm chứng quy trình làm việc theo nhánh, pull request, khôi phục phiên bản hoặc tự
+động đưa thay đổi qua các workspace phát triển, kiểm thử và vận hành. Đây là hạn chế
+về quản lý vòng đời và khả năng truy vết thay đổi của đồ án, không phải hạn chế của
+logic xử lý dữ liệu.
+
+7.3.4 Giới hạn về thời gian và bảo mật môi trường
+
+       Trial capacity có thời hạn sử dụng hữu hạn. Khi trial kết thúc, các item không
+thuộc Power BI như notebook và pipeline trở thành không hoạt động cho đến khi
+workspace được gán lại vào một capacity hợp lệ; nội dung OneLake chỉ được duy trì
+trong khoảng thời gian chuyển tiếp do nền tảng quy định (Microsoft, n.d.-g). Vì vậy,
+môi trường này không phù hợp để chứng minh khả năng vận hành liên tục hoặc theo dõi
+lịch chạy trong một giai đoạn dài.
+       Ngoài ra, Trial không hỗ trợ Private Link và Trusted Workspace Access (Mi-
+crosoft, n.d.-g). Đồ án vì thế chưa đánh giá được kết nối mạng riêng, cô lập truy cập theo
+vùng mạng hoặc các chính sách bảo vệ kết nối thường dùng trong môi trường doanh
+
+
+                                             84
+nghiệp. Kết quả hiện tại nên được hiểu là kiểm chứng chức năng và thiết kế dữ liệu trong
+phạm vi học thuật; khả năng triển khai sản xuất cần được đánh giá lại trên capacity trả
+phí với cấu hình tenant, bảo mật và quản lý mã nguồn đầy đủ.
+
+
+
+
+                                          85
+                             TÀI LIỆU THAM KHẢO
+
+Chaudhuri, S., & Dayal, U. (1997). An overview of data warehousing and OLAP technol-
+  ogy. ACM SIGMOD Record, 26(1), 65–74. https://doi.org/10.1145/248603.
+  248616.
+
+Microsoft. (n.d.-a).  Analysis  Services  tutorial scenario. Microsoft
+ Learn.          https://learn.microsoft.com/en-us/analysis-services/
+ multidimensional-tutorial/analysis-services-tutorial-scenario?
+ view=sql-analysis-services-2025.
+
+Microsoft. (n.d.-b). What is Microsoft Fabric? Microsoft Learn. https://learn.
+  microsoft.com/en-us/fabric/fundamentals/microsoft-fabric-overview.
+
+Microsoft. (n.d.-c). What is Fabric Data Warehouse? Microsoft Learn. https://
+ learn.microsoft.com/en-us/fabric/data-warehouse/data-warehousing.
+
+Microsoft. (n.d.-d). AdventureWorks sample databases. GitHub. https:
+ //github.com/microsoft/sql-server-samples/tree/master/samples/
+ databases/adventure-works.
+
+Microsoft. (n.d.-e). Implement medallion lakehouse architecture in Microsoft Fab-
+ ric. Microsoft Learn. https://learn.microsoft.com/en-us/fabric/onelake/
+ onelake-medallion-lakehouse-architecture.
+
+Microsoft. (n.d.-f). OneLake, the OneDrive for data. Microsoft Learn. https://learn.
+ microsoft.com/en-us/fabric/onelake/onelake-overview.
+
+Microsoft. (n.d.-g). Try Microsoft Fabric for free. Microsoft Learn. https://learn.
+  microsoft.com/en-us/fabric/get-started/fabric-trial.
+
+Microsoft. (n.d.-h). Fabric data agent concepts. Microsoft Learn. https://learn.
+ microsoft.com/en-us/fabric/data-science/concept-data-agent.
+
+Microsoft. (n.d.-i). Get started with Git integration. Microsoft Learn. https://learn.
+ microsoft.com/en-us/fabric/cicd/git-integration/git-get-started.
+
+SQL Server Samples at CodePlex. (2008). AdventureWorks 2008 OLTP Schema.
+  https://cursos.virtual.uniandes.edu.co/isis3301/wp-content/
+  uploads/sites/208/2019/08/adventureworks.pdf.
+
+
+                                         86
+

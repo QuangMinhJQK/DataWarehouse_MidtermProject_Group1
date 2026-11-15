@@ -32,17 +32,19 @@
 
 ### **1.5. Công nghệ và nền tảng sử dụng**
 
-#### 1.5.1. Microsoft Fabric
+#### 1.5.1. Azure SQL Database
 
-#### 1.5.2. OneLake và Lakehouse
+#### 1.5.2. Microsoft Fabric và OneLake
 
-#### 1.5.3. Fabric Data Factory
+#### 1.5.3. Lakehouse và Medallion Architecture
 
-#### 1.5.4. Fabric Data Warehouse
+#### 1.5.4. Fabric Data Factory
 
-#### 1.5.5. Fabric Data Science
+#### 1.5.5. Fabric Data Warehouse và Semantic Model
 
-#### 1.5.6. Power BI và Web Application
+#### 1.5.6. Fabric Data Science và Machine Learning
+
+#### 1.5.7. Power BI và Data Agent
 
 ### 
 
@@ -70,27 +72,31 @@
 
 ### **2.4. Khám phá và trực quan hóa dữ liệu**
 
-#### 2.4.1. Phân tích doanh thu theo kênh bán hàng
+#### 2.4.1. Phạm vi dữ liệu và phương pháp khám phá
 
-#### 2.4.2. Phân tích doanh thu theo nhóm sản phẩm
+#### 2.4.2. Kiểm tra chất lượng và khả năng liên kết
 
 #### 2.4.3. Phân tích doanh thu theo thời gian
 
-#### 2.4.4. Phân tích khách hàng
+#### 2.4.4. Phân tích kênh bán hàng và khách hàng
 
-#### 2.4.5. Phân tích doanh thu theo khu vực
+#### 2.4.5. Phân tích cơ cấu sản phẩm
 
-### **2.6. Xác định yêu cầu dữ liệu cho giải pháp**
+#### 2.4.6. Phân tích doanh thu theo lãnh thổ
 
-#### 2.6.1. Xác định quy trình nghiệp vụ
+#### 2.4.7. Kết luận từ khám phá dữ liệu
 
-#### 2.6.2. Xác định mức độ chi tiết dữ liệu
+### **2.5. Xác định yêu cầu dữ liệu cho giải pháp**
 
-#### 2.6.3. Xác định các chiều phân tích
+#### 2.5.1. Xác định quy trình nghiệp vụ
 
-#### 2.6.4. Xác định các chỉ tiêu đo lường
+#### 2.5.2. Xác định mức độ chi tiết dữ liệu
 
-#### 2.6.5. Xác định yêu cầu dữ liệu cho Machine Learning
+#### 2.5.3. Xác định các chiều phân tích
+
+#### 2.5.4. Xác định các chỉ tiêu đo lường
+
+#### 2.5.5. Xác định yêu cầu dữ liệu cho Machine Learning
 
 # **CHƯƠNG 3: XÂY DỰNG KHO DỮ LIỆU TRÊN MICROSOFT FABRIC**
 
@@ -112,7 +118,7 @@
 
 #### 3.2.3. Xây dựng Dataflow Gen2
 
-#### 3.2.4. Tự động hóa quá trình tích hợp dữ liệu
+#### 3.2.4. Phạm vi điều phối các quy trình tích hợp dữ liệu
 
 ### **3.3. Xây dựng Lakehouse theo Medallion Architecture**
 
@@ -154,147 +160,73 @@
 
 #### 3.6.2. Xây dựng Measures và KPI
 
-#### 3.6.3. Thiết lập Relationships và Hierarchies
+#### 3.6.3. Thiết lập Relationships
 
 #### 3.6.4. Kết nối với Power BI
 
-# **CHƯƠNG 4: XÂY DỰNG MÔ HÌNH HỌC MÁY CHO HOẠT ĐỘNG BÁN HÀNG**
+# **CHƯƠNG 4: XÂY DỰNG CÁC MÔ HÌNH HỌC MÁY CHO HOẠT ĐỘNG BÁN HÀNG**
 
 ### **4.1. Chuẩn bị dữ liệu cho Machine Learning**
 
-#### 4.1.1. Xác định bài toán dự báo
+#### 4.1.1. Xác định phạm vi bài toán
 
-#### 4.1.2. Xây dựng tập dữ liệu huấn luyện
+#### 4.1.2. Xây dựng các tập dữ liệu dạng rộng
 
-#### 4.1.3. Tiền xử lý và biến đổi dữ liệu
+#### 4.1.3. Chia dữ liệu theo thời gian và tiền xử lý
 
-### **4.2. Xây dựng mô hình dự báo doanh số**
+### **4.2. Dự báo lượng bán trong 7 ngày tiếp theo**
 
-#### 4.2.1. Xác định biến và đặc trưng đầu vào
+#### 4.2.1. Biến mục tiêu và đặc trưng đầu vào
 
 #### 4.2.2. Huấn luyện mô hình
 
-#### 4.2.3. Tối ưu và lựa chọn mô hình
+#### 4.2.3. Baseline và tiêu chí đánh giá
 
-#### 4.2.4. Đánh giá mô hình dự báo
+### **4.3. Dự đoán khả năng mua lại trong 30 ngày**
 
-### **4.3. Xây dựng mô hình dự báo nhu cầu và nguy cơ hết hàng**
+#### **4.3.1. Xác định target và tập đặc trưng**
 
-#### **4.3.1. Xác định bài toán**
+#### **4.3.2. Huấn luyện và đánh giá**
 
-#### **4.3.2. Xây dựng tập dữ liệu huấn luyện**
+### **4.4. Dự đoán nhóm sản phẩm tiếp theo trong 60 ngày**
 
-#### **4.3.3. Huấn luyện mô hình**
+#### **4.4.1. Xác định target và điều kiện gán nhãn**
 
-#### **4.3.4. Đánh giá mô hình**
+#### **4.4.2. Huấn luyện và đánh giá**
 
-### **4.4. Triển khai Machine Learning trên Microsoft Fabric**
+### **4.5. Tổ chức quy trình huấn luyện trên Microsoft Fabric**
 
-#### **4.4.1. Fabric Data Science và Notebooks**
+# **CHƯƠNG 5: KHAI THÁC DỮ LIỆU**
 
-#### **4.4.2. Quản lý thí nghiệm và mô hình**
+### **5.1. Khai thác dữ liệu với Power BI**
 
-#### **4.4.3. Lưu trữ kết quả dự báo**
+#### 5.1.1. Tổng quan hoạt động bán hàng
 
-#### **4.4.4. Tích hợp kết quả dự báo vào Data Warehouse**
+#### 5.1.2. Phân tích sản phẩm và vận hành giao hàng
 
-# **CHƯƠNG 5: TỰ ĐỘNG HÓA VÀ KHAI THÁC DỮ LIỆU**
+#### 5.1.3. Theo dõi hạn ngạch và tồn kho
 
-### **5.1. Tự động hóa quy trình dữ liệu trên Microsoft Fabric**
+#### 5.1.4. Theo dõi chất lượng dữ liệu và dữ liệu học máy
 
-#### 5.1.1. Cơ chế điều phối Data Pipeline
+### **5.2. Xây dựng Data Agent khai thác Semantic Model**
 
-#### 5.1.2. Lập lịch và kích hoạt quy trình
+#### 5.2.1. Kiến trúc ứng dụng và nguồn dữ liệu
 
-#### 5.1.3. Tự động cập nhật dữ liệu
+#### 5.2.2. Luồng xử lý truy vấn
 
-#### 5.1.4. Tích hợp kết quả Machine Learning
+#### 5.2.3. Kiểm soát an toàn và tính nhất quán
 
-### **5.2. Kiểm thử và đánh giá quy trình dữ liệu**
+#### 5.2.4. Kết quả thử nghiệm và phạm vi triển khai
 
-#### 5.2.1. Kiểm tra dữ liệu qua các tầng
+# **CHƯƠNG 6: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN**
 
-#### 5.2.2. Kiểm tra chất lượng dữ liệu tại tầng Silver
+### **6.1. Kết quả đạt được**
 
-#### 5.2.3. Kiểm tra tính đúng đắn của mô hình Data Warehouse
+### **6.2. Ưu điểm của giải pháp**
 
-#### 5.2.4. Kiểm tra dữ liệu đầu ra của Machine Learning
+### **6.3. Hạn chế của dự án**
 
-### **5.3. Khai thác dữ liệu với Power BI**
-
-#### 5.3.1. Dashboard tổng quan hoạt động bán hàng
-
-#### 5.3.2. Dashboard phân tích khách hàng
-
-#### 5.3.3. Dashboard phân tích sản phẩm
-
-#### 5.3.4. Dashboard phân tích doanh thu
-
-#### 5.3.5. Dashboard phân tích khu vực và kênh bán hàng
-
-#### 5.3.6. Dashboard kết quả dự báo
-
-### **5.4. Xây dựng và triển khai Web Application**
-
-#### 5.4.1. Kiến trúc ứng dụng
-
-#### 5.4.2. Tích hợp dữ liệu từ Data Warehouse
-
-#### 5.4.3. Tích hợp kết quả Machine Learning
-
-#### 5.4.4. Triển khai ứng dụng
-
-# **CHƯƠNG 6: THỬ NGHIỆM VÀ ĐÁNH GIÁ GIẢI PHÁP**
-
-### **6.1. Đánh giá Data Warehouse**
-
-#### 6.1.1. Đánh giá tính đầy đủ và nhất quán của dữ liệu
-
-#### 6.1.2. Đánh giá mô hình Star Schema
-
-#### 6.1.3. Đánh giá khả năng truy vấn và khai thác dữ liệu
-
-### **6.2. Đánh giá các mô hình Machine Learning**
-
-#### 6.2.1. Đánh giá mô hình dự báo doanh số
-
-#### 6.2.2. Đánh giá mô hình dự báo nhu cầu và nguy cơ hết hàng
-
-### **6.3. Đánh giá quy trình tự động hóa**
-
-#### 6.3.1. Kết quả thực thi Data Pipeline
-
-#### 6.3.2. Kết quả cập nhật dữ liệu
-
-#### 6.3.3. Kết quả tích hợp Machine Learning
-
-### **6.4. Đánh giá hệ thống báo cáo và Web Application**
-
-#### 6.4.1. Kết quả Dashboard
-
-#### 6.4.2. Kết quả Web Application
-
-#### 6.4.3. Khả năng hỗ trợ hoạt động bán hàng
-
-### 6.5. Đề xuất khai thác dữ liệu cho hoạt động bán hàng
-
-# **CHƯƠNG 7: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN**
-
-### **7.1. Kết quả đạt được**
-
-### **7.2. Ưu điểm của giải pháp**
-
-### **7.3. Hạn chế của dự án**
-
-### **7.4. Hướng phát triển**
+### **6.4. Hướng phát triển**
 
 **TÀI LIỆU THAM KHẢO**
-
-**PHỤ LỤC**
-
-### **A. Đường dẫn dự án**
-
-### **B. Mô tả phân công công việc**
-
-### **C. Mức độ đóng góp của các thành viên**
 

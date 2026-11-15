@@ -8,15 +8,41 @@
     {ĐỒ ÁN MÔN HỌC NHÀ KHO DỮ LIỆU VÀ TÍCH HỢP};
   \node[font=\bfseries,align=center,text width=16.5cm] at ([yshift=-164mm]current page.north) {\tendetai};
   \node[anchor=north west,align=left] at ([xshift=90mm,yshift=-194mm]current page.north west)
-    {\textbf{GVHD:} \gvhd\\[4pt] \textbf{SVTH:} \svth\\[4pt] \textbf{MSSV:} \mssv};
+    {\textbf{GVHD:} \gvhd\\[4pt] \textbf{Nhóm thực hiện:} \svth};
   \node[font=\bfseries,text=white] at ([yshift=-271mm]current page.north) {\thoigian};
 \end{tikzpicture}
 \end{titlepage}
 \setcounter{page}{1}
 
+% ================= DANH SÁCH THÀNH VIÊN =================
+\heading{DANH SÁCH THÀNH VIÊN}
+{\singlespacing\renewcommand{\arraystretch}{1.5}
+\begin{table}[H]\centering
+\begin{tabularx}{\textwidth}{|c|X|c|c|}\hline
+\textbf{STT} & \textbf{Họ và tên} & \textbf{MSSV} & \textbf{Đóng góp} \\ \hline
+1 & Nguyễn Nhựt Thụy & K244060807 & 100\% \\ \hline
+2 & Phạm Ngọc Phương Trúc & K244060814 & 100\% \\ \hline
+3 & Nguyễn Văn Quang Minh & K244060790 & 100\% \\ \hline
+4 & Lê Tuấn Anh & K244060760 & 100\% \\ \hline
+5 & Ngô Hoàng Khải & K244060779 & 100\% \\ \hline
+\end{tabularx}
+\end{table}}
+
 % ================= LỜI CẢM ƠN =================
 \heading{LỜI CẢM ƠN}
-\todo{Lời cảm ơn giảng viên hướng dẫn và những người hỗ trợ nhóm thực hiện đồ án.}
+
+Nhóm thực hiện xin trân trọng cảm ơn TS. Nguyễn Thôn Dã, giảng viên hướng dẫn, đã định hướng chuyên môn và đóng góp những ý kiến cần thiết trong quá trình thực hiện đồ án. Những hướng dẫn của Thầy đã giúp nhóm xác định rõ phạm vi bài toán, tổ chức quy trình xây dựng kho dữ liệu và hoàn thiện nội dung báo cáo theo hướng nhất quán hơn.
+
+Nhóm xin gửi lời cảm ơn đến quý Thầy Cô Khoa Hệ thống Thông tin đã trang bị các kiến thức nền tảng về cơ sở dữ liệu, tích hợp dữ liệu, mô hình hóa kho dữ liệu và phân tích dữ liệu. Đây là cơ sở để nhóm vận dụng Microsoft Fabric vào việc xây dựng giải pháp kho dữ liệu cho hoạt động bán hàng của Adventure Works Cycles.
+
+Nhóm cũng trân trọng sự phối hợp và tinh thần trách nhiệm của các thành viên trong suốt quá trình thu thập dữ liệu, xây dựng pipeline, thiết kế mô hình dữ liệu, thực hiện các bài toán học máy và biên soạn báo cáo. Sự trao đổi giữa các thành viên đã góp phần giúp các nội dung của đồ án được hoàn thành đồng bộ.
+
+Mặc dù nhóm đã cố gắng kiểm tra và hoàn thiện báo cáo, đồ án khó tránh khỏi những thiếu sót do giới hạn về thời gian, kinh nghiệm và môi trường thử nghiệm. Nhóm kính mong nhận được những nhận xét và góp ý của Thầy để tiếp tục điều chỉnh, bổ sung và nâng cao chất lượng của giải pháp.
+
+\begin{flushright}
+\textbf{Nhóm thực hiện}\\
+\textbf{Nhóm 1}
+\end{flushright}
 
 % ================= MỤC LỤC & CÁC DANH MỤC =================
 \clearpage
@@ -39,7 +65,6 @@
 OLTP & Online Transaction Processing & Xử lý giao dịch trực tuyến \\ \hline
 DW & Data Warehouse & Kho dữ liệu \\ \hline
 BI & Business Intelligence & Trí tuệ kinh doanh \\ \hline
-% ... bổ sung các từ viết tắt khác
 \end{longtable}}
 
 \heading{DANH MỤC THUẬT NGỮ}
@@ -50,6 +75,5 @@ BI & Business Intelligence & Trí tuệ kinh doanh \\ \hline
 1 & Data Warehouse & Kho dữ liệu phục vụ phân tích \\ \hline
 2 & Lakehouse & Nền tảng kết hợp lưu trữ hồ dữ liệu và khả năng quản lý bảng \\ \hline
 3 & Star Schema & Mô hình hình sao gồm bảng sự kiện và các bảng chiều \\ \hline
-% ... bổ sung các thuật ngữ khác
 \end{longtable}}
 

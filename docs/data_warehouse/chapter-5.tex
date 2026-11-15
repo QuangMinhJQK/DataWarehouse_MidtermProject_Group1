@@ -1,0 +1,178 @@
+% !TEX root = main.tex
+
+\chuong{KHAI THÁC DỮ LIỆU}
+
+\subsection{Khai thác dữ liệu với Power BI}
+
+Power BI sử dụng Semantic Model làm lớp dữ liệu dùng chung cho các trang báo cáo. Các measure về doanh thu, đơn hàng, biên lợi nhuận, giao hàng, hạn ngạch, tồn kho và tình trạng dữ liệu được định nghĩa tập trung; dashboard chủ yếu đảm nhiệm việc lọc, so sánh và trình bày. Cách tổ chức này giúp số liệu trên các trang khác nhau cùng tuân theo một định nghĩa nghiệp vụ, đồng thời cho phép người dùng chuyển từ góc nhìn tổng quan sang các nhóm vấn đề cụ thể.
+
+\subsubsection{Tổng quan hoạt động bán hàng}
+
+Trang tổng quan kết hợp bộ lọc khoảng ngày và lãnh thổ với bốn KPI gồm doanh thu thuần, số đơn hàng, giá trị đơn hàng trung bình và tỷ lệ giảm giá. Hai biểu đồ phía dưới lần lượt thể hiện xu hướng doanh thu theo thời gian và cơ cấu doanh thu theo nhóm sản phẩm. Trong ngữ cảnh lọc minh họa cho Australia, dashboard hiển thị doanh thu thuần 10,66 triệu, khoảng 7 nghìn đơn hàng, AOV 1,56 nghìn và tỷ lệ giảm giá 0,27\%. Phần cơ cấu cho thấy Bikes đóng góp phần lớn doanh thu trong phạm vi lọc đang chọn.
+
+\anh{dashboard/sales-overview.png}{Dashboard tổng quan hoạt động bán hàng}{fig:dashboard-sales-overview}
+
+Trang này đóng vai trò điểm bắt đầu cho quá trình khai thác. Người dùng có thể nhận biết nhanh quy mô bán hàng, sau đó sử dụng bộ lọc thời gian và lãnh thổ để kiểm tra sự thay đổi của KPI hoặc chuyển sang các trang chi tiết.
+
+\subsubsection{Phân tích sản phẩm và vận hành giao hàng}
+
+Dashboard sản phẩm trình bày số lượng bán, doanh thu thuần, biên lợi nhuận chuẩn ước tính và độ phủ chi phí. Biểu đồ xếp hạng cho phép nhận diện các sản phẩm đóng góp doanh thu lớn; bảng chi tiết đặt số lượng, mã sản phẩm, doanh thu, biên lợi nhuận ước tính và độ phủ chi phí trên cùng một dòng để hỗ trợ đối chiếu. Toàn bộ phạm vi đang hiển thị ghi nhận khoảng 275 nghìn đơn vị sản phẩm, 109,85 triệu doanh thu thuần, 12,55 triệu biên lợi nhuận chuẩn ước tính và độ phủ chi phí 99,97\%.
+
+\anh{dashboard/product-analysis.png}{Dashboard phân tích kết quả theo sản phẩm}{fig:dashboard-product-analysis}
+
+Dashboard vận hành tập trung vào các đơn đủ điều kiện đánh giá giao hàng, số đơn giao trễ, tỷ lệ giao trễ và sự khác biệt giữa các lãnh thổ. Ở ảnh minh họa, 31 nghìn đơn đủ điều kiện được ghi nhận, chưa phát hiện đơn giao trễ theo quy tắc measure hiện hành. Biểu đồ theo lãnh thổ hỗ trợ xác định khu vực cần được xem xét chi tiết khi thời gian hoặc khối lượng giao hàng khác biệt đáng kể.
+
+\anh{dashboard/operations.png}{Dashboard theo dõi hoạt động giao hàng theo lãnh thổ}{fig:dashboard-operations}
+
+\subsubsection{Theo dõi hạn ngạch và tồn kho}
+
+Trang hạn ngạch sử dụng ma trận theo nhân viên bán hàng và quý. Mỗi nhóm cột đặt hạn ngạch, doanh số thực tế và tỷ lệ hoàn thành cạnh nhau, nhờ đó có thể xem đồng thời diễn biến theo thời gian và mức độ đạt mục tiêu của từng nhân viên. Hàng tổng hỗ trợ kiểm tra kết quả ở cấp toàn bộ lực lượng bán hàng, trong khi các ô trống phản ánh trường hợp không có hạn ngạch hoặc không phát sinh dữ liệu phù hợp trong kỳ.
+
+\anh{dashboard/quota.png}{Dashboard đối chiếu doanh số thực tế với hạn ngạch theo quý}{fig:dashboard-quota}
+
+Trang tồn kho kết hợp các KPI về tổng lượng tồn, số sản phẩm cần đặt lại, số sản phẩm không có bản ghi tồn kho, tuổi dữ liệu và cờ dữ liệu cũ. Bảng chi tiết hiển thị lượng tồn, mức tồn an toàn, điểm đặt hàng lại, trạng thái cảnh báo và trạng thái độ mới cho từng sản phẩm. Ảnh minh họa ghi nhận tổng tồn kho khoảng 336 nghìn đơn vị, 8 sản phẩm cần đặt lại, 72 sản phẩm thiếu bản ghi tồn kho và tuổi snapshot 292,7 giờ. Cờ \path{Stock Is Stale} bằng 1 cho biết số liệu tồn kho cần được đọc cùng thời điểm quan sát, không nên xem như trạng thái thời gian thực.
+
+\anh{dashboard/inventory.png}{Dashboard theo dõi tồn kho và nhu cầu đặt hàng lại}{fig:dashboard-inventory}
+
+\subsubsection{Theo dõi chất lượng dữ liệu và dữ liệu học máy}
+
+Dashboard tình trạng dữ liệu công bố các mốc Gold được phát hành, thời điểm quan sát tồn kho, tuổi snapshot và ngày nghiệp vụ hoàn chỉnh. Các chỉ tiêu thiếu tỷ giá và thiếu chi phí giúp người dùng nhận biết phạm vi có thể ảnh hưởng đến measure quy đổi hoặc biên lợi nhuận. Thông tin phiên chạy, chính sách và phiên bản metric được đặt cùng trang để hỗ trợ truy vết bộ số liệu đang được báo cáo.
+
+\anh{dashboard/data-health.png}{Dashboard theo dõi thời điểm công bố và chất lượng dữ liệu}{fig:dashboard-data-health}
+
+Trang học máy mô tả phạm vi dữ liệu được chuẩn bị cho ba bài toán. Biểu đồ lượng bán lịch sử 7 ngày cho phép quan sát sự biến động theo ngày chốt và theo sản phẩm; phân phối số ngày mua trong 90 ngày mô tả tập khách hàng của bài toán mua lại; số bản ghi theo ngày chốt cho thấy quy mô dữ liệu của bài toán nhóm sản phẩm tiếp theo. Các biểu đồ này được dùng để kiểm tra độ phủ và phân phối dữ liệu đầu vào, không thay thế các metric đánh giá mô hình trên holdout.
+
+\anh{dashboard/ml-monitoring.png}{Dashboard theo dõi dữ liệu phục vụ các bài toán học máy}{fig:dashboard-ml-monitoring}
+
+\subsection{Xây dựng Data Agent khai thác Semantic Model}
+
+Data Agent được xây dựng dưới dạng ứng dụng hỏi--đáp dữ liệu chỉ đọc, phục vụ các câu hỏi về doanh thu, đơn hàng, sản phẩm, tồn kho và kết quả dự báo. Thay vì để mô hình ngôn ngữ tự sinh câu lệnh DAX và gửi trực tiếp đến nguồn dữ liệu, hệ thống tách quá trình xử lý thành hai nhiệm vụ: mô hình ngôn ngữ lập kế hoạch truy vấn có cấu trúc; các thành phần xác định của ứng dụng kiểm tra kế hoạch, biên dịch DAX và thực thi trên Semantic Model. Cách tổ chức này giữ các measure và quan hệ trong Semantic Model làm định nghĩa nghiệp vụ chuẩn, đồng thời thu hẹp phạm vi mà mô hình ngôn ngữ được phép tác động.
+
+\subsubsection{Kiến trúc ứng dụng và nguồn dữ liệu}
+
+Giao diện được phát triển bằng Streamlit theo dạng hội thoại. Người dùng có thể nhập câu hỏi hoặc chọn các câu hỏi mẫu; kết quả gồm phần diễn giải, bảng dữ liệu, cảnh báo nghiệp vụ và vùng kiểm tra chứa kế hoạch truy vấn cùng câu lệnh DAX. Khi khởi động, ứng dụng thực hiện health check để xác nhận Semantic Model cấu hình có thể được nhìn thấy và thực thi một truy vấn kiểm tra. Trạng thái kết nối, tên mô hình và phiên bản semantic catalog được hiển thị trên giao diện như Hình~\ref{fig:data-agent-interface}.
+
+\anh{data-agent-interface.png}{Giao diện Data Agent truy vấn dữ liệu bán hàng theo năm}{fig:data-agent-interface}
+
+Phần điều phối trung tâm nhận câu hỏi và lịch sử hội thoại gần nhất, sau đó gọi Gemini để tạo đối tượng \path{QueryPlan}. Đối tượng này chỉ mô tả hành động, measure, dimension, điều kiện lọc, thứ tự sắp xếp và giới hạn số dòng. Semantic catalog cung cấp danh sách trường được phép dùng, từ đồng nghĩa tiếng Việt và tiếng Anh, kiểu dữ liệu, định dạng measure và các cảnh báo nghiệp vụ. Catalog đồng thời được khóa theo workspace và Semantic Model cụ thể; cấu hình sai định danh làm ứng dụng dừng trước khi thực hiện truy vấn.
+
+Sau bước kiểm tra, bộ biên dịch chuyển kế hoạch hợp lệ thành một tập con DAX chỉ đọc dựa trên \path{SUMMARIZECOLUMNS}, \path{TOPN} và \path{ORDER BY}. Ứng dụng lấy access token theo luồng client credentials của Microsoft Entra ID và gọi Power BI Execute DAX Queries REST API. Kết quả dạng Apache Arrow được chuẩn hóa tên cột, giới hạn số dòng rồi mới chuyển đến Gemini để diễn giải. Vì vậy, Gemini không nhận quyền truy cập trực tiếp vào Semantic Model và không quyết định câu lệnh DAX cuối cùng.
+
+\begin{table}[H]\centering
+\caption{Vai trò của các thành phần trong Data Agent}
+\label{tab:data-agent-components}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{4.1cm}|X|}\hline
+\textbf{Thành phần} & \textbf{Vai trò chính} & \textbf{Đầu vào/đầu ra} \\ \hline
+Streamlit UI & Tiếp nhận câu hỏi và trình bày kết quả & Câu hỏi, bảng kết quả, cảnh báo, thông tin kiểm tra truy vấn \\ \hline
+Gemini Planner & Chuyển câu hỏi thành kế hoạch có cấu trúc & Câu hỏi và catalog / \path{QueryPlan} \\ \hline
+Semantic catalog và guardrail & Chuẩn hóa tên gọi, kiểm tra allow-list và giới hạn truy vấn & \path{QueryPlan} ban đầu / kế hoạch hợp lệ hoặc thông báo chặn \\ \hline
+DAX compiler & Tạo truy vấn xác định từ kế hoạch đã kiểm tra & Kế hoạch hợp lệ / một câu lệnh DAX chỉ đọc \\ \hline
+Microsoft Entra và Power BI REST API & Xác thực danh tính ứng dụng và thực thi truy vấn & DAX / tập kết quả Apache Arrow \\ \hline
+Gemini Summarizer & Diễn giải tập kết quả theo ngữ cảnh câu hỏi & Dữ liệu đã giới hạn / câu trả lời tiếng Việt \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{Luồng xử lý truy vấn}
+
+Hình~\ref{fig:data-agent-sequence} mô tả trình tự xử lý của một yêu cầu hợp lệ. Luồng lập kế hoạch và luồng diễn giải được tách thành hai lần gọi mô hình ngôn ngữ. Giữa hai lần gọi là các bước xác định gồm kiểm tra chính sách, biên dịch DAX, xác thực Microsoft Entra và truy vấn Semantic Model. Cấu trúc này giúp kết quả trả lời gắn với dữ liệu thực tế thay vì dựa trên tri thức sẵn có của mô hình ngôn ngữ.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth,
+  actor/.style={draw,rounded corners,fill=blue!6,minimum width=2.55cm,minimum height=0.8cm,align=center},
+  call/.style={->,thick},
+  reply/.style={->,thick,dashed}
+]
+\node[actor] (user) at (0,0) {Người dùng};
+\node[actor] (ui) at (3.2,0) {Streamlit UI};
+\node[actor] (service) at (6.4,0) {Agent Service};
+\node[actor] (gemini) at (9.6,0) {Gemini};
+\node[actor] (entra) at (12.8,0) {Microsoft Entra};
+\node[actor] (model) at (16,0) {Semantic Model};
+\foreach \x in {user,ui,service,gemini,entra,model}
+  \draw[densely dashed,gray] (\x.south) -- ++(0,-12.2);
+
+\draw[call] (0,-1.2) -- node[above]{Câu hỏi} (3.2,-1.2);
+\draw[call] (3.2,-2.0) -- node[above]{Câu hỏi và lịch sử gần nhất} (6.4,-2.0);
+\draw[call] (6.4,-2.8) -- node[above]{Câu hỏi và semantic catalog} (9.6,-2.8);
+\draw[reply] (9.6,-3.6) -- node[above]{\path{QueryPlan} có cấu trúc} (6.4,-3.6);
+
+\node[draw,rounded corners,fill=yellow!12,align=center,text width=3.4cm]
+  at (6.4,-4.8) {Kiểm tra guardrail\\và biên dịch DAX};
+
+\draw[call] (6.4,-6.0) -- node[above]{Yêu cầu access token} (12.8,-6.0);
+\draw[reply] (12.8,-6.8) -- node[above]{Access token} (6.4,-6.8);
+\draw[call] (6.4,-7.6) -- node[above]{DAX chỉ đọc} (16,-7.6);
+\draw[reply] (16,-8.4) -- node[above]{Kết quả Apache Arrow} (6.4,-8.4);
+\draw[call] (6.4,-9.2) -- node[above]{Câu hỏi, dữ liệu và cảnh báo} (9.6,-9.2);
+\draw[reply] (9.6,-10.0) -- node[above]{Phần diễn giải có căn cứ} (6.4,-10.0);
+\draw[reply] (6.4,-10.8) -- node[above]{Câu trả lời, bảng và audit} (3.2,-10.8);
+\draw[reply] (3.2,-11.6) -- node[above]{Hiển thị kết quả} (0,-11.6);
+\end{tikzpicture}%
+}
+\caption{Sequence diagram xử lý một câu hỏi trong Data Agent}
+\label{fig:data-agent-sequence}
+\end{figure}
+
+Nếu planner xác định câu hỏi chưa đủ rõ, hệ thống trả lại yêu cầu làm rõ mà không truy vấn dữ liệu. Yêu cầu ghi dữ liệu, truy cập thông tin định danh, bí mật hoặc nội dung ngoài catalog bị từ chối. Với kế hoạch hợp lệ, kết quả sau khi thực thi được giới hạn và chuẩn hóa trước khi tóm tắt; trường hợp không có dòng phù hợp được trả về dưới dạng kết quả rỗng thay vì để mô hình tự suy đoán.
+
+Do mã nguồn ứng dụng không được công bố trực tiếp, quy trình xử lý cốt lõi được trình bày dưới dạng mã giả tại Hình~\ref{fig:pseudo-data-agent}. Mã giả giữ lại các quyết định kiến trúc quan trọng, nhưng không chứa thông tin định danh môi trường, khóa truy cập hoặc chi tiết cấu hình bảo mật.
+
+\begin{figure}[H]\centering
+\fbox{\begin{minipage}{0.92\textwidth}\small\ttfamily
+INITIALIZE settings and load the curated semantic catalog\\
+VERIFY workspace and semantic model identities\\
+CHECK that the configured Semantic Model is query-ready\\
+RECEIVE the user question and recent conversation context\\
+REQUEST a structured QueryPlan from the planner model\\
+IF action is CLARIFY THEN RETURN a clarification question\\
+IF action is REJECT THEN RETURN the rejection reason\\
+VALIDATE measures, dimensions, filters, sorting, data types,\\
+\hspace*{1.5em}and result limits against the semantic catalog\\
+COMPILE the validated plan into deterministic read-only DAX\\
+ACQUIRE an application access token from Microsoft Entra ID\\
+EXECUTE exactly one DAX query against the Semantic Model\\
+NORMALIZE column names and CAP the returned rows\\
+IF no rows are returned THEN RETURN an empty-result response\\
+ADD data-freshness and business-semantics warnings\\
+REQUEST a grounded summary using only the returned rows\\
+RETURN the summary, result table, warnings, QueryPlan, DAX,\\
+\hspace*{1.5em}and request ID\\
+ON EXPECTED ERROR, RETURN a safe message with the request ID
+\end{minipage}}
+\caption{Mã giả xử lý truy vấn của Data Agent}
+\label{fig:pseudo-data-agent}
+\end{figure}
+
+\subsubsection{Kiểm soát an toàn và tính nhất quán}
+
+Các biện pháp kiểm soát được đặt tại nhiều lớp. Ở lớp ngữ nghĩa, chỉ measure và dimension đã khai báo trong catalog mới được chọn. Phiên bản hiện tại giới hạn tối đa ba measure, hai dimension, sáu điều kiện lọc và 200 dòng kết quả cho một truy vấn. Việc kết hợp đồng thời nhiều dimension có lực lượng giá trị lớn bị chặn để hạn chế truy vấn quá rộng; trường dùng để sắp xếp cũng phải xuất hiện trong kết quả.
+
+Ở lớp dữ liệu, tên khách hàng, thư điện tử, địa chỉ và các trường định danh chi tiết không được công bố trong catalog. Ứng dụng chỉ thực thi một truy vấn DAX và không cung cấp thao tác ghi. Các literal được chuẩn hóa theo kiểu dữ liệu trước khi biên dịch, chuỗi được thoát ký tự và kết quả bị cắt theo giới hạn ở cả yêu cầu API lẫn tầng ứng dụng. Dữ liệu trả về được xem là nội dung không đáng tin cậy khi chuyển đến mô hình tóm tắt, nhờ đó câu lệnh xuất hiện trong ô dữ liệu không được xử lý như chỉ dẫn.
+
+Ở lớp nghiệp vụ, một số measure luôn đi kèm thông tin bổ trợ. Ví dụ, biên lợi nhuận ước tính được trả cùng độ phủ chi phí; chỉ tiêu tồn kho kèm thời điểm quan sát và tuổi dữ liệu; dự báo mô phỏng lịch sử được phân biệt với dự báo vận hành. Những cảnh báo này giúp người dùng nhận biết phạm vi diễn giải của con số, đặc biệt với dữ liệu snapshot và dữ liệu dự báo.
+
+\begin{table}[H]\centering
+\caption{Các guardrail chính của Data Agent}
+\label{tab:data-agent-guardrails}
+\begin{tabularx}{\textwidth}{|p{3.5cm}|X|p{4.2cm}|}\hline
+\textbf{Nhóm kiểm soát} & \textbf{Cơ chế} & \textbf{Mục đích} \\ \hline
+Phạm vi ngữ nghĩa & Allow-list measure/dimension, từ đồng nghĩa và kiểu dữ liệu trong catalog & Chỉ truy vấn các khái niệm nghiệp vụ đã được xác nhận \\ \hline
+Giới hạn truy vấn & Tối đa 3 measure, 2 dimension, 6 filter và 200 dòng & Hạn chế truy vấn rộng, chi phí lớn và kết quả khó diễn giải \\ \hline
+Quyền truy cập & Service principal, token Microsoft Entra và quyền chỉ đọc qua API & Không cấp thông tin xác thực trực tiếp cho người dùng hoặc mô hình ngôn ngữ \\ \hline
+Bảo vệ dữ liệu & Không công bố PII chi tiết; coi ô kết quả là dữ liệu không đáng tin cậy & Giảm nguy cơ lộ dữ liệu và prompt injection từ nội dung kết quả \\ \hline
+Tính nhất quán & DAX được biên dịch xác định; measure lấy từ Semantic Model & Tránh để mô hình ngôn ngữ tự định nghĩa lại công thức nghiệp vụ \\ \hline
+Khả năng kiểm tra & Lưu request ID, kế hoạch truy vấn, DAX và cảnh báo trên giao diện & Hỗ trợ đối soát câu trả lời với truy vấn đã thực thi \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{Kết quả thử nghiệm và phạm vi triển khai}
+
+Thử nghiệm cục bộ cho thấy ứng dụng kết nối thành công với Semantic Model \path{sm_gold_sales_inventory}, lập kế hoạch cho câu hỏi doanh thu thuần và số đơn theo năm, trả dữ liệu cho các năm 2011--2014, đồng thời hiển thị bảng kết quả và vùng kiểm tra truy vấn. Hình~\ref{fig:data-agent-interface} là minh chứng cho toàn bộ chuỗi từ kết nối mô hình, gửi câu hỏi đến nhận phần diễn giải và dữ liệu tổng hợp.
+
+Bộ kiểm thử tự động gồm 20 trường hợp và đã hoàn thành toàn bộ. Các trường hợp kiểm tra bao phủ việc đọc catalog, khóa đúng workspace/model, chuẩn hóa alias và kiểu filter, thêm measure bổ trợ, chặn dimension lực lượng lớn, thoát literal, biên dịch DAX có giới hạn, đọc kết quả Apache Arrow, xử lý lỗi quyền API, chuẩn hóa tên cột và điều phối yêu cầu từ đầu đến cuối bằng các thành phần mô phỏng. Kết quả này xác nhận logic nội bộ của ứng dụng; ảnh giao diện bổ sung bằng chứng rằng luồng truy vấn đã hoạt động với Semantic Model trong môi trường thử nghiệm.
+
+Phiên bản hiện tại được sử dụng trong phạm vi minh họa cục bộ và chưa công bố ra Internet. Lý do chính không nằm ở luồng hỏi--đáp, mà ở yêu cầu phải thiết kế thêm xác thực, phân quyền, bảo vệ bí mật và cô lập quyền truy cập Fabric cho người dùng công cộng. Giới hạn này được tổng hợp tại Mục~6.3 cùng các hạn chế khác của dự án.

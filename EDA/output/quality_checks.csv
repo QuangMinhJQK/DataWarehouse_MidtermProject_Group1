@@ -1,0 +1,11 @@
+﻿Check,Value
+Order rows,31465.0
+Order-detail rows,121317.0
+Duplicate primary keys,0.0
+Orphan core foreign keys,0.0
+Distinct status values,1.0
+Missing SalesPersonID,27659.0
+Missing CurrencyRateID,17489.0
+Customers without orders,701.0
+Products without subcategory,209.0
+LineTotal minus SubTotal,-0.004012018442153931

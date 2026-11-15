@@ -1,3 +1,35 @@
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Sơ đồ tổng quát AdventureWorks OLTP 2008. Nguồn: tài liệu gốc trong bản nháp chương 2~\citep {aw-schema}.}}{16}{figure.caption.5}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Sơ đồ tổng quát AdventureWorks OLTP 2008 (nguồn: \citealp {aw-schema}).}}{21}{figure.caption.3}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Danh sách query Dataflow Bronze--STG được dùng để xác định phạm vi khám phá dữ liệu.}}{23}{figure.caption.4}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Doanh thu dòng hàng theo tháng đặt hàng; hai điểm màu cam là tháng chưa đủ dữ liệu.}}{25}{figure.caption.7}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Phân phối giá trị đơn hàng theo kênh; trục tung dùng thang log.}}{26}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Doanh thu dòng hàng theo danh mục sản phẩm.}}{27}{figure.caption.10}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Doanh thu dòng hàng theo lãnh thổ bán hàng.}}{28}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Kiến trúc Medallion của giải pháp trên Microsoft Fabric.}}{32}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Danh sách các item trong workspace Microsoft Fabric}}{34}{figure.caption.13}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Nguồn dữ liệu: các tệp CSV AdventureWorks được nạp vào Azure SQL Database.}}{37}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Cấu hình kết nối từ Microsoft Fabric đến Azure SQL Database}}{37}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Canvas minh họa các chặng xử lý dữ liệu trên Microsoft Fabric}}{38}{figure.caption.18}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Luồng xử lý tổng quát của Dataflow Gen2 từ STG đến các bảng INT}}{39}{figure.caption.19}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Danh mục bảng và số dòng tại Lakehouse Bronze}}{41}{figure.caption.22}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Cấu trúc STG và INT trong Lakehouse Silver}}{43}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Danh mục dimension, fact và data mart trong Warehouse Gold}}{46}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Các bảng dữ liệu dạng rộng trong Lakehouse Gold}}{47}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Trích đoạn Semantic Model tập trung vào bảng Sales và các bảng liên quan}}{53}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Pipeline điều phối quá trình nạp và kiểm tra dữ liệu từ Silver sang Gold}}{55}{figure.caption.33}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Danh sách bảng trong Semantic Model}}{57}{figure.caption.36}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces Danh sách measure trong Semantic Model}}{59}{figure.caption.37}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces Relationships giữa các bảng trong Semantic Model}}{61}{figure.caption.39}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces Trang tổng quan bán hàng trong Power BI}}{63}{figure.caption.41}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Mã giả huấn luyện mô hình dự báo lượng bán 7 ngày}}{67}{figure.caption.44}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Mã giả huấn luyện mô hình mua lại trong 30 ngày}}{68}{figure.caption.46}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Mã giả huấn luyện mô hình nhóm sản phẩm tiếp theo trong 60 ngày}}{70}{figure.caption.47}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Dashboard tổng quan hoạt động bán hàng}}{72}{figure.caption.49}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Dashboard phân tích kết quả theo sản phẩm}}{73}{figure.caption.50}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Dashboard theo dõi hoạt động giao hàng theo lãnh thổ}}{74}{figure.caption.51}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces Dashboard đối chiếu doanh số thực tế với hạn ngạch theo quý}}{74}{figure.caption.52}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Dashboard theo dõi tồn kho và nhu cầu đặt hàng lại}}{75}{figure.caption.53}%
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Dashboard theo dõi thời điểm công bố và chất lượng dữ liệu}}{76}{figure.caption.54}%
+\contentsline {figure}{\numberline {5.7}{\ignorespaces Dashboard theo dõi dữ liệu phục vụ các bài toán học máy}}{76}{figure.caption.55}%
+\contentsline {figure}{\numberline {5.8}{\ignorespaces Giao diện Data Agent truy vấn dữ liệu bán hàng theo năm}}{77}{figure.caption.56}%
+\contentsline {figure}{\numberline {5.9}{\ignorespaces Sequence diagram xử lý một câu hỏi trong Data Agent}}{79}{figure.caption.58}%
+\contentsline {figure}{\numberline {5.10}{\ignorespaces Mã giả xử lý truy vấn của Data Agent}}{80}{figure.caption.59}%

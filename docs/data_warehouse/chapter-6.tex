@@ -1,0 +1,116 @@
+% !TEX root = main.tex
+
+\setcounter{section}{5}
+\chuong{KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN}
+
+\subsection{Kết quả đạt được}
+
+Trong phạm vi một đồ án môn học, dự án đã xây dựng được một giải pháp dữ liệu bán hàng tương đối đầy đủ trên Microsoft Fabric, bao phủ các chặng từ tiếp nhận dữ liệu nguồn, chuẩn hóa và tích hợp, tổ chức kho dữ liệu, xây dựng lớp ngữ nghĩa đến trực quan hóa, học máy và hỏi--đáp dữ liệu. Kết quả đạt được không chỉ là tập hợp các đối tượng riêng lẻ trong workspace, mà là một kiến trúc có luồng dữ liệu và ranh giới trách nhiệm rõ ràng giữa các tầng.
+
+\subsubsection{Hoàn thiện kiến trúc tích hợp và kho dữ liệu}
+
+Dữ liệu từ Azure SQL Database đã được đưa vào kiến trúc Medallion gồm Bronze, Silver và Gold. Lakehouse Bronze lưu 91 đối tượng với tổng số 823.130 dòng trong danh mục kiểm kê. Tại Silver, 24 bảng STG chuẩn hóa dữ liệu theo nguồn và 17 bảng INT tích hợp dữ liệu theo chủ đề nghiệp vụ. Số dòng của các thực thể cốt lõi được duy trì qua các vùng tương ứng: 31.465 đơn hàng, 121.317 dòng chi tiết đơn hàng, 19.820 khách hàng và 504 sản phẩm. Việc đối chiếu này cung cấp bằng chứng ban đầu về tính đầy đủ của dữ liệu trong quá trình chuyển tầng.
+
+Tầng Gold được tổ chức thành Warehouse phục vụ phân tích và Lakehouse phục vụ học máy. Warehouse \path{wh_gold_sales} hiện có 77 đối tượng nghiệp vụ với tổng cộng 1.842.655 dòng trong danh mục, trong đó phần lõi gồm 10 bảng chiều, 11 bảng sự kiện và 10 data mart. Lakehouse \path{lh_gold_ml} chứa ba bảng dạng rộng với tổng cộng 482.554 dòng. Các tổng số dòng này được hiểu là số liệu kiểm kê trên nhiều đối tượng có quan hệ với nhau, không phải số giao dịch phân biệt. Mô hình chiều đã xác định rõ mức hạt của đơn hàng, chi tiết bán hàng, tồn kho và các nhóm lịch sử; đồng thời chuẩn hóa các phép tính doanh thu, chiết khấu, chi phí và biên lợi nhuận ước tính.
+
+Quy trình công bố Silver--Gold đã bổ sung manifest phiên dữ liệu, chính sách nghiệp vụ, giao dịch nạp dữ liệu và các cổng kiểm soát chất lượng. Dữ liệu chỉ được ghi nhận là đã công bố khi số dòng nguồn khớp manifest và các kiểm tra về khóa, tính duy nhất, toàn vẹn quan hệ, số tiền, tồn kho, lịch sử và tỷ giá đều đạt yêu cầu. Khi có lỗi, giao dịch được hoàn tác và trạng thái thất bại được ghi nhận trong lớp vận hành. Kết quả này tạo cơ sở để đối soát một phiên dữ liệu thay vì chỉ kiểm tra từng bảng độc lập.
+
+\subsubsection{Xây dựng lớp phân tích và báo cáo dùng chung}
+
+Trên Warehouse Gold, Semantic Model hiện gồm 18 bảng, 39 measure và 19 quan hệ, bao phủ bán hàng, giao hàng, tồn kho, hạn ngạch, chất lượng dữ liệu và học máy. Việc định nghĩa tập trung giúp Power BI và Data Agent sử dụng cùng một cách hiểu nghiệp vụ thay vì tự xây dựng lại công thức hoặc liên kết dữ liệu.
+
+Báo cáo Power BI gồm bảy trang về tổng quan bán hàng, sản phẩm, giao hàng, hạn ngạch, tồn kho, tình trạng dữ liệu và học máy. Người dùng có thể đi từ KPI tổng quan đến vấn đề chi tiết, đồng thời theo dõi độ mới và phạm vi chất lượng của dữ liệu. Như vậy, kho dữ liệu đã được kết nối với một lớp khai thác trực quan phục vụ nhiều nhóm câu hỏi thay vì chỉ cung cấp các bảng lưu trữ.
+
+\subsubsection{Xây dựng dữ liệu và quy trình cho ba bài toán học máy}
+
+Dự án đã chuẩn bị ba tập dữ liệu dạng rộng cho các bài toán lượng bán 7 ngày, mua lại trong 30 ngày và nhóm sản phẩm tiếp theo trong 60 ngày, lần lượt có 141.457, 303.836 và 37.261 dòng. Đặc trưng được xây dựng từ các cửa sổ lịch sử; dữ liệu huấn luyện và holdout được tách theo thời gian, còn tham số xử lý giá trị thiếu chỉ được ước lượng trên tập huấn luyện. Cách tổ chức này hạn chế việc sử dụng thông tin tương lai trong quá trình huấn luyện.
+
+Ba quy trình mô hình đã xác định thuật toán, tham số, baseline và chỉ tiêu đánh giá. Bài toán lượng bán sử dụng hồi quy tăng cường và MAE; hai bài toán hành vi sử dụng hồi quy logistic có trọng số lớp, với Average Precision, Macro F1 và log loss tùy bài toán. Trên holdout của bài toán lượng bán, baseline dự báo bằng 0 có MAE 9,49, thấp hơn baseline dùng lượng bán 7 ngày gần nhất với MAE 13,21. Do metric của các mô hình chưa được xác nhận, kết quả ở giai đoạn này là quy trình dữ liệu, thiết kế huấn luyện và khung đánh giá có khả năng lặp lại; báo cáo chưa kết luận mô hình đã cải thiện so với baseline.
+
+\subsubsection{Thử nghiệm Data Agent khai thác Semantic Model}
+
+Dự án đã xây dựng Data Agent dưới dạng ứng dụng Streamlit chỉ đọc, có khả năng chuyển câu hỏi thành \path{QueryPlan} có cấu trúc, kiểm tra kế hoạch theo semantic catalog, biên dịch thành DAX xác định và truy vấn Semantic Model qua Power BI REST API. Mô hình ngôn ngữ không được truy cập trực tiếp nguồn dữ liệu hoặc tự quyết định câu lệnh DAX cuối cùng. Kết quả trả về kèm bảng dữ liệu, cảnh báo nghiệp vụ, kế hoạch truy vấn, câu lệnh DAX và mã yêu cầu để hỗ trợ kiểm tra.
+
+Thử nghiệm cục bộ cho thấy ứng dụng đã kết nối thành công với Semantic Model, xử lý câu hỏi về doanh thu và số đơn theo năm, đồng thời trả dữ liệu cho giai đoạn 2011--2014. Bộ kiểm thử tự động gồm 20 trường hợp đã hoàn thành toàn bộ, bao phủ các chức năng chính từ đọc catalog, kiểm tra định danh mô hình và guardrail đến biên dịch DAX, đọc kết quả và điều phối yêu cầu. Kết quả này xác nhận logic nội bộ và khả năng tích hợp trong môi trường thử nghiệm; ứng dụng chưa được xem là dịch vụ sẵn sàng công bố ra Internet.
+
+\subsection{Ưu điểm của giải pháp}
+
+\subsubsection{Kiến trúc phân tầng rõ ràng trên một nền tảng thống nhất}
+
+Ưu điểm đầu tiên của giải pháp là phân tách được vai trò của dữ liệu theo mức độ xử lý. Bronze giữ dữ liệu nguồn để đối chiếu; STG chuẩn hóa cấu trúc; INT tích hợp và áp dụng quy tắc nghiệp vụ; Gold tổ chức dữ liệu cho phân tích và học máy. Cách phân tầng này giúp xác định dữ liệu đang ở trạng thái nào, giảm việc trộn lẫn logic làm sạch với logic báo cáo và tạo điều kiện chạy lại một chặng khi cần thiết. Việc triển khai Lakehouse, Warehouse, Data Factory, Data Science, Semantic Model và Power BI trong Microsoft Fabric cũng giảm số lượng nền tảng rời rạc phải kết nối trong phạm vi giải pháp.
+
+\subsubsection{Kiểm soát chất lượng và khả năng truy vết được tích hợp vào luồng dữ liệu}
+
+Giải pháp không chỉ nạp dữ liệu vào bảng đích mà còn lưu thông tin phiên, manifest, chính sách và kết quả kiểm tra trong các schema vận hành. Các cổng chất lượng được đặt trước thời điểm công bố Gold và gắn với cơ chế hoàn tác giao dịch. Nhờ đó, một phiên dữ liệu không đạt yêu cầu không bị trình bày như dữ liệu đã sẵn sàng cho báo cáo. Các dashboard tình trạng dữ liệu, thời điểm quan sát tồn kho, độ phủ chi phí và thiếu tỷ giá tiếp tục đưa ngữ cảnh chất lượng đến lớp sử dụng cuối. Đây là ưu điểm quan trọng đối với các chỉ tiêu phụ thuộc vào snapshot hoặc dữ liệu lịch sử, vì người dùng có thể nhận biết giới hạn của con số thay vì mặc nhiên xem mọi dữ liệu là thời gian thực và hoàn chỉnh.
+
+\subsubsection{Lớp ngữ nghĩa được tái sử dụng giữa nhiều hình thức khai thác}
+
+Semantic Model đóng vai trò hợp đồng dữ liệu giữa Warehouse và các công cụ sử dụng. Power BI lấy measure, quan hệ và chiều phân tích từ mô hình này; Data Agent cũng chỉ được truy vấn các khái niệm đã công bố trong semantic catalog. Cách dùng chung giúp duy trì một định nghĩa nhất quán cho doanh thu, đơn hàng, tồn kho, hạn ngạch và các cảnh báo dữ liệu. Khi một quy tắc được điều chỉnh tại lớp dữ liệu hoặc lớp ngữ nghĩa, các kênh khai thác có thể tiếp nhận thay đổi mà không cần tái tạo toàn bộ logic ở từng giao diện.
+
+\subsubsection{Kết hợp phân tích mô tả, dự báo và hỏi--đáp có kiểm soát}
+
+Giải pháp mở rộng từ báo cáo mô tả sang học máy và truy vấn ngôn ngữ tự nhiên trên cùng nền dữ liệu Gold. Các tập đặc trưng, kết quả dự báo, measure báo cáo và cảnh báo chất lượng có thể được liên kết bằng khóa nghiệp vụ và ngày chốt, tạo điều kiện đối chiếu kết quả mô hình với dữ liệu lịch sử. Đồng thời, Data Agent sử dụng allow-list, giới hạn độ rộng truy vấn, DAX chỉ đọc và thông tin kiểm tra để thu hẹp quyền của mô hình ngôn ngữ. Thiết kế này phù hợp với mục tiêu hỗ trợ người dùng tiếp cận dữ liệu thuận tiện hơn nhưng vẫn duy trì Semantic Model và các thành phần xác định của ứng dụng làm nguồn kiểm soát nghiệp vụ.
+
+Nhìn chung, ưu điểm nổi bật của giải pháp nằm ở tính nhất quán giữa các tầng, khả năng truy vết phiên dữ liệu và việc tái sử dụng cùng một lớp ngữ nghĩa cho báo cáo lẫn hỏi--đáp. Kiến trúc cũng tạo sẵn các điểm mở rộng cho học máy và tự động hóa. Tuy nhiên, các ưu điểm này mới được kiểm chứng trong môi trường thử nghiệm; giá trị vận hành ở quy mô sản xuất còn phụ thuộc vào việc khắc phục các hạn chế được trình bày ở mục tiếp theo.
+
+\subsection{Hạn chế của dự án}
+
+Giải pháp được xây dựng trong một Fabric Trial, vì vậy phạm vi thử nghiệm không tương đương một môi trường Fabric trả phí dùng cho vận hành. Trial cung cấp phần lớn các workload cốt lõi và tối đa 1~TB dung lượng OneLake trong thời hạn 60 ngày, nhưng không hỗ trợ toàn bộ nhóm tính năng trí tuệ nhân tạo, bảo mật mạng và quản lý vòng đời ở mức doanh nghiệp~\citep{microsoft-fabric-trial}. Các giới hạn này không làm thay đổi mô hình dữ liệu đã xây dựng, nhưng ảnh hưởng trực tiếp đến những chức năng có thể triển khai và kiểm chứng trong đồ án.
+
+\subsubsection{Chưa có pipeline điều phối thống nhất}
+
+Các quy trình nạp Bronze, chuyển đổi Silver, công bố Warehouse Gold và chuẩn bị dữ liệu học máy đã được xây dựng theo từng nhiệm vụ riêng. Một số quy trình có quan hệ phụ thuộc và nhánh xử lý lỗi ở phạm vi nội bộ, nhưng toàn bộ các chặng chưa được kết nối bằng một pipeline cấp cao. Vì vậy, phiên bản hiện tại chưa tự động truyền cùng một mã phiên chạy và bộ tham số xuyên suốt, chưa kích hoạt các chặng theo một lịch chung, và chưa tổng hợp trạng thái thành công hoặc thất bại của toàn bộ luồng tại một điểm điều phối.
+
+Việc vận hành từng quy trình đơn lẻ phù hợp để kiểm chứng logic xử lý, nhưng chưa đủ để kết luận hệ thống đã tự động hóa đầu cuối. Khi một chặng được chạy lại hoặc hoàn thành không đồng thời với chặng khác, dữ liệu Bronze, Silver, Gold, Semantic Model và kết quả học máy có thể thuộc các thời điểm cập nhật khác nhau. Giải pháp cũng chưa kiểm chứng cơ chế retry liên chặng, tiếp tục từ điểm lỗi, cảnh báo tập trung và mục tiêu độ mới dữ liệu. Đây là hạn chế vận hành quan trọng cần được xử lý trước khi triển khai định kỳ.
+
+\subsubsection{Giới hạn công bố Data Agent ra môi trường công cộng}
+
+Data Agent tùy biến của đồ án đã hoạt động trong môi trường cục bộ và có thể truy vấn Semantic Model bằng danh tính ứng dụng. Tuy nhiên, phiên bản hiện tại sử dụng một service principal dùng chung ở tầng máy chủ. Nếu công bố trực tiếp ứng dụng ra Internet, mọi người truy cập có thể gián tiếp sử dụng cùng quyền của danh tính này; đây không phải mô hình phù hợp cho một dịch vụ công cộng, ngay cả khi giao diện chỉ cho phép gửi câu hỏi bằng ngôn ngữ tự nhiên.
+
+Việc triển khai công khai vì vậy cần bổ sung một lớp xác thực người dùng, ánh xạ quyền của người dùng với quyền truy cập dữ liệu, cơ chế quản lý và luân chuyển bí mật, giới hạn tần suất, nhật ký kiểm toán và chính sách cô lập phiên. Đối với hệ sinh thái Microsoft, các thành phần này còn phụ thuộc vào Microsoft Entra ID, thiết lập tenant, quyền workspace và quyền Read/Build trên Semantic Model. Thiết kế bảo mật trở nên phức tạp hơn khi phải bảo đảm người dùng bên ngoài không kế thừa quyền rộng của service principal. Do phạm vi đồ án chưa bao gồm đầy đủ kiến trúc định danh và phân quyền này, ứng dụng chỉ được chạy để minh họa và kiểm thử có kiểm soát, chưa được triển khai như một dịch vụ công khai.
+
+\subsubsection{Giới hạn tích hợp Git và công bố mã nguồn}
+
+Git integration không phải là giới hạn cố hữu của Fabric Trial. Microsoft cho phép sử dụng trial capacity cho tính năng này, nhưng workspace phải có capacity phù hợp, tenant phải bật quyền đồng bộ item với kho Git và người thực hiện phải có quyền trên GitHub hoặc Azure DevOps~\citep{microsoft-fabric-git}. Trong môi trường của đồ án, các điều kiện quản trị và kết nối kho Git chưa được cấu hình, nên các item Fabric không được đồng bộ trực tiếp với một repository.
+
+Do đó, mã nguồn xử lý vẫn được quản lý tách rời khỏi workspace và không thể trình bày bằng lịch sử commit liên kết trực tiếp từ Fabric. Phạm vi hiện tại cũng chưa kiểm chứng quy trình làm việc theo nhánh, pull request, khôi phục phiên bản hoặc tự động đưa thay đổi qua các workspace phát triển, kiểm thử và vận hành. Đây là hạn chế về quản lý vòng đời và khả năng truy vết thay đổi của đồ án, không phải hạn chế của logic xử lý dữ liệu.
+
+\subsubsection{Giới hạn về thời gian và bảo mật môi trường}
+
+Trial capacity có thời hạn sử dụng hữu hạn. Khi trial kết thúc, các item không thuộc Power BI như notebook và pipeline trở thành không hoạt động cho đến khi workspace được gán lại vào một capacity hợp lệ; nội dung OneLake chỉ được duy trì trong khoảng thời gian chuyển tiếp do nền tảng quy định~\citep{microsoft-fabric-trial}. Vì vậy, môi trường này không phù hợp để chứng minh khả năng vận hành liên tục hoặc theo dõi lịch chạy trong một giai đoạn dài.
+
+Ngoài ra, Trial không hỗ trợ Private Link và Trusted Workspace Access~\citep{microsoft-fabric-trial}. Đồ án vì thế chưa đánh giá được kết nối mạng riêng, cô lập truy cập theo vùng mạng hoặc các chính sách bảo vệ kết nối thường dùng trong môi trường doanh nghiệp. Kết quả hiện tại nên được hiểu là kiểm chứng chức năng và thiết kế dữ liệu trong phạm vi học thuật; khả năng triển khai sản xuất cần được đánh giá lại trên capacity trả phí với cấu hình tenant, bảo mật và quản lý mã nguồn đầy đủ.
+
+\subsection{Hướng phát triển}
+
+Trên cơ sở các kết quả và hạn chế đã nêu, hướng phát triển của dự án tập trung vào việc chuyển giải pháp từ một mô hình thử nghiệm thành một quy trình có khả năng vận hành ổn định, kiểm soát được quyền truy cập và đánh giá được hiệu quả theo thời gian. Các đề xuất dưới đây vẫn giữ nguyên kiến trúc phân tầng và lớp ngữ nghĩa dùng chung, đồng thời bổ sung những thành phần còn thiếu ở cấp điều phối, bảo mật và vận hành.
+
+\subsubsection{Hoàn thiện pipeline điều phối và quản lý phiên dữ liệu}
+
+Trước hết, cần xây dựng một pipeline cấp cao kết nối lần lượt các chặng nạp Bronze, xử lý Silver, công bố Gold, cập nhật Semantic Model và tạo dữ liệu cho học máy. Pipeline nên nhận một mã phiên cùng các tham số ngày chạy, truyền thống nhất các giá trị này cho từng chặng và chỉ kích hoạt bước tiếp theo khi bước trước đã vượt qua các cổng chất lượng. Trạng thái của toàn bộ phiên cần được ghi nhận tại một bảng điều phối, bao gồm thời điểm bắt đầu, thời điểm kết thúc, phiên bản mã, phạm vi dữ liệu, số dòng và thông báo lỗi.
+
+Ngoài việc chạy theo lịch, pipeline cần hỗ trợ retry có giới hạn, tiếp tục từ chặng thất bại và chạy lại có kiểm soát theo mã phiên. Các cảnh báo về độ mới dữ liệu, số dòng bất thường hoặc lỗi kiểm tra quan hệ nên được chuyển đến một kênh theo dõi tập trung. Cách tổ chức này giúp phân biệt một phiên đã hoàn tất với một phiên chỉ mới cập nhật một phần, đồng thời tạo cơ sở để đặt mục tiêu thời gian hoàn thành và độ mới cho từng lớp dữ liệu.
+
+\subsubsection{Tăng cường bảo mật và quản lý Data Agent}
+
+Data Agent cần được bổ sung xác thực người dùng bằng Microsoft Entra ID thay vì sử dụng một danh tính dùng chung cho mọi phiên truy cập. Sau khi xác thực, ứng dụng cần ánh xạ người dùng hoặc nhóm người dùng với phạm vi dữ liệu được phép xem, đồng thời bảo đảm các bộ lọc bảo mật ở Semantic Model được áp dụng nhất quán. Bí mật kết nối nên được chuyển sang kho quản lý bí mật phù hợp, có cơ chế luân chuyển và không xuất hiện trong mã nguồn, log hoặc thông báo lỗi.
+
+Ở lớp ứng dụng, cần bổ sung giới hạn tần suất, giới hạn thời gian xử lý, nhật ký kiểm toán và cơ chế xóa hoặc ẩn thông tin nhạy cảm trong lịch sử hội thoại. Mọi truy vấn sinh ra vẫn phải đi qua semantic catalog, bộ kiểm tra kế hoạch và các giới hạn số measure, chiều, bộ lọc và dòng kết quả. Trước khi cung cấp cho người dùng bên ngoài, hệ thống cũng cần được kiểm thử với các câu hỏi cố tình vượt quyền, yêu cầu truy cập dữ liệu thô hoặc cố gắng làm lộ cấu hình nội bộ.
+
+\subsubsection{Thiết lập quản lý mã nguồn và triển khai nhiều môi trường}
+
+Khi các điều kiện quản trị được đáp ứng, mã nguồn notebook, pipeline, SQL và ứng dụng nên được liên kết với một repository Git. Quy trình phát triển có thể tách thành các nhánh hoặc workspace phát triển, kiểm thử và vận hành; mỗi thay đổi cần được kiểm tra trước khi hợp nhất. Các bước kiểm tra tối thiểu gồm lint, kiểm thử SQL, kiểm thử logic Data Agent, kiểm tra định dạng notebook và xác nhận không đưa bí mật vào repository.
+
+Việc triển khai cũng nên được tham số hóa theo môi trường, chẳng hạn workspace, lakehouse, warehouse, semantic model và thông tin kết nối. Nhờ đó, cùng một phiên bản mã có thể được kiểm thử trên dữ liệu mẫu trước khi đưa lên môi trường vận hành. Lịch sử commit, kết quả kiểm thử và phiên bản đối tượng Fabric cần được liên kết với mã phiên dữ liệu để tăng khả năng truy vết khi số liệu thay đổi.
+
+\subsubsection{Đánh giá và cải thiện các mô hình học máy}
+
+Các mô hình hiện tại cần được đánh giá lại trên nhiều khoảng thời gian holdout thay vì chỉ dựa trên một lần tách dữ liệu. Với bài toán lượng bán, nên so sánh thêm các baseline theo mùa vụ, theo trung bình trượt và theo cùng ngày trong tuần; với các bài toán phân loại, cần theo dõi sự cân bằng lớp, độ ổn định của Average Precision, Macro F1 và log loss. Kết quả nên được phân tích theo sản phẩm, nhóm khách hàng, khu vực và giai đoạn để nhận diện những nhóm có sai số cao.
+
+Sau khi chọn được mô hình phù hợp, quy trình cần bổ sung theo dõi drift của dữ liệu và chất lượng dự báo, lưu phiên bản đặc trưng, tham số và mô hình, cũng như cơ chế huấn luyện lại theo điều kiện xác định. Kết quả dự báo phải đi kèm thời điểm chốt, phiên dữ liệu và phiên bản mô hình để người dùng có thể phân biệt dự báo mới với kết quả của một lần chạy trước.
+
+\subsubsection{Mở rộng giám sát, hiệu năng và quản trị dữ liệu}
+
+Trong giai đoạn tiếp theo, hệ thống nên bổ sung các chỉ số về thời gian chạy pipeline, thời gian truy vấn, tỷ lệ lỗi, dung lượng dữ liệu và mức sử dụng tài nguyên. Các truy vấn thường xuyên trên Warehouse có thể được phân tích để điều chỉnh phân vùng, chỉ mục hoặc cách tổ chức bảng mà không làm thay đổi hợp đồng của Semantic Model. Những bảng lớn và các truy vấn phục vụ dashboard cần được kiểm tra riêng để bảo đảm thời gian phản hồi phù hợp.
+
+Song song với giám sát kỹ thuật, cần hoàn thiện tài liệu dòng dữ liệu, chủ sở hữu dữ liệu, định nghĩa chỉ tiêu, thời hạn lưu trữ và quy trình xử lý dữ liệu không hợp lệ. Khi các thông tin này được duy trì cùng với catalog và dashboard chất lượng, người sử dụng có thể hiểu nguồn gốc, phạm vi và giới hạn của từng chỉ tiêu. Đây là bước cần thiết để giải pháp có thể mở rộng từ phạm vi đồ án sang các bài toán phân tích khác mà vẫn giữ được tính nhất quán và khả năng kiểm chứng.

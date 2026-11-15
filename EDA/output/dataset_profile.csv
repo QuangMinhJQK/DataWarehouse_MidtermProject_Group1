@@ -1,0 +1,8 @@
+﻿Table,Rows,MissingPrimaryKey,DuplicatePrimaryKey
+SalesOrderHeader,31465,0,0
+SalesOrderDetail,121317,0,0
+Product,504,0,0
+ProductSubcategory,37,0,0
+ProductCategory,4,0,0
+Customer,19820,0,0
+SalesTerritory,10,0,0

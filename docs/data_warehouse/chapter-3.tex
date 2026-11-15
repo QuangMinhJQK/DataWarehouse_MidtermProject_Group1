@@ -1,14 +1,18 @@
+% !TEX root = main.tex
+
 \chuong{XÂY DỰNG KHO DỮ LIỆU TRÊN MICROSOFT FABRIC}
 
 \subsection{Kiến trúc tổng thể của giải pháp}
 
 Giải pháp được triển khai hoàn toàn trong một workspace của Microsoft Fabric, nhận dữ liệu từ một cơ sở dữ liệu Azure SQL mô phỏng hệ thống giao dịch và đưa dữ liệu qua ba tầng Bronze, Silver, Gold theo kiến trúc Medallion. Kiến trúc Medallion tổ chức dữ liệu thành nhiều tầng liên tiếp, mỗi tầng nâng dần chất lượng và mức độ sẵn sàng cho phân tích so với tầng trước~\citep{microsoft-medallion}. Hình~\ref{fig:fabric-architecture} mô tả toàn bộ kiến trúc, từ nguồn dữ liệu bên trái, các tầng xử lý trong workspace ở giữa, đến các đối tượng khai thác ở bên phải.
 
-\begin{figure}[H]\centering
-\includegraphics[width=\textwidth,keepaspectratio]{fabric.jpg}
+\begin{landscape}
+\begin{figure}[p]\centering
+\includegraphics[width=0.95\linewidth,height=0.78\textheight,keepaspectratio]{fabric.jpg}
 \caption{Kiến trúc Medallion của giải pháp trên Microsoft Fabric.}
 \label{fig:fabric-architecture}
 \end{figure}
+\end{landscape}
 
 \subsubsection{Kiến trúc Microsoft Fabric}
 
@@ -20,7 +24,27 @@ Kiến trúc gồm ba khối chính. Khối thứ nhất là nguồn dữ liệu
 \item Tầng Gold: một Warehouse chứa các bảng chiều, bảng sự kiện và data mart, cùng một Lakehouse chứa đặc trưng và biến mục tiêu cho học máy (\textit{ML Features, Targets}).
 \end{itemize}
 
-Khối thứ ba là các đối tượng khai thác dữ liệu (\textit{Consumers}). Warehouse tầng Gold được công bố qua một Semantic model, từ đó phục vụ báo cáo Power BI và một Data agent. Ngoài luồng chính, kiến trúc còn có một nhánh học máy: dữ liệu huấn luyện lấy từ Lakehouse tầng Gold được đưa vào Fabric AutoML để huấn luyện mô hình, sau đó kết quả dự báo (\textit{ML result}) được ghi ngược về Lakehouse tầng Gold.
+Khối thứ ba là các đối tượng khai thác dữ liệu (\textit{Consumers}). Warehouse tầng Gold được công bố qua một Semantic model, từ đó phục vụ báo cáo Power BI và Data Agent. Ngoài luồng chính, kiến trúc còn có một nhánh học máy: dữ liệu huấn luyện được chuẩn bị trong Lakehouse tầng Gold, xử lý bởi các notebook và đăng ký thành ML Model; kết quả dự báo sau đó được ghi trở lại Lakehouse tầng Gold.
+
+Các item đang được tổ chức trong workspace theo những nhóm ở Bảng~\ref{tab:fabric-workspace-items}. Lakehouse tự có SQL analytics endpoint cùng tên; các endpoint này là giao diện truy vấn của Lakehouse nên không được xem là một tầng dữ liệu riêng. Tương tự, mỗi bài toán học máy được tính là một cụm logic gồm notebook, experiment và model đăng ký. Các bản notebook có hậu tố số và experiment cũ là bản lặp trong quá trình thử nghiệm, không được tính thành mô hình độc lập.
+
+\anh{fabric-workspace-items.png}{Danh sách các item trong workspace Microsoft Fabric}{fig:fabric-workspace-items}
+
+\begingroup\small
+\begin{table}[H]\centering
+\caption{Các nhóm item chính trong workspace Microsoft Fabric}
+\label{tab:fabric-workspace-items}
+\begin{tabularx}{\textwidth}{|p{2.5cm}|X|X|}\hline
+\textbf{Nhóm} & \textbf{Tên item} & \textbf{Vai trò} \\ \hline
+Lưu trữ & \path{bronze}, \path{silver}, \path{lh_gold_ml}, \path{wh_gold_sales} & Lưu dữ liệu thô, dữ liệu Silver, tập dữ liệu học máy và mô hình chiều Gold \\ \hline
+Biến đổi & \path{CopyJob_1}, \path{df_01_build_stg}, \path{df_02_build_int} & Thu thập dữ liệu nguồn, chuẩn hóa STG và tích hợp INT \\ \hline
+Điều phối & \path{pl_bronze_to_silver_sales}, \path{silver_gold}, \path{pl_prepare_gold_ml}, \path{pl_ml_sales_forecast}, \path{pl_publish_ml_predictions} & Điều phối các chặng Bronze--Silver--Gold và nhánh học máy \\ \hline
+Học máy & \path{nb_automl_demand_7d}, \path{nb_automl_repeat_purchase_30d}, \path{nb_automl_next_category_60d}; \path{ml_model_demand_7d}, \path{ml_model_repeat_purchase_30d}, \path{ml_model_next_category_60d} & Huấn luyện, theo dõi thí nghiệm, đăng ký và chấm điểm ba mô hình \\ \hline
+Khai thác & \path{sm_gold_sales_inventory}, \path{pt_gold_operations} & Cung cấp lớp ngữ nghĩa và báo cáo Power BI \\ \hline
+Hỗ trợ & \path{sliver}, \path{sliver_v2} và các item staging do Dataflow tạo & Cung cấp môi trường thực thi và vùng tạm kỹ thuật \\ \hline
+\end{tabularx}
+\end{table}
+\endgroup
 
 \subsubsection{Luồng dữ liệu trong hệ thống}
 
@@ -31,8 +55,8 @@ Dữ liệu đi qua hệ thống theo các bước sau:
 \item Từ Bronze sang Silver, một Data Pipeline gọi \textit{Data flow} để đọc các bảng thô, chuẩn hóa ở vùng STG rồi tích hợp, áp dụng quy tắc nghiệp vụ ở vùng INT.
 \item Từ Silver sang Gold, một Data Pipeline chạy các \textit{Script} để nạp dữ liệu INT vào các bảng chiều và bảng sự kiện của Warehouse.
 \item Từ Warehouse, dữ liệu được chuyển tiếp sang Lakehouse tầng Gold để tạo tập đặc trưng cho học máy.
-\item Fabric AutoML nhận dữ liệu huấn luyện (\textit{Training Data}) từ Lakehouse tầng Gold, huấn luyện mô hình và trả kết quả dự báo về cùng Lakehouse.
-\item Warehouse tầng Gold được mô hình hóa thành Semantic model để Power BI và Data agent truy vấn.
+\item Ba notebook nhận dữ liệu huấn luyện từ Lakehouse tầng Gold, huấn luyện mô hình cố định, ghi nhận thí nghiệm và đăng ký các ML Model tương ứng; kết quả chấm điểm được trả về cùng Lakehouse.
+\item Warehouse tầng Gold được mô hình hóa thành Semantic model để Power BI và Data Agent truy vấn.
 \end{enumerate}
 
 \subsubsection{Vai trò của OneLake}
@@ -41,7 +65,7 @@ OneLake là lớp lưu trữ dùng chung của Microsoft Fabric, đóng vai trò
 
 \subsubsection{Vai trò của Lakehouse và Data Warehouse}
 
-Giải pháp kết hợp cả hai loại đối tượng lưu trữ, mỗi loại đảm nhận phần việc phù hợp với đặc điểm của nó. Lakehouse được dùng ở tầng Bronze và Silver, nơi dữ liệu còn thay đổi cấu trúc và cần được xử lý linh hoạt bằng pipeline, dataflow hoặc notebook. Lakehouse cũng được dùng ở tầng Gold để chứa đặc trưng học máy, vì dữ liệu này là đầu vào cho notebook và AutoML chứ không phải cho truy vấn báo cáo.
+Giải pháp kết hợp cả hai loại đối tượng lưu trữ, mỗi loại đảm nhận phần việc phù hợp với đặc điểm của nó. Lakehouse được dùng ở tầng Bronze và Silver, nơi dữ liệu còn thay đổi cấu trúc và cần được xử lý linh hoạt bằng pipeline, dataflow hoặc notebook. Lakehouse cũng được dùng ở tầng Gold để chứa đặc trưng, biến mục tiêu và kết quả chấm điểm, vì dữ liệu này phục vụ trực tiếp cho các notebook học máy thay vì truy vấn báo cáo thông thường.
 
 Data Warehouse được dùng ở tầng Gold cho dữ liệu đã chuẩn hóa theo mô hình chiều. Fabric Data Warehouse là lớp dữ liệu quan hệ, hỗ trợ đầy đủ T-SQL và phù hợp với mô hình hình sao~\citep{microsoft-warehouse}, nên thích hợp để chứa bảng sự kiện bán hàng cùng các bảng chiều làm nguồn cho Semantic model.
 
@@ -57,36 +81,46 @@ Dữ liệu gốc của AdventureWorks ở dạng tệp CSV, được chia theo 
 \label{fig:datasource}
 \end{figure}
 
-Từ Azure SQL Database, dữ liệu được đưa vào Fabric bằng một Data Pipeline với hoạt động Copy job, ghi vào Lakehouse tầng Bronze (Hình~\ref{fig:fabric-architecture}).
+Từ Azure SQL Database, dữ liệu được đưa vào Fabric bằng \path{CopyJob_1} và ghi vào Lakehouse \path{bronze}. Kết nối nguồn thuộc loại SQL, sử dụng máy chủ \texttt{adventureworksgroup1.\allowbreak database.\allowbreak windows.\allowbreak net} và cơ sở dữ liệu \texttt{adventureworksnhom1}. Kết nối dùng tài khoản tổ chức, không qua data gateway và bật mã hóa đường truyền; thông tin xác thực không được đưa vào báo cáo.
 
-\todo{Bổ sung: tên server/database (ẩn thông tin nhạy cảm), loại connection trong Fabric, ảnh chụp cấu hình connection và danh sách bảng được chọn.}
+\anh{azure-sql-connection.png}{Cấu hình kết nối từ Microsoft Fabric đến Azure SQL Database}{fig:azure-sql-connection}
 
 \subsubsection{Xây dựng Data Pipeline}
 
-Giải pháp sử dụng ba nhóm hoạt động trong các Data Pipeline, mỗi nhóm đảm nhận một chặng của luồng dữ liệu, như Bảng~\ref{tab:pipelines} tóm tắt.
+Giải pháp sử dụng các pipeline và hoạt động chuyên biệt cho từng chặng, như Bảng~\ref{tab:pipelines} tóm tắt.
 
 \begin{table}[H]\centering
 \caption{Các hoạt động pipeline trong giải pháp}
 \label{tab:pipelines}
-\begin{tabularx}{\textwidth}{|l|l|X|}\hline
-\textbf{Hoạt động} & \textbf{Chặng} & \textbf{Nhiệm vụ} \\ \hline
-Copy job & Azure SQL $\rightarrow$ Bronze & Sao chép các bảng nguồn vào Lakehouse tầng Bronze \\ \hline
-Data flow & Bronze $\rightarrow$ Silver & Chuẩn hóa, tích hợp dữ liệu và áp dụng quy tắc nghiệp vụ \\ \hline
-Script & Silver $\rightarrow$ Gold & Chạy các câu lệnh nạp dữ liệu vào Warehouse \\ \hline
+\begin{tabularx}{\textwidth}{|p{4.2cm}|p{3.5cm}|X|}\hline
+\textbf{Item} & \textbf{Chặng} & \textbf{Nhiệm vụ} \\ \hline
+\path{CopyJob_1} & Azure SQL $\rightarrow$ Bronze & Sao chép các bảng nguồn vào Lakehouse \path{bronze} \\ \hline
+\path{df_01_build_stg} & Bronze $\rightarrow$ STG & Chuẩn hóa cấu trúc và dữ liệu nguồn \\ \hline
+\path{df_02_build_int} & STG $\rightarrow$ INT & Tích hợp bảng và áp dụng quy tắc nghiệp vụ \\ \hline
+\path{silver_gold} & Silver $\rightarrow$ Gold & Nạp dữ liệu đã tích hợp vào Warehouse \path{wh_gold_sales} \\ \hline
+\path{pl_prepare_gold_ml} & Warehouse $\rightarrow$ Lakehouse Gold & Chuẩn bị ba bảng đặc trưng và biến mục tiêu \\ \hline
+\path{pl_ml_sales_forecast} & Huấn luyện và chấm điểm & Điều phối ba notebook và ba ML Model \\ \hline
+\path{pl_publish_ml_predictions} & ML $\rightarrow$ Gold & Công bố kết quả dự báo cho lớp khai thác \\ \hline
 \end{tabularx}
 \end{table}
 
-\todo{Bổ sung: ảnh chụp canvas pipeline, thứ tự và ràng buộc giữa các hoạt động, tham số, cách xử lý lỗi.}
+Ở mức kiến trúc, luồng dữ liệu đi từ các hoạt động thu thập đến Bronze, STG, INT và Warehouse Gold. Từ Gold, một nhánh phục vụ Semantic model và báo cáo; nhánh còn lại chuẩn bị dữ liệu học máy, thực hiện chấm điểm rồi công bố kết quả trở lại tầng Gold. Trong phiên bản hiện tại, quan hệ phụ thuộc được cấu hình bên trong từng quy trình riêng lẻ; các chặng chưa được hợp nhất thành một pipeline điều phối đầu cuối.
+
+\anh{fabric-pipeline-canvas.png}{Canvas minh họa các chặng xử lý dữ liệu trên Microsoft Fabric}{fig:fabric-pipeline-canvas}
 
 \subsubsection{Xây dựng Dataflow Gen2}
 
-Ở chặng Bronze sang Silver, kiến trúc sử dụng \textit{Data flow} để biến đổi dữ liệu thô thành dữ liệu đã chuẩn hóa và tích hợp.
+Trong kiến trúc triển khai, Dataflow Gen2 đảm nhiệm chặng xử lý từ vùng STG đến vùng INT của Lakehouse Silver. Thay vì mô tả riêng từng dataflow, Hình~\ref{fig:dataflow-gen2-general} khái quát chuỗi biến đổi chung được áp dụng cho các nhóm dữ liệu nghiệp vụ. Dữ liệu đã được chuẩn hóa sơ bộ tại STG được đọc vào Dataflow Gen2, kết hợp giữa các bảng liên quan, bổ sung thuộc tính và ghi vào vùng INT để xây dựng tầng Gold.
 
-\todo{Bổ sung: các truy vấn Power Query trong dataflow, các bước làm sạch cụ thể (kiểu dữ liệu, giá trị thiếu, trùng lặp), đích ghi dữ liệu.}
+\anh{chapter3/Datawarehouse.png}{Luồng xử lý tổng quát của Dataflow Gen2 từ STG đến các bảng INT}{fig:dataflow-gen2-general}
 
-\subsubsection{Tự động hóa quá trình tích hợp dữ liệu}
+Luồng xử lý gồm ba nhóm công việc chính. Thứ nhất, bước tích hợp dữ liệu thực hiện các phép nối và mở rộng giữa các thực thể có quan hệ nghiệp vụ, chẳng hạn sản phẩm, khách hàng, đơn hàng, tồn kho, hạn ngạch và lịch sử giá. Nhờ đó, dữ liệu phân tán ở nhiều bảng STG được tổ chức lại thành các tập dữ liệu tích hợp theo chủ đề. Thứ hai, Dataflow Gen2 áp dụng các quy tắc tính toán nghiệp vụ. Các phép tính tiêu biểu gồm xác định giá niêm yết hiện hành từ lịch sử giá, xác định chi phí tiêu chuẩn hiện hành từ lịch sử chi phí và tạo các chỉ tiêu dẫn xuất của giao dịch bán hàng như giá trị đơn hàng, giá trị chiết khấu và giá trị thuần. Thứ ba, dữ liệu đầu ra được kiểm tra về khóa, kiểu dữ liệu, tính nhất quán và khả năng trùng lặp trước khi ghi vào vùng INT.
 
-\todo{Bổ sung: pipeline tổng điều phối ba chặng, lịch chạy, kết quả chạy thử. Nội dung chi tiết nằm ở mục 5.1.}
+Kết quả của quá trình là 17 bảng INT chứa dữ liệu đã được tích hợp, làm giàu và sẵn sàng cho nghiệp vụ. Các khối \path{int_sales}, \path{int_product}, \path{int_customer}, \path{int_order}, \path{int_stock} và \path{int_quota} trong hình đại diện cho các nhóm dữ liệu chính; tên bảng vật lý và số dòng cụ thể được trình bày tại Mục~3.3.2. Cách tổ chức này tạo ranh giới rõ ràng giữa vùng STG, nơi dữ liệu được chuẩn hóa theo nguồn, và vùng INT, nơi dữ liệu được áp dụng quy tắc nghiệp vụ để làm đầu vào thống nhất cho các bảng chiều và bảng sự kiện tại Gold.
+
+\subsubsection{Phạm vi điều phối các quy trình tích hợp dữ liệu}
+
+Các pipeline hiện được xây dựng theo từng nhiệm vụ chuyên biệt: sao chép dữ liệu nguồn vào Bronze, gọi Dataflow để tạo Silver, thực thi các script nạp Gold và xử lý dữ liệu học máy. Cách tách này cho phép kiểm tra từng chặng, nhưng chưa có một pipeline cấp cao để truyền tham số dùng chung, áp dụng lịch chạy thống nhất, quản lý phụ thuộc giữa các chặng và tổng hợp trạng thái lỗi. Đây là giới hạn về tự động hóa đầu cuối của phiên bản hiện tại và được tổng hợp tại Mục~6.3.
 
 \subsection{Xây dựng Lakehouse theo Medallion Architecture}
 
@@ -106,59 +140,371 @@ Gold & Lakehouse & Đặc trưng và biến mục tiêu cho học máy, cùng k�
 
 \subsubsection{Tầng Bronze – dữ liệu nguồn}
 
-Tầng Bronze là một Lakehouse lưu các bảng nguồn ở dạng thô, giữ nguyên cấu trúc của năm lược đồ nguồn. Tầng này chưa áp dụng bất kỳ phép biến đổi nào, nhằm lưu lại một bản sao trung thực của hệ thống nguồn để có thể đối chiếu và chạy lại các bước phía sau khi cần.
+Tầng Bronze là một Lakehouse lưu các bảng nguồn ở dạng thô, giữ nguyên cách tổ chức theo các lược đồ nghiệp vụ của AdventureWorks. Ngoài năm lược đồ chính là \path{HumanResources}, \path{Person}, \path{Production}, \path{Purchasing} và \path{Sales}, tầng này còn có nhóm \path{dbo} chứa các đối tượng dùng chung. Các bảng hệ thống và đối tượng theo dõi truy vấn không được đưa vào thống kê. Phạm vi hiện tại gồm 91 đối tượng với tổng cộng 823.130 dòng; đây là tổng số dòng của danh mục đối tượng, không phải số bản ghi nghiệp vụ phân biệt.
 
-\todo{Bổ sung: danh sách bảng đã nạp, số dòng của từng bảng, ảnh chụp Lakehouse Bronze.}
+\begin{table}[H]\centering
+\caption{Quy mô dữ liệu tại tầng Bronze theo lược đồ nguồn}
+\label{tab:bronze-inventory}
+\begin{tabularx}{0.82\textwidth}{|X|>{\centering\arraybackslash}p{3.2cm}|>{\raggedleft\arraybackslash}p{3.2cm}|}\hline
+\textbf{Lược đồ} & \textbf{Số đối tượng} & \textbf{Tổng số dòng} \\ \hline
+\path{HumanResources} & 12 & 1.869 \\ \hline
+\path{Person} & 15 & 141.441 \\ \hline
+\path{Production} & 27 & 351.783 \\ \hline
+\path{Purchasing} & 7 & 13.686 \\ \hline
+\path{Sales} & 26 & 294.412 \\ \hline
+\path{dbo} & 4 & 19.939 \\ \hline
+\textbf{Tổng cộng} & \textbf{91} & \textbf{823.130} \\ \hline
+\end{tabularx}
+\end{table}
+
+Trong nhóm dữ liệu bán hàng, các bảng có vai trò trực tiếp đối với luồng phân tích gồm \path{SalesOrderHeader} với 31.465 dòng, \path{SalesOrderDetail} với 121.317 dòng, \path{Customer} với 19.820 dòng và \path{Product} với 504 dòng. Việc lưu dữ liệu ở mức chi tiết này tạo cơ sở để đối chiếu số lượng bản ghi khi dữ liệu đi qua STG, INT và các bảng sự kiện tại Gold.
+
+\anh{bronze-inventory.png}{Danh mục bảng và số dòng tại Lakehouse Bronze}{fig:bronze-inventory}
 
 \subsubsection{Tầng Silver – dữ liệu làm sạch và chuyển đổi}
 
-Tầng Silver là một Lakehouse chia thành hai vùng xử lý. Vùng STG (\textit{Data Standardization}) chuẩn hóa dữ liệu từ Bronze, như thống nhất kiểu dữ liệu và định dạng. Vùng INT (\textit{Data Integration \& Business Rules}) tích hợp dữ liệu giữa các bảng và áp dụng các quy tắc nghiệp vụ, tạo ra dữ liệu sẵn sàng cho việc xây dựng mô hình chiều.
+Tầng Silver là một Lakehouse được chia thành hai vùng xử lý. Vùng STG (\textit{Data Standardization}) gồm 24 bảng, tiếp nhận các thực thể cần thiết từ Bronze và đưa chúng về cấu trúc thống nhất. Vùng INT (\textit{Data Integration \& Business Rules}) gồm 17 bảng, tổ chức lại dữ liệu theo các chủ đề phục vụ mô hình chiều và phân tích. Tổng số dòng trong danh mục STG là 230.129 và trong danh mục INT là 209.903; chênh lệch giữa hai tổng này phản ánh số lượng và phạm vi bảng khác nhau, vì vậy không được hiểu là số dòng bị loại bỏ trong một phép tải duy nhất.
 
-\todo{Bổ sung: quy tắc chuẩn hóa ở STG, quy tắc nghiệp vụ ở INT (ví dụ định nghĩa doanh thu, trạng thái đơn hàng), các bảng Silver kết quả.}
+\begingroup
+\footnotesize
+\renewcommand{\arraystretch}{1.08}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{5.1cm}|>{\raggedleft\arraybackslash}p{1.7cm}|>{\raggedright\arraybackslash}p{5.1cm}|>{\raggedleft\arraybackslash}p{1.7cm}|}
+\caption{Danh mục bảng và số dòng tại tầng Silver}\label{tab:silver-inventory}\\ \hline
+\multicolumn{2}{|c|}{\textbf{STG}} & \multicolumn{2}{c|}{\textbf{INT}} \\ \hline
+\textbf{Bảng} & \textbf{Số dòng} & \textbf{Bảng} & \textbf{Số dòng} \\ \hline
+\endfirsthead
+\multicolumn{4}{c}{\textit{Bảng~\ref{tab:silver-inventory} (tiếp theo)}}\\ \hline
+\multicolumn{2}{|c|}{\textbf{STG}} & \multicolumn{2}{c|}{\textbf{INT}} \\ \hline
+\textbf{Bảng} & \textbf{Số dòng} & \textbf{Bảng} & \textbf{Số dòng} \\ \hline
+\endhead
+\path{stg_address} & 19.614 & \path{int_currency} & 105 \\ \hline
+\path{stg_country_region} & 238 & \path{int_currency_rate} & 13.532 \\ \hline
+\path{stg_currency} & 105 & \path{int_customer} & 19.820 \\ \hline
+\path{stg_currency_rate} & 13.532 & \path{int_geography} & 19.614 \\ \hline
+\path{stg_customer} & 19.820 & \path{int_inventory_by_location} & 1.069 \\ \hline
+\path{stg_location} & 14 & \path{int_inventory_by_product} & 432 \\ \hline
+\path{stg_person} & 19.972 & \path{int_product} & 504 \\ \hline
+\path{stg_product} & 504 & \path{int_product_cost_history} & 395 \\ \hline
+\path{stg_product_category} & 4 & \path{int_product_price_history} & 395 \\ \hline
+\path{stg_product_cost_history} & 395 & \path{int_product_stock_status} & 504 \\ \hline
+\path{stg_product_inventory} & 1.069 & \path{int_sales_order_lines} & 121.317 \\ \hline
+\path{stg_product_list_price_history} & 395 & \path{int_sales_orders} & 31.465 \\ \hline
+\path{stg_product_subcategory} & 37 & \path{int_sales_person} & 17 \\ \hline
+\path{stg_sales_order_detail} & 121.317 & \path{int_sales_person_quota_history} & 163 \\ \hline
+\path{stg_sales_order_header} & 31.465 & \path{int_sales_territory_history} & 17 \\ \hline
+\path{stg_sales_person} & 17 & \path{int_special_offer_products} & 538 \\ \hline
+\path{stg_sales_person_quota_history} & 163 & \path{int_special_offers} & 16 \\ \hline
+\path{stg_sales_territory} & 10 & & \\ \hline
+\path{stg_sales_territory_history} & 17 & & \\ \hline
+\path{stg_ship_method} & 5 & & \\ \hline
+\path{stg_special_offer} & 16 & & \\ \hline
+\path{stg_special_offer_product} & 538 & & \\ \hline
+\path{stg_state_province} & 181 & & \\ \hline
+\path{stg_store} & 701 & & \\ \hline
+\textbf{Tổng cộng} & \textbf{230.129} & \textbf{Tổng cộng} & \textbf{209.903} \\ \hline
+\end{longtable}
+\endgroup
+
+Số dòng của các thực thể cốt lõi được duy trì nhất quán qua các vùng tương ứng: đơn hàng có 31.465 dòng tại Bronze, \path{stg_sales_order_header} và \path{int_sales_orders}; chi tiết đơn hàng có 121.317 dòng tại Bronze, \path{stg_sales_order_detail} và \path{int_sales_order_lines}. Tương tự, khách hàng duy trì 19.820 dòng và sản phẩm duy trì 504 dòng từ nguồn đến INT. Kết quả này tạo một điểm kiểm soát ban đầu về tính đầy đủ của dữ liệu trước khi nạp sang Gold, nhưng chưa thay thế các kiểm tra về khóa, giá trị null, trùng lặp và tính đúng đắn của quy tắc nghiệp vụ.
+
+\anh{silver-inventory.png}{Cấu trúc STG và INT trong Lakehouse Silver}{fig:silver-inventory}
 
 \subsubsection{Tầng Gold – dữ liệu được chuẩn hóa phục vụ phân tích}
 
-Tầng Gold gồm hai đối tượng với hai mục đích khác nhau. Warehouse chứa các bảng chiều, bảng sự kiện và data mart theo mô hình chiều, là nguồn của Semantic model. Lakehouse chứa đặc trưng và biến mục tiêu cho học máy, đồng thời nhận kết quả dự báo từ mô hình để các báo cáo có thể khai thác cùng với dữ liệu lịch sử.
+Tầng Gold gồm hai đối tượng với hai mục đích khác nhau. Warehouse \path{wh_gold_sales} có 77 đối tượng nghiệp vụ với tổng cộng 1.842.655 dòng, trong đó phần lõi của mô hình chiều gồm 10 bảng chiều, 11 bảng sự kiện và 10 data mart chính. Lakehouse \path{lh_gold_ml} lưu ba bảng dữ liệu dạng rộng với tổng cộng 482.554 dòng, phục vụ ba bài toán học máy. Các bảng hệ thống và đối tượng theo dõi truy vấn không được đưa vào thống kê. Tương tự các tầng trước, tổng số dòng tại Warehouse là số liệu kiểm kê trên nhiều bảng và khung nhìn có quan hệ với nhau, không phải số bản ghi nghiệp vụ phân biệt.
 
-\todo{Bổ sung: danh sách bảng Gold, ảnh chụp Warehouse và Lakehouse Gold.}
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{table}[H]\centering
+\caption{Danh mục bảng chiều và bảng sự kiện tại Gold}
+\label{tab:gold-dim-fact}
+\begin{tabularx}{\textwidth}{|X|>{\raggedleft\arraybackslash}p{1.8cm}|X|>{\raggedleft\arraybackslash}p{1.8cm}|}\hline
+\multicolumn{2}{|c|}{\textbf{Dimension}} & \multicolumn{2}{c|}{\textbf{Fact}} \\ \hline
+\textbf{Bảng} & \textbf{Số dòng} & \textbf{Bảng} & \textbf{Số dòng} \\ \hline
+\path{currency} & 105 & \path{currency_rate} & 13.532 \\ \hline
+\path{customer} & 19.820 & \path{inventory_current} & 1.069 \\ \hline
+\path{date} & 1.139 & \path{inventory_daily_snapshot} & 0 \\ \hline
+\path{geography} & 19.615 & \path{inventory_product_current} & 504 \\ \hline
+\path{location} & 14 & \path{offer_product} & 538 \\ \hline
+\path{product} & 504 & \path{product_cost_history} & 395 \\ \hline
+\path{product_eligibility} & 504 & \path{product_price_history} & 395 \\ \hline
+\path{sales_person} & 18 & \path{sales_order} & 31.465 \\ \hline
+\path{special_offer} & 16 & \path{sales_order_line} & 121.317 \\ \hline
+\path{territory} & 11 & \path{sales_quota} & 163 \\ \hline
+& & \path{sales_territory_assignment} & 17 \\ \hline
+\textbf{Tổng cộng} & \textbf{41.746} & \textbf{Tổng cộng} & \textbf{169.395} \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]\centering
+\caption{Danh mục data mart và bảng dữ liệu học máy tại Gold}
+\label{tab:gold-mart-ml}
+\begin{tabularx}{\textwidth}{|X|>{\raggedleft\arraybackslash}p{1.8cm}|X|>{\raggedleft\arraybackslash}p{1.8cm}|}\hline
+\multicolumn{2}{|c|}{\textbf{Data mart}} & \multicolumn{2}{c|}{\textbf{Bảng dữ liệu học máy}} \\ \hline
+\textbf{Đối tượng} & \textbf{Số dòng} & \textbf{Bảng} & \textbf{Số dòng} \\ \hline
+\path{customer_performance} & 19.119 & \path{ml_wide_demand_7d} & 141.457 \\ \hline
+\path{customer_rfm_current} & 19.119 & \path{ml_wide_next_category_60d} & 37.261 \\ \hline
+\path{data_health} & 1 & \path{ml_wide_repeat_30d} & 303.836 \\ \hline
+\path{inventory_product_current} & 504 & & \\ \hline
+\path{offer_performance} & 12 & & \\ \hline
+\path{order_operations} & 31.465 & & \\ \hline
+\path{price_realization} & 121.317 & & \\ \hline
+\path{quota_performance} & 192 & & \\ \hline
+\path{sales_line_approved} & 121.317 & & \\ \hline
+\path{sales_product_day} & 69.202 & & \\ \hline
+\textbf{Tổng cộng} & \textbf{382.248} & \textbf{Tổng cộng} & \textbf{482.554} \\ \hline
+\end{tabularx}
+\end{table}
+\endgroup
+
+Các bảng \path{sales_order} và \path{sales_order_line} lần lượt có 31.465 và 121.317 dòng, tương ứng với số dòng của thực thể đơn hàng và chi tiết đơn hàng tại INT. Bảng \path{inventory_daily_snapshot} hiện chưa có dữ liệu; trạng thái này được ghi nhận như hiện trạng của danh mục, không được xem là lỗi tải khi chưa có thông tin về lịch tạo ảnh chụp tồn kho. Tổng số dòng của các data mart và bảng dữ liệu học máy cũng là số liệu kiểm kê theo từng đối tượng, không đại diện cho số giao dịch phân biệt vì một giao dịch có thể xuất hiện trong nhiều tập dữ liệu phục vụ các mục tiêu phân tích khác nhau.
+
+\anh{gold-warehouse-inventory.png}{Danh mục dimension, fact và data mart trong Warehouse Gold}{fig:gold-warehouse-inventory}
+\anh{gold-ml-inventory.png}{Các bảng dữ liệu dạng rộng trong Lakehouse Gold}{fig:gold-ml-inventory}
 
 \subsubsection{Luồng chuyển đổi dữ liệu giữa các tầng}
 
-Dữ liệu chỉ đi theo một chiều chính từ Bronze sang Silver rồi sang Gold: Data flow đảm nhận chặng Bronze sang Silver, các Script đảm nhận chặng Silver sang Gold (Bảng~\ref{tab:pipelines}). Riêng tầng Gold có thêm một vòng phụ cho học máy, trong đó dữ liệu huấn luyện đi ra khỏi Lakehouse tầng Gold và kết quả dự báo quay trở lại cùng Lakehouse.
+Dữ liệu đi theo một chiều chính từ Bronze sang STG, tiếp tục qua INT và được nạp vào Warehouse Gold. Bronze duy trì dữ liệu nguồn; STG tạo lớp dữ liệu chuẩn hóa; INT tổ chức dữ liệu theo các chủ đề tích hợp; Gold cung cấp mô hình chiều, data mart và các bảng dạng rộng cho học máy. Đối với các thực thể bán hàng cốt lõi, số dòng quan sát được duy trì xuyên suốt các tầng, nhờ đó có thể đối chiếu phạm vi dữ liệu trước và sau từng chặng. Riêng tầng Gold có thêm một nhánh học máy: dữ liệu đầu vào được chuẩn bị tại Lakehouse Gold và kết quả dự báo được công bố trở lại lớp khai thác.
+
+Trên cơ sở cấu trúc này, quá trình chuyển từ Silver sang Gold được thiết kế như một lần công bố dữ liệu có kiểm soát. Mỗi lần nạp gắn với một phiên dữ liệu nguồn cụ thể, một chính sách nghiệp vụ đã được phê duyệt và một tập các phép kiểm tra bắt buộc. Cách tiếp cận này giúp mô hình chiều và các bảng phục vụ báo cáo chỉ được cập nhật khi dữ liệu đầu vào và kết quả biến đổi đáp ứng đầy đủ điều kiện chất lượng.
 
 \subsection{Thiết kế Data Warehouse cho hoạt động bán hàng}
 
 \subsubsection{Xác định Business Process và Grain}
-\todo{Quy trình bán hàng; grain: một dòng cho mỗi SalesOrderDetailID (đã nêu ở mục 2.5.2).}
+
+Quy trình trung tâm của Data Warehouse là phân tích bán hàng, bắt đầu từ đơn hàng và các dòng sản phẩm thuộc đơn. Ngày ghi nhận doanh thu là \textit{order date}; \textit{due date} và \textit{ship date} vẫn được lưu để phân tích tiến độ thực hiện đơn hàng. Doanh thu chỉ được đưa vào lớp phân tích khi trạng thái đơn đáp ứng chính sách đang có hiệu lực. Với chính sách hiện tại, trạng thái 5--\textit{Shipped} được tính vào doanh thu, còn các trạng thái khác bị loại khỏi tập doanh thu được công bố.
+
+Hai mức hạt bán hàng được duy trì song song. Mức chi tiết chính là một dòng cho mỗi cặp \textit{sales order} và \textit{sales order detail}; mức tiêu đề là một dòng cho mỗi đơn hàng. Việc tách hai mức hạt giúp các khoản \textit{tax}, \textit{freight} và \textit{total due} được giữ đúng ở cấp đơn, tránh lặp lại trên từng dòng sản phẩm. Bên cạnh bán hàng, mô hình còn bao phủ tồn kho hiện tại, lịch sử giá và chi phí, khuyến mại, hạn ngạch, phân công lãnh thổ và tỷ giá.
+
+\begin{table}[H]\centering
+\caption{Mức hạt của các nhóm dữ liệu nghiệp vụ}
+\label{tab:gold-grain}
+\begin{tabularx}{\textwidth}{|p{3.7cm}|p{5.2cm}|X|}\hline
+\textbf{Nhóm dữ liệu} & \textbf{Mức hạt} & \textbf{Vai trò phân tích} \\ \hline
+Đơn hàng & Một dòng cho mỗi \textit{sales order} & Theo dõi trạng thái, khách hàng, các mốc thời gian và tổng tiền ở cấp đơn \\ \hline
+Chi tiết bán hàng & Một dòng cho mỗi cặp \textit{sales order}--\textit{sales order detail} & Phân tích số lượng, giá, chiết khấu, doanh thu, chi phí ước tính và biên lợi nhuận theo sản phẩm \\ \hline
+Tồn kho & Một dòng cho mỗi sản phẩm--địa điểm; đồng thời có một bản tổng hợp cho mỗi sản phẩm & Theo dõi số lượng hiện có và trạng thái so với ngưỡng tồn kho \\ \hline
+Lịch sử và chính sách & Một dòng cho mỗi thực thể và khoảng hiệu lực hoặc ngày nghiệp vụ & Phân tích biến động giá, chi phí, lãnh thổ, hạn ngạch và tỷ giá \\ \hline
+\end{tabularx}
+\end{table}
+
+Các phép tính tiền được chuẩn hóa theo cùng một quy tắc. Ở cấp dòng, \textit{net line amount} bằng \textit{gross line amount} trừ \textit{discount amount} và phải khớp với \textit{line total} của nguồn trong sai số cho phép. Ở cấp đơn, \textit{subtotal} phải bằng tổng tiền thuần của các dòng; \textit{total due} bằng \textit{subtotal} cộng thuế và phí vận chuyển. Quy tắc xử lý hoàn trả chưa có bằng chứng nghiệp vụ đầy đủ nên nằm ngoài phạm vi đã xác nhận của mô hình hiện tại.
+
 \subsubsection{Xây dựng Bus Matrix}
-\todo{Bus matrix: quy trình bán hàng $\times$ các chiều thời gian, sản phẩm, khách hàng, lãnh thổ, kênh bán.}
+
+Bus Matrix trong Bảng~\ref{tab:gold-bus-matrix} thể hiện các chiều dùng chung giữa những quy trình chính. Ký hiệu ``X'' cho biết chiều tham gia trực tiếp vào nhóm dữ liệu tương ứng. Kênh bán được giữ bằng thuộc tính \textit{online order flag}, qua đó phân biệt đơn trực tuyến với đơn thuộc kênh bán lại theo ngữ nghĩa của cờ nguồn.
+
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{table}[H]\centering
+\caption{Bus Matrix của Data Warehouse tầng Gold}
+\label{tab:gold-bus-matrix}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|*{10}{>{\centering\arraybackslash}p{1cm}|}}\hline
+\textbf{Quy trình} & \textbf{Ngày} & \textbf{SP} & \textbf{KH} & \textbf{LT} & \textbf{KB} & \textbf{ĐL} & \textbf{NV} & \textbf{ƯĐ} & \textbf{ĐĐ} & \textbf{TT} \\ \hline
+Đơn hàng & X &  & X & X & X & X & X &  &  &  \\ \hline
+Chi tiết bán hàng & X & X & X & X & X &  & X & X &  & X \\ \hline
+Tồn kho & X & X &  &  &  &  &  &  & X &  \\ \hline
+Giá và chi phí & X & X &  &  &  &  &  &  &  & X \\ \hline
+Khuyến mại & X & X &  &  &  &  &  & X &  &  \\ \hline
+Hạn ngạch & X &  &  &  &  &  & X &  &  &  \\ \hline
+Phân công lãnh thổ & X &  &  & X &  &  & X &  &  &  \\ \hline
+\end{tabular}
+\end{table}
+\noindent\textit{Chú thích:} SP -- sản phẩm; KH -- khách hàng; LT -- lãnh thổ; KB -- kênh bán; ĐL -- địa lý; NV -- nhân viên bán hàng; ƯĐ -- ưu đãi; ĐĐ -- địa điểm; TT -- tiền tệ.
+\endgroup
+
 \subsubsection{Thiết kế Dimension Tables}
-\todo{Danh sách chiều, khóa thay thế, thuộc tính.}
+
+Các bảng chiều cung cấp ngữ cảnh mô tả ổn định cho dữ liệu sự kiện. Nhóm chiều cốt lõi gồm ngày, sản phẩm, khách hàng, lãnh thổ, địa lý, nhân viên bán hàng, ưu đãi đặc biệt, địa điểm, điều kiện đủ của sản phẩm và tiền tệ. Chiều ngày bao phủ từ ngày đặt hàng nhỏ nhất đến ngày lớn nhất xuất hiện trong đặt hàng, đến hạn, giao hàng hoặc ảnh chụp tồn kho. Các thuộc tính sản phẩm, khách hàng và tổ chức bán hàng phục vụ phân nhóm trong Semantic Model và các data mart.
+
+Trong phiên bản hiện tại, phần lớn cột mang hậu tố \textit{key} sử dụng lại định danh nghiệp vụ từ nguồn, chưa phải khóa thay thế được sinh độc lập. Ba chiều nhân viên bán hàng, lãnh thổ và địa lý có thêm thành viên chưa xác định với khóa $-1$ để tiếp nhận các quan hệ bị thiếu mà không làm mất bản ghi sự kiện. Các chiều được nạp lại toàn bộ nên phản ánh trạng thái hiện hành, gần với cách xử lý Slowly Changing Dimension loại 1. Những thay đổi cần lưu lịch sử như giá sản phẩm, chi phí sản phẩm và phân công lãnh thổ được tách sang các bảng lịch sử có khoảng hiệu lực.
+
+\begin{table}[H]\centering
+\caption{Các nhóm bảng chiều tại tầng Gold}
+\label{tab:gold-dimensions-design}
+\begin{tabularx}{\textwidth}{|p{4.3cm}|X|}\hline
+\textbf{Bảng chiều} & \textbf{Nội dung chính} \\ \hline
+\path{dim.date} & Ngày đầy đủ, năm, quý, tháng và các thuộc tính lịch dùng chung \\ \hline
+\path{dim.product}, \path{dim.product_eligibility} & Thông tin sản phẩm, phân cấp sản phẩm và khoảng thời gian đủ điều kiện phân tích \\ \hline
+\path{dim.customer} & Thông tin khách hàng và loại khách hàng phục vụ phân đoạn \\ \hline
+\path{dim.territory}, \path{dim.geography} & Cấu trúc lãnh thổ bán hàng và địa lý hóa đơn, giao hàng \\ \hline
+\path{dim.sales_person} & Nhân viên bán hàng và thông tin tổ chức liên quan \\ \hline
+\path{dim.special_offer} & Loại ưu đãi, mức chiết khấu và khoảng hiệu lực \\ \hline
+\path{dim.location} & Địa điểm lưu kho \\ \hline
+\path{dim.currency} & Danh mục tiền tệ dùng cho quy đổi và báo cáo \\ \hline
+\end{tabularx}
+\end{table}
+
 \subsubsection{Thiết kế Fact Tables}
-\todo{Bảng sự kiện, số đo, khóa ngoại.}
+
+Bảng \path{fact.sales_order_line} là trung tâm phân tích doanh thu. Bảng lưu số lượng, đơn giá, tỷ lệ chiết khấu, tiền gộp, tiền chiết khấu, tiền thuần và giá trị dòng từ nguồn. Chi phí chuẩn tại thời điểm đặt hàng được ghép theo sản phẩm và ngày hiệu lực; từ đó tính \textit{estimated standard cost amount} và \textit{estimated standard margin amount}. Bảng \path{fact.sales_order} giữ các chỉ tiêu cấp tiêu đề, còn \path{fact.inventory_current} giữ tồn kho ở mức sản phẩm--địa điểm.
+
+Các bảng sự kiện bổ trợ gồm lịch sử giá, lịch sử chi phí, quan hệ ưu đãi--sản phẩm, hạn ngạch bán hàng, lịch sử phân công lãnh thổ, tỷ giá, tồn kho tổng hợp theo sản phẩm và ảnh chụp tồn kho theo ngày. Ảnh chụp tồn kho chỉ được tạo cho đúng ngày quan sát thực tế; hệ thống không tự suy diễn dữ liệu lịch sử. Chính sách tiền tệ khai báo đồng tiền nguồn và đồng tiền báo cáo. Khi hai đồng tiền giống nhau, tỷ giá bằng 1; ngược lại, giá trị báo cáo sử dụng \textit{average rate} theo ngày và cặp tiền tệ.
+
+\begin{table}[H]\centering
+\caption{Các nhóm bảng sự kiện tại tầng Gold}
+\label{tab:gold-facts-design}
+\begin{tabularx}{\textwidth}{|p{4.5cm}|X|}\hline
+\textbf{Bảng sự kiện} & \textbf{Số đo hoặc nội dung} \\ \hline
+\path{fact.sales_order} & Tiền hàng, thuế, phí vận chuyển, tổng phải thu và các mốc xử lý đơn \\ \hline
+\path{fact.sales_order_line} & Số lượng, giá, chiết khấu, doanh thu thuần, chi phí chuẩn và biên lợi nhuận ước tính \\ \hline
+\path{fact.inventory_current}, \path{fact.inventory_product_current} & Số lượng theo địa điểm và tổng hợp trạng thái tồn kho theo sản phẩm \\ \hline
+\path{fact.product_price_history}, \path{fact.product_cost_history} & Giá niêm yết và chi phí chuẩn theo khoảng hiệu lực \\ \hline
+\path{fact.offer_product}, \path{fact.sales_quota}, \path{fact.sales_territory_assignment} & Phạm vi ưu đãi, hạn ngạch và lịch sử phân công bán hàng \\ \hline
+\path{fact.currency_rate} & Tỷ giá trung bình và tỷ giá cuối ngày theo cặp tiền tệ \\ \hline
+\path{fact.inventory_daily_snapshot} & Ảnh chụp tồn kho theo ngày quan sát đã xác nhận \\ \hline
+\end{tabularx}
+\end{table}
+
 \subsubsection{Xây dựng mô hình Star Schema}
-\todo{Sơ đồ hình sao.}
+
+Mô hình hình sao được tổ chức quanh hai bảng bán hàng có mức hạt khác nhau. \path{fact.sales_order_line} liên kết trực tiếp với các chiều ngày, sản phẩm, khách hàng, lãnh thổ, nhân viên bán hàng và ưu đãi; \path{fact.sales_order} liên kết với ngày đặt, ngày đến hạn, ngày giao, khách hàng, lãnh thổ, nhân viên bán hàng và địa lý hóa đơn, giao hàng. Các bảng tồn kho, hạn ngạch và lịch sử dùng lại những chiều phù hợp, nhờ đó duy trì cách diễn giải nhất quán giữa các chủ đề phân tích.
+
+Hình~\ref{fig:semantic-model-sales-relationships} minh họa cách cấu trúc này được biểu diễn ở lớp Semantic Model. Ảnh là một trích đoạn từ mô hình tổng thể, tập trung vào bảng \path{Sales} và các bảng liên quan; các nhánh dữ liệu khác không nằm trong phạm vi của hình.
+
+\anh{semantic-model-sales-relationships.png}{Trích đoạn Semantic Model tập trung vào bảng Sales và các bảng liên quan}{fig:semantic-model-sales-relationships}
 
 \subsection{Xây dựng Fabric Data Warehouse}
 
 \subsubsection{Tạo và cấu hình Data Warehouse}
-\todo{Tạo Warehouse trong workspace, đặt tên, cấu hình.}
+
+Warehouse \path{wh_gold_sales} được tổ chức thành các schema theo chức năng: \path{src} cung cấp khung nhìn đến dữ liệu INT; \path{dim} và \path{fact} chứa mô hình chiều; \path{mart} và \path{rpt} cung cấp dữ liệu đã được định hình cho lớp khai thác; \path{ref} lưu chính sách và ánh xạ nghiệp vụ; \path{ops} theo dõi phiên nạp, manifest, công bố và kết quả kiểm tra chất lượng. Các schema \path{ml} và \path{agent} hỗ trợ kết quả học máy và truy vấn qua Data Agent. Cách tách schema giúp phân biệt dữ liệu nguồn, dữ liệu lõi, dữ liệu công bố và dữ liệu vận hành trong cùng Warehouse.
+
 \subsubsection{Xây dựng các bảng Dimension}
-\todo{Script tạo bảng chiều.}
+
+Các bảng chiều được tạo trước các bảng sự kiện để cung cấp miền khóa tham chiếu. Khi nạp, chiều ngày được sinh theo khoảng ngày thực tế; các chiều sản phẩm, khách hàng, lãnh thổ, địa lý, nhân viên, ưu đãi và địa điểm được tái tạo từ vùng INT. Sau khi dữ liệu nguồn được nạp, thành viên $-1$ được bổ sung cho các chiều cho phép giá trị chưa xác định. Chiều điều kiện sản phẩm và chiều tiền tệ được cập nhật trong cùng phiên công bố để bảo đảm các phép lọc và quy đổi sử dụng một chính sách nhất quán.
+
 \subsubsection{Xây dựng các bảng Fact}
-\todo{Script tạo bảng sự kiện.}
+
+Các bảng sự kiện bán hàng được nạp sau các chiều. Dữ liệu tiêu đề đơn hàng tạo \path{fact.sales_order}; dữ liệu chi tiết được kết hợp với tiêu đề và lịch sử chi phí để tạo \path{fact.sales_order_line}. Tồn kho được duy trì ở cả mức sản phẩm--địa điểm và mức tổng hợp sản phẩm. Các bảng lịch sử, hạn ngạch, phân công lãnh thổ, tỷ giá và quan hệ ưu đãi được nạp tiếp theo, sau đó mới tạo data mart và các bảng báo cáo. Trình tự này bảo đảm mọi phép tổng hợp được thực hiện trên một phiên dữ liệu Gold đã đồng nhất.
+
 \subsubsection{Thiết lập khóa và mối quan hệ}
-\todo{Khóa chính, khóa ngoại.}
+
+Khóa nghiệp vụ xác định duy nhất từng mức hạt: \textit{sales order id} cho tiêu đề; cặp \textit{sales order id--sales order detail id} cho chi tiết; cặp sản phẩm--địa điểm cho tồn kho; và tổ hợp thực thể--ngày hoặc khoảng hiệu lực cho dữ liệu lịch sử. Quan hệ logic giữa fact và dimension được kiểm tra trong quy trình nạp, bao gồm các khóa ngày, sản phẩm, khách hàng, lãnh thổ, nhân viên, địa lý, ưu đãi, địa điểm và tiền tệ. Bản ghi thiếu quan hệ ở các trường được phép sẽ quy về thành viên $-1$; các vi phạm còn lại làm phiên nạp thất bại.
+
 \subsubsection{Nạp và đồng bộ dữ liệu}
-\todo{Script nạp dữ liệu từ Silver vào Warehouse.}
+
+Quá trình Silver--Gold gồm hai bước chính. Trước hết, phiên Silver được đăng ký thành một manifest bất biến. Manifest ghi nhận mã phiên nguồn, ngày nghiệp vụ hoàn tất, thời điểm quan sát tồn kho và số dòng của đúng 17 bảng INT. Hệ thống từ chối mã phiên đã sử dụng, thời điểm quan sát trong tương lai hoặc manifest thiếu nguồn bắt buộc. Tiếp theo, phiên Gold chỉ được khởi chạy khi chính sách nghiệp vụ tồn tại duy nhất và đã ở trạng thái được phép công bố. Số dòng hiện tại của từng bảng INT phải khớp với manifest trước khi biến đổi bắt đầu.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth,keepaspectratio]{silver-to-gold-pipeline.png}
+\caption{Pipeline điều phối quá trình nạp và kiểm tra dữ liệu từ Silver sang Gold}
+\label{fig:silver-to-gold-pipeline}
+\end{figure}
+
+Như thể hiện trong Hình~\ref{fig:silver-to-gold-pipeline}, pipeline lần lượt đăng ký Silver, nạp Gold, kiểm tra kết quả và kết thúc thành công. Nếu bước xác thực không đạt, nhánh lỗi chuyển sang hoạt động kết thúc thất bại. Bên trong bước nạp Gold, dữ liệu chiều, sự kiện, data mart và bảng báo cáo được làm mới bằng chiến lược xóa rồi nạp lại trong một giao dịch. Dữ liệu chỉ được ghi nhận là đã công bố sau khi toàn bộ cổng chất lượng bắt buộc vượt qua; nếu xảy ra lỗi, giao dịch được hoàn tác, phiên chạy mang trạng thái \textit{FAILED} và lỗi được ghi vào lớp vận hành.
+
+\begin{table}[H]\centering
+\caption{Các cổng kiểm soát chất lượng trong quá trình nạp Gold}
+\label{tab:gold-dq-gates}
+\begin{tabularx}{\textwidth}{|p{4.2cm}|X|}\hline
+\textbf{Nhóm kiểm tra} & \textbf{Điều kiện kiểm soát} \\ \hline
+Khóa và tính duy nhất & Không có khóa bắt buộc bị null, trùng khóa ở nguồn hoặc trùng mức hạt trong bảng đích \\ \hline
+Toàn vẹn quan hệ & Chi tiết phải có tiêu đề; khóa từ fact phải tồn tại trong chiều tương ứng hoặc dùng thành viên chưa xác định được cho phép \\ \hline
+Đối chiếu số dòng & Số dòng của 17 nguồn INT phải khớp manifest; các bảng bán hàng và tồn kho phải khớp phạm vi nguồn sau nạp \\ \hline
+Đối chiếu tiền & Tiền gộp trừ chiết khấu bằng tiền thuần; tiền thuần bằng giá trị dòng nguồn; tổng dòng bằng \textit{subtotal}; \textit{subtotal} cộng thuế và vận chuyển bằng \textit{total due} \\ \hline
+Tồn kho & Tổng số lượng theo địa điểm phải khớp tổng hợp theo sản phẩm; trạng thái tồn kho phải phù hợp với ngưỡng an toàn và điểm đặt hàng lại \\ \hline
+Lịch sử và tỷ giá & Khoảng hiệu lực giá, chi phí, lãnh thổ và hạn ngạch phải hợp lệ; tỷ giá dương và cặp tiền tệ theo ngày không trùng \\ \hline
+Công bố & Chỉ cập nhật bản công bố và các bảng báo cáo sau khi mọi kiểm tra chặn đã đạt; lỗi bất kỳ làm hoàn tác toàn bộ giao dịch \\ \hline
+\end{tabularx}
+\end{table}
 
 \subsection{Xây dựng Semantic Model}
 
 \subsubsection{Thiết kế mô hình dữ liệu phân tích}
-\todo{Semantic model tạo trên Warehouse tầng Gold, các bảng được đưa vào.}
+
+Semantic Model được xây dựng như lớp ngữ nghĩa dùng chung giữa dữ liệu tầng Gold và các công cụ khai thác. Mô hình hiện gồm 18 bảng, bao phủ dữ liệu bán hàng, đơn hàng, sản phẩm, khách hàng, tồn kho, hạn ngạch, khuyến mại, dự báo và các tập dữ liệu hỗ trợ học máy. Cách tổ chức này cho phép báo cáo sử dụng các thực thể và chỉ tiêu đã định nghĩa thống nhất, thay vì thiết lập lại logic phân tích tại từng trang báo cáo.
+
+\begin{table}[H]\centering
+\caption{Các bảng trong Semantic Model}
+\label{tab:semantic-model-tables}
+\begin{tabularx}{\textwidth}{|p{3.8cm}|X|}\hline
+\textbf{Nhóm dữ liệu} & \textbf{Bảng} \\ \hline
+Chiều phân tích & \path{customer}, \path{date}, \path{product}, \path{sales_person}, \path{special_offer}, \path{territory} \\ \hline
+Bán hàng và vận hành & \path{Sales}, \path{OrdersHeader}, \path{Offer}, \path{Price}, \path{Quota}, \path{Stock} \\ \hline
+Phân tích và học máy & \path{CustomerRFM}, \path{DataHealth}, \path{Forecast}, \path{MLDemand7d}, \path{MLNextCategoryFeatures}, \path{MLRepeatFeatures} \\ \hline
+\end{tabularx}
+\end{table}
+
+Trong đó, \path{Sales} cung cấp dữ liệu chi tiết để phân tích doanh thu và số lượng; \path{OrdersHeader} hỗ trợ các chỉ tiêu ở cấp đơn hàng; các bảng \path{Price}, \path{Quota} và \path{Stock} phục vụ phân tích giá, mức độ hoàn thành hạn ngạch và tồn kho. Nhóm bảng còn lại mở rộng mô hình sang phân khúc khách hàng, kiểm tra sức khỏe dữ liệu và khai thác kết quả học máy.
+
+\anh{semantic-model-tables.png}{Danh sách bảng trong Semantic Model}{fig:semantic-model-tables}
+
 \subsubsection{Xây dựng Measures và KPI}
-\todo{Các measure DAX: doanh thu, số lượng, số đơn hàng.}
-\subsubsection{Thiết lập Relationships và Hierarchies}
-\todo{Quan hệ giữa bảng sự kiện và bảng chiều, hierarchy thời gian, sản phẩm, khu vực.}
+
+Mô hình định nghĩa 39 measure, được tổ chức theo các chủ đề bán hàng, giao hàng, tồn kho, hạn ngạch, chất lượng dữ liệu và học máy. Bảng~\ref{tab:semantic-measures} tổng hợp các measure theo mục đích sử dụng. Các tên measure được giữ nhất quán với lớp báo cáo để người sử dụng có thể nhận biết trực tiếp ý nghĩa nghiệp vụ khi xây dựng biểu đồ.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3.3cm}|>{\raggedright\arraybackslash}p{11.1cm}|}
+\caption{Các nhóm measure trong Semantic Model}\label{tab:semantic-measures}\\ \hline
+\textbf{Nhóm} & \textbf{Measure} \\ \hline
+\endfirsthead
+\multicolumn{2}{c}{\textit{Bảng~\ref{tab:semantic-measures} (tiếp theo)}}\\ \hline
+\textbf{Nhóm} & \textbf{Measure} \\ \hline
+\endhead
+Bán hàng & \texttt{Net Sales}, \texttt{Report Currency Net Sales}, \texttt{Orders}, \texttt{Total Orders Header}, \texttt{Quantity}, \texttt{AOV}, \texttt{Discount Rate}, \texttt{Estimated Standard Margin} \\ \hline
+Giao hàng & \texttt{Average Days to Ship}, \texttt{Eligible Shipment Orders}, \texttt{Late Shipment Orders}, \texttt{Late Shipment Orders V2}, \texttt{Late Shipment Rate}, \texttt{Late Shipment Rate V2}, \texttt{Orders Shipped After 7 Days} \\ \hline
+Tồn kho & \texttt{Cost Coverage}, \texttt{Inventory Observed At}, \texttt{No Inventory Record Products}, \texttt{Reorder Products}, \texttt{Stock Age Hours}, \texttt{Stock Is Stale}, \texttt{Stock Quantity} \\ \hline
+Hạn ngạch & \texttt{Quota Actual Sales}, \texttt{Quota Attainment}, \texttt{Total Quota} \\ \hline
+Học máy và dự báo & \texttt{Average Historical Qty 7D}, \texttt{Average Historical Qty 28D}, \texttt{Average Orders Last 90 Days}, \texttt{Historical Demo Forecast Qty}, \texttt{Operational Forecast Qty}, \texttt{ML Demand Records}, \texttt{Products in ML Dataset}, \texttt{Next Category Customers}, \texttt{Next Category Records}, \texttt{Repeat Purchase Customers}, \texttt{Repeat Purchase Records} \\ \hline
+Chất lượng và thời điểm dữ liệu & \texttt{Complete Business Date}, \texttt{Gold Published At}, \texttt{Missing FX Lines} \\ \hline
+\end{longtable}
+\endgroup
+
+Tại trang tổng quan bán hàng, bốn KPI chính gồm \texttt{Net Sales}, \texttt{Orders}, \texttt{AOV} và \texttt{Discount Rate}. Với phạm vi ngày từ 31/05/2011 đến 12/07/2014 và toàn bộ lãnh thổ, báo cáo hiển thị doanh thu thuần 109,85 triệu USD, khoảng 31 nghìn đơn hàng, giá trị đơn hàng trung bình 3,49 nghìn USD và tỷ lệ chiết khấu 0,48\%. Các con số này mô tả trạng thái đang hiển thị trên báo cáo và cần được đối chiếu bằng truy vấn kiểm thử trước khi dùng làm số liệu nghiệm thu.
+
+\anh{semantic-model-measures.png}{Danh sách measure trong Semantic Model}{fig:semantic-model-measures}
+
+\subsubsection{Thiết lập Relationships}
+
+Semantic Model hiện có 19 quan hệ. Các quan hệ được tổ chức quanh những khóa dùng chung của khách hàng, sản phẩm, ngày, nhân viên bán hàng, khuyến mại và lãnh thổ. Bảng~\ref{tab:semantic-relationships} trình bày cấu trúc quan hệ theo nhóm bảng; cách tổng hợp này thể hiện đầy đủ 19 liên kết mà không lặp lại tên khóa ở từng dòng.
+
+\begin{table}[H]\centering
+\caption{Cấu trúc relationships trong Semantic Model}
+\label{tab:semantic-relationships}
+\begingroup
+\small
+\begin{tabularx}{\textwidth}{|p{3.4cm}|X|p{3.4cm}|}\hline
+\textbf{Bảng phía phân tích} & \textbf{Khóa liên kết} & \textbf{Bảng tham chiếu} \\ \hline
+\path{Sales} & \path{customer_key}, \path{order_date_key}, \path{product_key}, \path{sales_person_key}, \path{special_offer_key}, \path{territory_key} & \path{customer}, \path{date}, \path{product}, \path{sales_person}, \path{special_offer}, \path{territory} \\ \hline
+\path{OrdersHeader} & \path{customer_key}, \path{order_date_key}, \path{sales_person_key}, \path{territory_key} & \path{customer}, \path{date}, \path{sales_person}, \path{territory} \\ \hline
+\path{Forecast}, \path{MLDemand7d}, \path{Price}, \path{Stock} & \path{product_key} & \path{product} \\ \hline
+\path{CustomerRFM}, \texttt{MLNextCategory\allowbreak Features}, \texttt{MLRepeat\allowbreak Features} & \path{customer_key} & \path{customer} \\ \hline
+\path{Offer} & \path{special_offer_key} & \path{special_offer} \\ \hline
+\path{Quota} & \path{sales_person_key} & \path{sales_person} \\ \hline
+\end{tabularx}
+\endgroup
+\end{table}
+
+Mô hình này cho phép các chiều dùng chung lọc đồng thời nhiều chủ đề phân tích, chẳng hạn chiều sản phẩm được sử dụng cho bán hàng, giá, tồn kho và dự báo; chiều khách hàng được sử dụng cho bán hàng, đơn hàng, RFM và các bài toán hành vi.
+
+\anh{semantic-model-relationships.png}{Relationships giữa các bảng trong Semantic Model}{fig:semantic-model-relationships}
+
 \subsubsection{Kết nối với Power BI}
-\todo{Power BI và Data agent kết nối với Semantic model (Hình~\ref{fig:fabric-architecture}).}
+
+Báo cáo Power BI khai thác trực tiếp các bảng, quan hệ và measure đã công bố trong Semantic Model. Báo cáo hiện được chia thành bảy trang theo các nhóm nhu cầu phân tích, như trình bày trong Bảng~\ref{tab:powerbi-pages}. Việc tách trang giúp mỗi nhóm câu hỏi nghiệp vụ có không gian trình bày riêng nhưng vẫn dùng chung bộ lọc và định nghĩa chỉ tiêu.
+
+\begin{table}[H]\centering
+\caption{Cấu trúc các trang báo cáo Power BI}
+\label{tab:powerbi-pages}
+\begin{tabularx}{\textwidth}{|p{4.2cm}|X|}\hline
+\textbf{Trang} & \textbf{Câu hỏi phân tích chính} \\ \hline
+\texttt{01 - Sales Overview} & Kết quả bán hàng tổng thể thay đổi như thế nào theo thời gian, lãnh thổ và nhóm sản phẩm? \\ \hline
+\texttt{02 - Product} & Sản phẩm và nhóm sản phẩm nào đóng góp nhiều vào doanh thu và sản lượng? \\ \hline
+\texttt{03 - Operations} & Tiến độ giao hàng và tỷ lệ giao trễ đang ở mức nào? \\ \hline
+\texttt{04 - Quota} & Doanh số thực tế đạt bao nhiêu so với hạn ngạch của lực lượng bán hàng? \\ \hline
+\texttt{05 - Inventory} & Mức tồn kho, độ mới của dữ liệu tồn kho và nhu cầu đặt hàng lại ra sao? \\ \hline
+\texttt{07 - Data Health} & Dữ liệu đã được cập nhật đầy đủ chưa và còn vấn đề chất lượng nào cần theo dõi? \\ \hline
+\texttt{08 - ML} & Quy mô tập dữ liệu và kết quả của các bài toán học máy được thể hiện như thế nào? \\ \hline
+\end{tabularx}
+\end{table}
+
+Trang \texttt{01 - Sales Overview} sử dụng bộ lọc khoảng ngày và lãnh thổ, bốn thẻ KPI, biểu đồ xu hướng doanh thu và biểu đồ doanh thu theo nhóm sản phẩm. Trong phạm vi đang hiển thị, nhóm \path{Bikes} chiếm phần lớn doanh thu, tiếp theo là \path{Components}, trong khi \path{Clothing} và \path{Accessories} có tỷ trọng thấp hơn. Cấu trúc này hỗ trợ đồng thời việc theo dõi quy mô kinh doanh, xu hướng theo thời gian và cơ cấu doanh thu theo sản phẩm.
+
+\anh{powerbi-sales-overview.png}{Trang tổng quan bán hàng trong Power BI}{fig:powerbi-sales-overview}
+

@@ -1,0 +1,257 @@
+version: "2026-11-13.1"
+semantic_model:
+  name: sm_gold_sales_inventory
+  workspace_id: d0eaee60-9f3e-47b2-8aee-bbd327ab2062
+  id: 58ae8006-e9ca-4010-9ee1-6ad9a1d85c0a
+  verified_from_tmdl: true
+
+policy:
+  max_measures: 3
+  max_dimensions: 2
+  max_filters: 6
+  max_high_cardinality_dimensions: 1
+  high_cardinality_dimensions:
+    - date.full_date
+    - product.name
+    - forecast.cutoff
+  blocked_detail_fields:
+    - customer.customer_name
+    - sales_person.sales_person_name
+
+dimensions:
+  date.full_date:
+    table: date
+    column: full_date
+    label: Ngày
+    data_type: date
+    synonyms: [date, day, ngày, ngày bán]
+  date.year:
+    table: date
+    column: calendar_year
+    label: Năm
+    data_type: integer
+    synonyms: [year, calendar year, năm]
+  date.quarter:
+    table: date
+    column: calendar_quarter
+    label: Quý
+    data_type: string
+    synonyms: [quarter, quý]
+  date.year_month:
+    table: date
+    column: year_month
+    label: Tháng
+    data_type: string
+    synonyms: [month, year month, tháng]
+  product.name:
+    table: product
+    column: product_name
+    label: Sản phẩm
+    data_type: string
+    synonyms: [product, product name, sản phẩm, tên sản phẩm]
+  product.category:
+    table: product
+    column: category_name
+    label: Danh mục
+    data_type: string
+    synonyms: [category, product category, danh mục, nhóm sản phẩm]
+  product.subcategory:
+    table: product
+    column: subcategory_name
+    label: Danh mục con
+    data_type: string
+    synonyms: [subcategory, product subcategory, danh mục con]
+  customer.type:
+    table: customer
+    column: customer_type
+    label: Loại khách hàng
+    data_type: string
+    synonyms: [customer type, loại khách hàng, cá nhân, cửa hàng]
+  territory.name:
+    table: territory
+    column: territory_name
+    label: Khu vực
+    data_type: string
+    synonyms: [territory, region, khu vực, lãnh thổ]
+  territory.country:
+    table: territory
+    column: country_region_code
+    label: Quốc gia
+    data_type: string
+    synonyms: [country, country code, quốc gia]
+  sales.channel:
+    table: Sales
+    column: online_order_flag
+    label: Kênh online
+    data_type: boolean
+    synonyms: [channel, online, sales channel, kênh bán]
+  sales.status:
+    table: Sales
+    column: order_status
+    label: Trạng thái đơn
+    data_type: integer
+    synonyms: [order status, trạng thái đơn]
+  stock.status:
+    table: Stock
+    column: stock_data_status
+    label: Trạng thái dữ liệu tồn kho
+    data_type: string
+    synonyms: [stock status, inventory status, trạng thái tồn kho]
+  forecast.mode:
+    table: Forecast
+    column: availability_mode
+    label: Chế độ dự báo
+    data_type: string
+    synonyms: [forecast mode, availability mode, chế độ dự báo]
+  forecast.cutoff:
+    table: Forecast
+    column: cutoff_date
+    label: Ngày chốt dự báo
+    data_type: date
+    synonyms: [cutoff, cutoff date, ngày chốt]
+  forecast.horizon:
+    table: Forecast
+    column: horizon_days
+    label: Số ngày dự báo
+    data_type: integer
+    synonyms: [horizon, horizon days, kỳ dự báo]
+
+measures:
+  Net Sales:
+    table: Sales
+    label: Doanh thu thuần
+    format: currency
+    synonyms: [revenue, net sales, sales, doanh thu, doanh thu thuần]
+    description: Approved line sales after discount; excludes tax and freight.
+  Orders:
+    table: Sales
+    label: Số đơn hàng
+    format: integer
+    synonyms: [orders, order count, số đơn, số đơn hàng]
+    description: Distinct sales order count.
+  Quantity:
+    table: Sales
+    label: Số lượng bán
+    format: integer
+    synonyms: [quantity, units sold, số lượng, số lượng bán]
+  AOV:
+    table: Sales
+    label: Giá trị đơn trung bình
+    format: currency
+    synonyms: [aov, average order value, giá trị đơn trung bình]
+  Discount Rate:
+    table: Sales
+    label: Tỷ lệ giảm giá
+    format: percent
+    synonyms: [discount rate, tỷ lệ giảm giá, chiết khấu]
+  Cost Coverage:
+    table: Sales
+    label: Độ phủ chi phí
+    format: percent
+    synonyms: [cost coverage, độ phủ chi phí]
+  Estimated Standard Margin:
+    table: Sales
+    label: Biên lợi nhuận chuẩn ước tính
+    format: currency
+    synonyms: [estimated margin, margin, lợi nhuận ước tính]
+    companions: [Cost Coverage]
+  Missing FX Lines:
+    table: Sales
+    label: Số dòng thiếu tỷ giá
+    format: integer
+    synonyms: [missing fx, thiếu tỷ giá]
+  Report Currency Net Sales:
+    table: Sales
+    label: Doanh thu theo tiền tệ báo cáo
+    format: currency
+    synonyms: [report currency sales, doanh thu quy đổi]
+    companions: [Missing FX Lines]
+  Eligible Shipment Orders:
+    table: OrdersHeader
+    label: Đơn đủ điều kiện giao hàng
+    format: integer
+    synonyms: [eligible shipment orders, đơn đủ điều kiện giao]
+  Late Shipment Orders:
+    table: OrdersHeader
+    label: Đơn giao trễ
+    format: integer
+    synonyms: [late orders, late shipment orders, đơn giao trễ]
+  Late Shipment Rate:
+    table: OrdersHeader
+    label: Tỷ lệ giao trễ
+    format: percent
+    synonyms: [late shipment rate, late rate, tỷ lệ giao trễ]
+    companions: [Eligible Shipment Orders]
+  Average Days to Ship:
+    table: OrdersHeader
+    label: Số ngày giao trung bình
+    format: decimal
+    synonyms: [average days to ship, số ngày giao trung bình]
+  Stock Quantity:
+    table: Stock
+    label: Tồn kho hiện tại
+    format: integer
+    synonyms: [stock, stock quantity, inventory, tồn kho]
+    companions: [Inventory Observed At, Stock Age Hours]
+  No Inventory Record Products:
+    table: Stock
+    label: Sản phẩm không có bản ghi tồn kho
+    format: integer
+    synonyms: [no inventory record, thiếu bản ghi tồn kho]
+  Reorder Products:
+    table: Stock
+    label: Sản phẩm cần đặt lại
+    format: integer
+    synonyms: [reorder products, products to reorder, sản phẩm cần đặt lại]
+    companions: [Inventory Observed At, Stock Age Hours]
+  Total Quota:
+    table: Quota
+    label: Tổng hạn ngạch
+    format: currency
+    synonyms: [total quota, sales quota, hạn ngạch]
+  Quota Actual Sales:
+    table: Quota
+    label: Doanh số thực tế theo quota
+    format: currency
+    synonyms: [quota actual, actual sales, doanh số thực tế]
+  Quota Attainment:
+    table: Quota
+    label: Tỷ lệ đạt quota
+    format: percent
+    synonyms: [quota attainment, tỷ lệ đạt quota]
+  Gold Published At:
+    table: DataHealth
+    label: Thời điểm Gold công bố
+    format: datetime
+    synonyms: [published at, gold published, thời điểm công bố]
+  Complete Business Date:
+    table: DataHealth
+    label: Ngày nghiệp vụ hoàn chỉnh
+    format: date
+    synonyms: [complete date, complete business date, ngày dữ liệu hoàn chỉnh]
+  Inventory Observed At:
+    table: DataHealth
+    label: Thời điểm quan sát tồn kho
+    format: datetime
+    synonyms: [inventory observed at, thời điểm quan sát tồn kho]
+  Stock Age Hours:
+    table: DataHealth
+    label: Tuổi dữ liệu tồn kho (giờ)
+    format: decimal
+    synonyms: [stock age, stock age hours, tuổi dữ liệu tồn kho]
+  Stock Is Stale:
+    table: DataHealth
+    label: Tồn kho đã cũ
+    format: boolean
+    synonyms: [stock stale, stale inventory, tồn kho đã cũ]
+  Historical Demo Forecast Qty:
+    table: Forecast
+    label: Dự báo mô phỏng lịch sử
+    format: decimal
+    synonyms: [historical forecast, demo forecast, dự báo lịch sử]
+  Operational Forecast Qty:
+    table: Forecast
+    label: Dự báo vận hành
+    format: decimal
+    synonyms: [operational forecast, current forecast, dự báo vận hành]
+

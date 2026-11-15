@@ -1,3 +1,26 @@
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Các lược đồ nghiệp vụ trong AdventureWorks OLTP}}{13}{table.caption.4}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Các lược đồ nghiệp vụ trong AdventureWorks OLTP}}{21}{table.caption.2}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Nhóm bảng được lựa chọn trong Dataflow Bronze--STG}}{23}{table.caption.5}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Kết quả kiểm tra dữ liệu lõi trước khi trực quan hóa}}{24}{table.caption.6}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces Tổng hợp đơn hàng và doanh thu theo kênh bán hàng}}{26}{table.caption.8}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Các nhóm item chính trong workspace Microsoft Fabric}}{35}{table.caption.14}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Các hoạt động pipeline trong giải pháp}}{38}{table.caption.17}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Tổng hợp các tầng trong kiến trúc Medallion}}{40}{table.caption.20}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Quy mô dữ liệu tại tầng Bronze theo lược đồ nguồn}}{40}{table.caption.21}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Danh mục bảng và số dòng tại tầng Silver}}{42}{table.3.5}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Danh mục bảng chiều và bảng sự kiện tại Gold}}{44}{table.caption.24}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Danh mục data mart và bảng dữ liệu học máy tại Gold}}{45}{table.caption.25}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces Mức hạt của các nhóm dữ liệu nghiệp vụ}}{49}{table.caption.28}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces Bus Matrix của Data Warehouse tầng Gold}}{50}{table.caption.29}%
+\contentsline {table}{\numberline {3.10}{\ignorespaces Các nhóm bảng chiều tại tầng Gold}}{51}{table.caption.30}%
+\contentsline {table}{\numberline {3.11}{\ignorespaces Các nhóm bảng sự kiện tại tầng Gold}}{52}{table.caption.31}%
+\contentsline {table}{\numberline {3.12}{\ignorespaces Các cổng kiểm soát chất lượng trong quá trình nạp Gold}}{56}{table.caption.34}%
+\contentsline {table}{\numberline {3.13}{\ignorespaces Các bảng trong Semantic Model}}{57}{table.caption.35}%
+\contentsline {table}{\numberline {3.14}{\ignorespaces Các nhóm measure trong Semantic Model}}{58}{table.3.14}%
+\contentsline {table}{\numberline {3.15}{\ignorespaces Cấu trúc relationships trong Semantic Model}}{60}{table.caption.38}%
+\contentsline {table}{\numberline {3.16}{\ignorespaces Cấu trúc các trang báo cáo Power BI}}{62}{table.caption.40}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Phạm vi ba bài toán học máy}}{64}{table.caption.42}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Đặc trưng sử dụng cho ba bài toán học máy}}{65}{table.caption.43}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Quy mô dữ liệu và kết quả baseline của bài toán lượng bán 7 ngày}}{67}{table.caption.45}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Tổng hợp thiết kế đánh giá ba mô hình}}{71}{table.caption.48}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces Vai trò của các thành phần trong Data Agent}}{78}{table.caption.57}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Các guardrail chính của Data Agent}}{81}{table.caption.60}%

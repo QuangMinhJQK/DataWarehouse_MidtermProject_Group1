@@ -211,6 +211,9 @@ tempCodeRunnerFile.py
 
 # LaTeX Workshop build output
 docs/build/
+*.fdb_latexmk
+*.fls
+*.xdv
 
 # Local Fabric credentials and public certificate output
 tools/fabric/local/
@@ -222,3 +225,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local archive exports
+dataagent_fabric.zip

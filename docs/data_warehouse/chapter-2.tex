@@ -10,11 +10,11 @@ Adventure Works Cycles phù hợp với đề tài là do chính Microsoft đã 
 
 \subsection{Tổng quan hoạt động bán hàng}
 \subsubsection{Quy trình bán hàng}
-Trong dữ liệu nguồn, một đơn hàng gồm bản ghi đầu đơn tại \texttt{Sales.SalesOrderHeader} và các dòng hàng tại \texttt{Sales.SalesOrderDetail}. Đầu đơn lưu ngày đặt hàng, khách hàng, khu vực, kênh đặt hàng và trạng thái; dòng hàng lưu sản phẩm, số lượng, đơn giá và chiết khấu. Quan hệ này cho phép đi từ giao dịch phát sinh đến số đo doanh thu ở mức từng sản phẩm trong đơn~\citep{aw-samples}.
+Trong dữ liệu nguồn, một đơn hàng gồm bản ghi đầu đơn tại \texttt{Sales.\allowbreak SalesOrderHeader} và các dòng hàng tại \texttt{Sales.\allowbreak SalesOrderDetail}. Đầu đơn lưu ngày đặt hàng, khách hàng, khu vực, kênh đặt hàng và trạng thái; dòng hàng lưu sản phẩm, số lượng, đơn giá và chiết khấu. Quan hệ này cho phép đi từ giao dịch phát sinh đến số đo doanh thu ở mức từng sản phẩm trong đơn~\citep{aw-samples}.
 \subsubsection{Các đối tượng tham gia hoạt động bán hàng}
-Các đối tượng chính trong phạm vi phân tích là đơn hàng, sản phẩm, khách hàng và lãnh thổ bán hàng. Dữ liệu sản phẩm nối tiếp tới phân nhóm và danh mục; khách hàng có thể gắn với cá nhân hoặc cửa hàng. Những quan hệ này được mô tả trong script nguồn \texttt{AdventureWorks/raw/instawdb.sql} và sơ đồ ở Hình~\ref{fig:aw-oltp-schema}.
+Các đối tượng chính trong phạm vi phân tích là đơn hàng, sản phẩm, khách hàng và lãnh thổ bán hàng. Dữ liệu sản phẩm nối tiếp tới phân nhóm và danh mục; khách hàng có thể gắn với cá nhân hoặc cửa hàng. Quan hệ giữa các đối tượng được thể hiện ở Hình~\ref{fig:aw-oltp-schema}.
 \subsubsection{Các chỉ tiêu đánh giá hoạt động bán hàng}
-Các chỉ tiêu dự kiến gồm doanh thu dòng hàng, số lượng sản phẩm bán và số đơn hàng. \texttt{LineTotal} của dòng hàng được định nghĩa từ đơn giá, tỷ lệ chiết khấu và số lượng; \texttt{TotalDue} ở đầu đơn gồm tạm tính, thuế và phí vận chuyển. Khi so sánh hai mức số đo phải nêu rõ có cộng thuế và phí vận chuyển hay không~\citep{aw-samples}.
+Các chỉ tiêu phân tích gồm doanh thu dòng hàng, số lượng sản phẩm bán và số đơn hàng. \texttt{LineTotal} của dòng hàng được định nghĩa từ đơn giá, tỷ lệ chiết khấu và số lượng; \texttt{TotalDue} ở đầu đơn gồm tạm tính, thuế và phí vận chuyển. Khi so sánh hai mức số đo phải nêu rõ có cộng thuế và phí vận chuyển hay không~\citep{aw-samples}.
 \subsection{Nguồn gốc và cấu trúc dữ liệu}
 \subsubsection{Nguồn dữ liệu Adventure Works}
 
@@ -54,28 +54,135 @@ Khác với OLTP, AdventureWorksDW được tổ chức theo mô hình chiều v
 Sự khác biệt giữa hai cách tổ chức này chính là lý do đồ án cần một quy trình chuyển đổi. OLTP được tối ưu cho việc ghi nhận giao dịch, còn mô hình chiều được tối ưu cho truy vấn và phân tích. Việc đưa dữ liệu từ nguồn thô đến mô hình chiều là nội dung của các chương sau.
 
 \subsubsection{Các bảng dữ liệu phục vụ hoạt động bán hàng}
-Nhóm bảng lõi gồm \texttt{SalesOrderHeader}, \texttt{SalesOrderDetail}, \texttt{Customer}, \texttt{SalesTerritory}, \texttt{Product}, \texttt{ProductSubcategory} và \texttt{ProductCategory}. Các bảng \texttt{Person} và \texttt{Store} bổ sung thông tin mô tả khách hàng. Khi triển khai cần kiểm tra khả năng nối từng bảng và cách xử lý khóa ngoại thiếu giá trị trước khi dùng làm chiều phân tích. Cấu trúc cột được đối chiếu từ \texttt{AdventureWorks/raw/instawdb.sql}~\citep{aw-samples}.
+Nhóm bảng lõi gồm \texttt{SalesOrderHeader}, \texttt{SalesOrderDetail}, \texttt{Customer}, \texttt{SalesTerritory}, \texttt{Product}, \texttt{ProductSubcategory} và \texttt{ProductCategory}. Các bảng \texttt{Person} và \texttt{Store} bổ sung thông tin mô tả khách hàng. Khả năng nối giữa các bảng và các khóa ngoại thiếu giá trị được kiểm tra trước khi dữ liệu được dùng để xây dựng các chiều phân tích~\citep{aw-samples}.
 \subsubsection{Mối quan hệ giữa các bảng dữ liệu}
-\texttt{SalesOrderDetail.SalesOrderID} nối với \texttt{SalesOrderHeader.SalesOrderID}; \texttt{ProductID} nối dòng hàng với sản phẩm. \texttt{CustomerID} và \texttt{TerritoryID} ở đầu đơn dẫn đến khách hàng và lãnh thổ. Từ sản phẩm có thể đi qua \texttt{ProductSubcategoryID} rồi \texttt{ProductCategoryID} để phân tích theo nhóm. Đây là đường nối dự kiến cho mô hình phân tích; số bản ghi mất liên kết cần được kiểm tra trên dữ liệu đã nạp.
+\texttt{SalesOrderDetail.\allowbreak SalesOrderID} nối với \texttt{SalesOrderHeader.\allowbreak SalesOrderID}; \texttt{ProductID} nối dòng hàng với sản phẩm. \texttt{CustomerID} và \texttt{TerritoryID} ở đầu đơn dẫn đến khách hàng và lãnh thổ. Từ sản phẩm có thể đi qua \texttt{ProductSubcategoryID} rồi \texttt{ProductCategoryID} để phân tích theo nhóm. Các đường nối này được sử dụng trong mô hình phân tích và được kiểm tra trên dữ liệu đã nạp.
 \subsection{Khám phá và trực quan hóa dữ liệu}
-\subsubsection{Phân tích doanh thu theo kênh bán hàng}
-Cột \texttt{OnlineOrderFlag} ở đầu đơn có thể dùng để tách đơn đặt trực tuyến và đơn qua kênh khác. Bảng tổng hợp cần dùng cùng quy tắc trạng thái đơn và cùng định nghĩa doanh thu cho cả hai kênh.
-\subsubsection{Phân tích doanh thu theo nhóm sản phẩm}
-\texttt{ProductSubcategory} và \texttt{ProductCategory} cung cấp hai cấp phân nhóm. Khi tổng hợp, cần giữ cả sản phẩm chưa có phân nhóm để không làm mất doanh thu.
+\subsubsection{Phạm vi dữ liệu và phương pháp khám phá}
+
+Quá trình khám phá tập trung vào ba nội dung: kiểm tra chất lượng và khả năng liên kết giữa các bảng, mô tả đặc điểm phân phối của các chỉ tiêu bán hàng, và xác định những yêu cầu cần thiết cho mô hình kho dữ liệu. Dữ liệu được xem xét ở cả mức đầu đơn và dòng hàng, sau đó phân tích theo thời gian, kênh bán, sản phẩm, khách hàng và lãnh thổ. Cách tổ chức này bảo đảm các nhận xét mô tả gắn trực tiếp với phạm vi nghiệp vụ bán hàng của dự án.
+
+Danh sách query Dataflow trong Hình~\ref{fig:stg-dataflow-queries} cho thấy 24 bảng đã được chọn cho luồng Bronze--STG. Hai query còn lại là \texttt{fnSnakeCaseColumns} và \texttt{fnDQGate}, phục vụ chuẩn hóa tên cột và kiểm soát chất lượng. Bảng~\ref{tab:stg-selected-tables} lược bỏ tiền tố \texttt{stg\_} để thể hiện tên thực thể nguồn. Phạm vi này rộng hơn bảy bảng lõi của mô hình doanh thu vì còn giữ dữ liệu lịch sử giá, chi phí, tồn kho, khuyến mại, tiền tệ và địa chỉ để phục vụ các bước tích hợp tiếp theo.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.42\textwidth,height=0.58\textheight,keepaspectratio]{stgdf.png}
+\caption{Danh sách query Dataflow Bronze--STG được dùng để xác định phạm vi khám phá dữ liệu.}
+\label{fig:stg-dataflow-queries}
+\end{figure}
+
+\begingroup\small
+\begin{table}[H]\centering
+\caption{Nhóm bảng được lựa chọn trong Dataflow Bronze--STG}
+\label{tab:stg-selected-tables}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|X|}\hline
+\textbf{Nhóm dữ liệu} & \textbf{Các bảng được lựa chọn} \\ \hline
+Giao dịch và khách hàng & SalesOrderHeader, SalesOrderDetail, Customer, Person, Store, SalesPerson, SalesPersonQuotaHistory \\ \hline
+Sản phẩm và tồn kho & Product, ProductCategory, ProductSubcategory, ProductCostHistory, ProductListPriceHistory, ProductInventory, Location, SpecialOffer, SpecialOfferProduct \\ \hline
+Địa lý và lãnh thổ & SalesTerritory, SalesTerritoryHistory, CountryRegion, StateProvince, Address \\ \hline
+Danh mục tham chiếu & ShipMethod, Currency, CurrencyRate \\ \hline
+\end{tabularx}
+\end{table}
+\endgroup
+
+Trong phân tích, doanh thu được định nghĩa là tổng \texttt{SalesOrderDetail.\allowbreak LineTotal}, tức giá trị dòng hàng sau chiết khấu nhưng chưa cộng thuế và phí vận chuyển. \texttt{OrderDate} được dùng làm ngày nghiệp vụ, \texttt{SalesOrderID} dùng để đếm đơn phân biệt và \texttt{OrderQty} dùng để đo số lượng bán. Việc cố định định nghĩa ngay từ bước khám phá giúp tránh cộng lặp \texttt{TaxAmt} và \texttt{Freight}, vốn được lưu ở mức đầu đơn.
+
+\subsubsection{Kiểm tra chất lượng và khả năng liên kết}
+
+Dữ liệu gồm 31\,465 đầu đơn và 121\,317 dòng hàng, phát sinh từ ngày 30/05/2022 đến 29/06/2025. Không phát hiện khóa chính trùng trong bảy bảng lõi được dùng cho phân tích. Sáu quan hệ từ dòng hàng đến đầu đơn và sản phẩm, từ đầu đơn đến khách hàng và lãnh thổ, cùng chuỗi sản phẩm--phân nhóm--danh mục đều không có khóa ngoại mất liên kết. Tổng \texttt{LineTotal} lệch tổng \texttt{SubTotal} dưới 0,01 đơn vị do sai số làm tròn khi tổng hợp; về mặt nghiệp vụ hai số đo được đối soát là nhất quán.
+
+\begin{table}[H]\centering
+\caption{Kết quả kiểm tra dữ liệu lõi trước khi trực quan hóa}
+\label{tab:eda-quality-checks}
+\begin{tabularx}{\textwidth}{|X|r|X|}\hline
+\textbf{Nội dung kiểm tra} & \textbf{Kết quả} & \textbf{Diễn giải} \\ \hline
+Khóa chính trùng ở bảy bảng lõi & 0 & Không phát hiện bản ghi trùng theo khóa nghiệp vụ được kiểm tra \\ \hline
+Khóa ngoại mất liên kết ở sáu quan hệ lõi & 0 & Có thể nối dữ liệu bán hàng với sản phẩm, khách hàng và lãnh thổ \\ \hline
+Giá trị trạng thái đơn phân biệt & 1 & Toàn bộ bản ghi hiện có mang mã trạng thái 5 \\ \hline
+\texttt{SalesPersonID} thiếu & 27\,659 & Bằng đúng số đơn trực tuyến; đây là thiếu có cấu trúc, không nên tự động loại bản ghi \\ \hline
+\texttt{CurrencyRateID} thiếu & 17\,489 & Cột cho phép rỗng; cần quy tắc riêng khi chuẩn hóa tiền tệ \\ \hline
+Khách hàng chưa phát sinh đơn & 701 & Nên giữ trong chiều khách hàng nhưng không xuất hiện trong sự kiện bán hàng hiện tại \\ \hline
+Sản phẩm chưa có phân nhóm & 209 & Cần thành viên ``chưa xác định'' khi xây dựng chiều sản phẩm \\ \hline
+\end{tabularx}
+\end{table}
+
+Các giá trị thiếu trên không được thay thế hoặc loại bỏ trong giai đoạn khám phá. Chúng được xem là tín hiệu để thiết kế quy tắc STG: phân biệt thiếu hợp lệ theo nghiệp vụ với lỗi chất lượng, đồng thời tạo thành viên mặc định trong các chiều nhằm bảo toàn dòng sự kiện nếu dữ liệu mới xuất hiện.
+
 \subsubsection{Phân tích doanh thu theo thời gian}
-\texttt{OrderDate} là mốc đặt hàng; \texttt{ShipDate} là mốc giao hàng và có thể trống. Nhóm sẽ chọn một ngày nghiệp vụ thống nhất trước khi tính chuỗi doanh thu theo tháng và năm.
-\subsubsection{Phân tích khách hàng}
-\texttt{CustomerID} cho phép đếm khách hàng phát sinh đơn. Việc phân loại cá nhân và cửa hàng dựa vào \texttt{PersonID} và \texttt{StoreID}; các trường hợp hai khóa cùng có giá trị cần được đối chiếu với định nghĩa trong dữ liệu nguồn.
-\subsubsection{Phân tích doanh thu theo khu vực}
-\texttt{TerritoryID} trên đầu đơn nối với \texttt{SalesTerritory}, nơi có tên lãnh thổ, quốc gia và nhóm khu vực. Doanh thu theo khu vực sẽ dùng lãnh thổ ghi tại thời điểm đơn hàng, tránh suy ngược từ địa chỉ hiện tại của khách hàng.
+
+Hình~\ref{fig:eda-monthly-revenue} tổng hợp doanh thu dòng hàng theo tháng đặt hàng. Tháng 05/2022 chỉ có dữ liệu từ ngày 30 và tháng 06/2025 kết thúc ở ngày 29, vì vậy hai điểm biên được đánh dấu riêng và không dùng để so sánh trực tiếp với tháng đầy đủ. Trong 36 tháng đầy đủ, doanh thu biến động đáng kể; tháng 04/2025 đạt mức cao nhất, khoảng 5,22 triệu đơn vị tiền tệ. Chuỗi cũng cho thấy mức doanh thu ở giai đoạn sau nhìn chung cao hơn giai đoạn đầu, nhưng vẫn có dao động giữa các tháng. Vì vậy, bài toán dự báo cần tách tập theo trình tự thời gian và xem xét yếu tố mùa vụ thay vì chia mẫu ngẫu nhiên.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.96\textwidth,keepaspectratio]{chapter-2/eda/monthly_revenue.png}
+\caption{Doanh thu dòng hàng theo tháng đặt hàng; hai điểm màu cam là tháng chưa đủ dữ liệu.}
+\label{fig:eda-monthly-revenue}
+\end{figure}
+
+\subsubsection{Phân tích kênh bán hàng và khách hàng}
+
+\texttt{OnlineOrderFlag} tách dữ liệu thành kênh trực tuyến và kênh không trực tuyến, được gọi là kênh đại lý trong phần phân tích. Bảng~\ref{tab:eda-channel-summary} cho thấy số đơn và doanh thu không phân bổ cùng một tỷ lệ. Trực tuyến tạo 87,90\% số đơn nhưng chỉ chiếm 26,73\% doanh thu. Đại lý chỉ chiếm 12,10\% số đơn nhưng tạo 73,27\% doanh thu; trung vị giá trị đơn của kênh này cao hơn khoảng 13,9 lần so với trực tuyến. Do đó, chỉ tiêu số đơn không thể thay thế doanh thu khi đánh giá hiệu quả kênh.
+
+\begingroup\small
+\begin{table}[H]\centering
+\caption{Tổng hợp đơn hàng và doanh thu theo kênh bán hàng}
+\label{tab:eda-channel-summary}
+\begin{tabular}{|l|r|r|r|r|r|}\hline
+\textbf{Kênh} & \textbf{Số đơn} & \textbf{Tỷ trọng đơn} & \textbf{DT (triệu)} & \textbf{Tỷ trọng DT} & \textbf{Trung vị} \\ \hline
+Trực tuyến & 27\,659 & 87,90\% & 29,36 & 26,73\% & 594,97 \\ \hline
+Đại lý & 3\,806 & 12,10\% & 80,49 & 73,27\% & 8\,257,08 \\ \hline
+\end{tabular}
+\end{table}
+\endgroup
+
+Phân phối trong Hình~\ref{fig:eda-order-value-channel} được trình bày trên thang log vì giá trị đơn trải rộng từ vài đơn vị đến hơn 100 nghìn đơn vị tiền tệ. Biểu đồ giữ trung vị và khoảng tứ phân vị thay vì chỉ dùng trung bình, qua đó cho thấy khác biệt về quy mô giao dịch giữa hai kênh mà không để một số đơn rất lớn che khuất phần lớn quan sát.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.78\textwidth,keepaspectratio]{chapter-2/eda/order_value_by_channel.png}
+\caption{Phân phối giá trị đơn hàng theo kênh; trục tung dùng thang log.}
+\label{fig:eda-order-value-channel}
+\end{figure}
+
+Trong 19\,820 khách hàng nguồn, có 19\,119 khách hàng đã phát sinh đơn và 701 khách hàng chưa xuất hiện trong giao dịch. Khách hàng của hai kênh không giao nhau trong tập dữ liệu hiện tại. Điều này củng cố nhu cầu giữ \texttt{CustomerID} và thuộc tính loại khách hàng trong chiều khách hàng, đồng thời không loại các thành viên chưa có giao dịch khi nạp chiều.
+
+\subsubsection{Phân tích cơ cấu sản phẩm}
+
+Doanh thu được nối từ dòng hàng qua \texttt{Product}, \texttt{ProductSubcategory} đến \texttt{ProductCategory}. Tất cả dòng hàng hiện tại đều tìm được danh mục, dù 209 sản phẩm trong bảng nguồn chưa có phân nhóm. Hình~\ref{fig:eda-category-revenue} cho thấy Bikes tạo 94,65 triệu, tương đương 86,17\% doanh thu dòng hàng. Components đứng thứ hai với 10,74\%, còn Clothing và Accessories cộng lại chỉ chiếm khoảng 3,09\%.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.86\textwidth,keepaspectratio]{chapter-2/eda/category_revenue.png}
+\caption{Doanh thu dòng hàng theo danh mục sản phẩm.}
+\label{fig:eda-category-revenue}
+\end{figure}
+
+Mức tập trung trên cho thấy số lượng bán, số đơn có sản phẩm và doanh thu phải được lưu như các số đo riêng. Chẳng hạn, Accessories xuất hiện trong 19\,524 đơn nhưng chỉ tạo 1,16\% doanh thu; vì vậy tần suất xuất hiện cao không đồng nghĩa với đóng góp doanh thu lớn. Chiều sản phẩm cần giữ cả cấp sản phẩm, phân nhóm và danh mục để có thể chuyển đổi mức phân tích mà không làm mất chi tiết.
+
+\subsubsection{Phân tích doanh thu theo lãnh thổ}
+
+Phân tích khu vực sử dụng \texttt{TerritoryID} ghi trên đầu đơn và nối với \texttt{SalesTerritory}; không suy ngược lãnh thổ từ địa chỉ hiện tại của khách hàng. Hình~\ref{fig:eda-territory-revenue} cho thấy Southwest dẫn đầu với 24,18 triệu, tương đương 22,02\% doanh thu. Canada và Northwest lần lượt đóng góp 14,89\% và 14,64\%; ba lãnh thổ này cộng lại chiếm khoảng 51,55\% doanh thu. Tuy vậy, cả mười lãnh thổ đều có giao dịch nên không có cơ sở loại bỏ lãnh thổ nào khỏi chiều phân tích.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.98\textwidth,keepaspectratio]{chapter-2/eda/territory_revenue.png}
+\caption{Doanh thu dòng hàng theo lãnh thổ bán hàng.}
+\label{fig:eda-territory-revenue}
+\end{figure}
+
+\subsubsection{Kết luận từ khám phá dữ liệu}
+
+Kết quả khám phá xác nhận mức hạt phù hợp của bảng sự kiện là một dòng cho mỗi \texttt{SalesOrderDetailID}. Ở mức này có thể cộng đúng số lượng và doanh thu dòng hàng, đồng thời đếm đơn phân biệt qua \texttt{SalesOrderID}. Các chiều tối thiểu gồm ngày đặt hàng, sản phẩm, khách hàng, lãnh thổ và kênh bán. Thuế, phí vận chuyển và tổng phải trả vẫn thuộc mức đầu đơn, nên nếu đưa vào bảng sự kiện dòng hàng phải có quy tắc phân bổ hoặc một bảng sự kiện đầu đơn riêng.
+
+Quá trình khám phá cũng chỉ ra ba yêu cầu xử lý cho tầng Silver: bảo toàn các giá trị thiếu có ý nghĩa nghiệp vụ, tạo thành viên ``chưa xác định'' cho khóa chiều không đầy đủ và chuẩn hóa tiền tệ trước khi so sánh các giao dịch có tỷ giá. Những kết luận này được chuyển thành yêu cầu dữ liệu ở mục tiếp theo và là cơ sở cho thiết kế kho ở Chương 3.
 \subsection{Xác định yêu cầu dữ liệu cho giải pháp}
 \subsubsection{Xác định quy trình nghiệp vụ}
-Quy trình được chọn là bán hàng. Dữ liệu đầu đơn và dòng hàng là cơ sở để theo dõi doanh thu, số lượng bán và số đơn hàng theo các chiều phân tích.
+Quy trình được chọn là bán hàng, gồm thông tin đầu đơn và các dòng sản phẩm. Đầu đơn cung cấp ngày đặt hàng, khách hàng, lãnh thổ và kênh bán; dòng hàng cung cấp sản phẩm, số lượng, đơn giá và chiết khấu. Phạm vi này hỗ trợ theo dõi doanh thu, số lượng bán và số đơn hàng.
 \subsubsection{Xác định mức độ chi tiết dữ liệu}
-Bảng sự kiện bán hàng dự kiến có một dòng cho mỗi \texttt{SalesOrderDetailID}. Mức chi tiết này giữ được liên hệ với sản phẩm, số lượng, giá và chiết khấu của từng dòng; các thuộc tính đầu đơn được đưa vào qua \texttt{SalesOrderID}.
+Bảng sự kiện bán hàng được thiết kế với một dòng cho mỗi \texttt{SalesOrder\allowbreak DetailID}. Mức chi tiết này giữ được liên hệ với sản phẩm, số lượng, giá và chiết khấu của từng dòng; các thuộc tính đầu đơn được đưa vào qua \texttt{SalesOrderID}. Khi tổng hợp lên mức đơn hàng, \texttt{SalesOrderID} phải được đếm phân biệt để một đơn có nhiều sản phẩm không bị tính lặp.
 \subsubsection{Xác định các chiều phân tích}
-Những chiều tối thiểu gồm ngày đặt hàng, sản phẩm, khách hàng, lãnh thổ và kênh bán.
+Những chiều tối thiểu gồm ngày đặt hàng, sản phẩm, khách hàng, lãnh thổ và kênh bán. Chiều sản phẩm giữ cấu trúc sản phẩm--phân nhóm--danh mục; chiều khách hàng phân biệt cá nhân và cửa hàng. Lãnh thổ được lấy theo đơn hàng, còn kênh bán được xác định từ \texttt{OnlineOrderFlag}.
 \subsubsection{Xác định các chỉ tiêu đo lường}
-Các số đo tối thiểu gồm số lượng, doanh thu dòng hàng và số đơn hàng phân biệt. Thuế và phí vận chuyển ở mức đầu đơn sẽ được trình bày riêng để tránh cộng lặp khi một đơn có nhiều dòng.
+Các số đo tối thiểu gồm số lượng bán, doanh thu dòng hàng và số đơn hàng phân biệt. Số lượng và doanh thu có thể cộng theo các chiều phân tích, trong khi số đơn phải được tính phân biệt theo \texttt{SalesOrderID}. Thuế, phí vận chuyển và tổng phải trả thuộc mức đầu đơn nên được trình bày riêng để tránh cộng lặp khi một đơn có nhiều dòng.
+\clearpage
 \subsubsection{Xác định yêu cầu dữ liệu cho Machine Learning}
-Bài toán dự báo doanh số cần chuỗi thời gian được tổng hợp ở một mức hạt và đơn vị tiền thống nhất. Tập huấn luyện và kiểm tra sẽ được tách theo thời gian; kết quả dự báo phải ghi rõ kỳ dự báo, dữ liệu lịch sử và sai số đánh giá trước khi đưa vào báo cáo.
+Nhánh học máy cần ba tập dữ liệu có mức hạt và cửa sổ dự báo riêng. Tập thứ nhất có một dòng cho mỗi sản phẩm tại một ngày chốt, với biến mục tiêu là tổng lượng bán trong 7 ngày kế tiếp. Các đặc trưng mô tả lượng bán trong 7, 14 và 28 ngày gần nhất, mức dao động trong 28 ngày, số ngày có phát sinh bán và thứ trong tuần của ngày chốt.
+
+Hai tập còn lại có một dòng cho mỗi khách hàng tại một ngày chốt. Bài toán mua lại sử dụng nhãn nhị phân cho biết khách hàng có tiếp tục mua trong 30 ngày kế tiếp hay không. Bài toán nhóm sản phẩm sử dụng nhãn \texttt{BIKES}, \texttt{ACCESSORIES} hoặc \texttt{OTHER} cho nhóm chính của lần mua tiếp theo trong 60 ngày, với điều kiện khách hàng có phát sinh giao dịch trong cửa sổ dự báo. Đặc trưng chung gồm số ngày từ lần mua gần nhất, số ngày có mua, số đơn, số lượng và giá trị mua trong 90 ngày, cùng nhóm sản phẩm chính của lần mua gần nhất.
+
+Các tập dữ liệu phải giữ ngày chốt và khóa sản phẩm hoặc khách hàng để đối soát, nhưng không đưa các khóa này vào huấn luyện. Dữ liệu huấn luyện và holdout được tách theo thời gian; mọi bước xử lý giá trị thiếu chỉ được xác định trên tập huấn luyện rồi áp dụng lại cho holdout. Chỉ tiêu đánh giá tương ứng là MAE cho dự báo lượng bán, Average Precision và log loss cho dự đoán mua lại, Macro F1 và log loss cho dự đoán nhóm sản phẩm.

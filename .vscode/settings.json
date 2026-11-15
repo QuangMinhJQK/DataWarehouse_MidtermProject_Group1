@@ -11,7 +11,7 @@
     "latex-workshop.latex.autoBuild.run": "onSave",
     "latex-workshop.latex.rootFile.doNotPrompt": true,
     "latex-workshop.latex.rootFile.useSubFile": false,
-    "latex-workshop.latex.outDir": "%DIR%/build",
+    "latex-workshop.latex.outDir": "%DIR%",
     "latex-workshop.latex.recipes": [
         {
             "name": "latexmk (XeLaTeX)",
@@ -21,18 +21,16 @@
     "latex-workshop.latex.tools": [
         {
             "name": "latexmk-xelatex",
-            "command": "C:\\Users\\Khai\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\latexmk.exe",
+            "command": "latexmk",
             "args": [
                 "-pdfxe",
                 "-synctex=1",
                 "-interaction=nonstopmode",
+                "-halt-on-error",
                 "-file-line-error",
                 "-outdir=%OUTDIR%",
                 "%DOC%"
-            ],
-            "env": {
-                "PATH": "C:\\Users\\Khai\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64;C:\\Strawberry\\perl\\bin;%PATH%"
-            }
+            ]
         }
     ]
 }

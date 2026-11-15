@@ -1,12 +1,15 @@
 % !TEX program = xelatex
 % Đồ án môn học Nhà kho dữ liệu và tích hợp
 % Biên dịch: xelatex main.tex (chạy 2 lần để cập nhật mục lục)
-\documentclass[13pt,a4paper]{extarticle}
+\RequirePackage{fix-cm}
+\documentclass[12pt,a4paper]{extarticle}
 
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
+\usepackage[fontsize=13pt]{fontsize}
 \usepackage[left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
-\usepackage{setspace,indentfirst,graphicx,float,xcolor,tikz}
+\usepackage{setspace,indentfirst,graphicx,float,xcolor,tikz,pdflscape}
+\usetikzlibrary{arrows.meta,positioning}
 \usepackage{array,tabularx,longtable,multirow,enumitem}
 \usepackage{titlesec}
 \usepackage[authoryear,round]{natbib}
@@ -18,18 +21,15 @@
 \newcommand{\tennganh}{HỆ THỐNG THÔNG TIN QUẢN LÝ}
 \newcommand{\tenchuyennganh}{KINH DOANH SỐ VÀ TRÍ TUỆ NHÂN TẠO}
 \newcommand{\tendetai}{XÂY DỰNG GIẢI PHÁP KHO DỮ LIỆU TRÊN NỀN TẢNG MICROSOFT \mbox{FABRIC} CHO HOẠT ĐỘNG BÁN HÀNG CỦA ADVENTURE WORKS CYCLES}
-\newcommand{\gvhd}{[Học hàm, học vị, họ tên GVHD]}
-\newcommand{\svth}{[Họ tên sinh viên]}
-\newcommand{\mssv}{[MSSV]}
-\newcommand{\lop}{[Lớp]}
-\newcommand{\thoigian}{TP.HCM, THÁNG ../....}
-\newcommand{\coquan}{[Tên cơ quan kiến tập]}
-\newcommand{\mentor}{[Họ tên người hướng dẫn tại cơ quan]}
+\newcommand{\gvhd}{TS. Nguyễn Thôn Dã}
+\newcommand{\svth}{Nhóm 1}
+\newcommand{\thoigian}{TP.HCM, THÁNG 11/2026}
 
 % ---------- Trình bày chung ----------
 \onehalfspacing
 \setlength{\parindent}{1.27cm}
 \setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{5em}
 \graphicspath{{images/}}
 \renewcommand{\contentsname}{MỤC LỤC}
 \renewcommand{\listfigurename}{DANH MỤC HÌNH ẢNH}
@@ -73,20 +73,10 @@
 \newcommand*\toclevel@phan{1}
 \makeatother
 
-% ---------- Tiện ích giữ chỗ (xoá khi viết nội dung thật) ----------
-\newcommand{\todo}[1]{\par{\color{gray}\textit{[#1]}}\par}
-\newcommand{\nguon}[1]{\par\textit{Nguồn: #1}\par}
-% \hinh{chú thích}{nhãn}: thay \fbox bằng \includegraphics
-\newcommand{\hinh}[2]{\begin{figure}[H]\centering
-  \fbox{\parbox[c][3.5cm][c]{0.7\textwidth}{\centering\color{gray}\textit{[Chèn hình]}}}
-  \caption{#1}\label{#2}\end{figure}}
-% \bang{chú thích}{nhãn}{số cột}{hàng tiêu đề}
-\newcommand{\bang}[4]{\begin{table}[H]\centering\caption{#1}\label{#2}
-  \begin{tabularx}{\textwidth}{|*{#3}{>{\centering\arraybackslash}X|}}\hline
-  #4 \\ \hline
-  \multicolumn{#3}{|c|}{\color{gray}\textit{[Nội dung bảng]}} \\ \hline
-  \end{tabularx}\end{table}}
-\newcommand{\dongcham}[1]{\par\noindent\foreach \i in {1,...,#1}{\makebox[\textwidth]{\dotfill}\\}\par\bigskip}
+% \anh{tệp ảnh}{chú thích}{nhãn}: ảnh chính thức, tự giới hạn theo khổ trang
+\newcommand{\anh}[3]{\begin{figure}[H]\centering
+  \includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{#1}
+  \caption{#2}\label{#3}\end{figure}}
 
 \begin{document}
 
@@ -94,7 +84,9 @@
 \input{chapter-1}
 \input{chapter-2}
 \input{chapter-3}
-\input{planned-toc}
+\input{chapter-4}
+\input{chapter-5}
+\input{chapter-6}
 \input{backmatter}
 
 \end{document}

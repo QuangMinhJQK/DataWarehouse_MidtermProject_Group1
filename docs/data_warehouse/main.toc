@@ -1,45 +1,134 @@
-\contentsline {section}{LỜI CẢM ƠN}{1}{Doc-Start}%
-\contentsline {section}{MỤC LỤC}{2}{Doc-Start}%
-\contentsline {section}{DANH MỤC HÌNH ẢNH}{4}{chapter*.1}%
-\contentsline {section}{DANH MỤC BẢNG}{5}{chapter*.2}%
-\contentsline {section}{DANH MỤC TỪ VIẾT TẮT}{6}{chapter*.3}%
-\contentsline {section}{DANH MỤC THUẬT NGỮ}{7}{table.0.1}%
-\contentsline {chapter}{\numberline {1}GIỚI THIỆU TỔNG QUAN}{8}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Bối cảnh thực tế}{8}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Lý do chọn đề tài}{8}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Mục tiêu dự án}{9}{section.1.3}%
-\contentsline {subsection}{\numberline {1.3.1}Mục tiêu tổng quan}{9}{subsection.1.3.1}%
-\contentsline {subsection}{\numberline {1.3.2}Mục tiêu cụ thể}{9}{subsection.1.3.2}%
-\contentsline {section}{\numberline {1.4}Đối tượng và phạm vi dự án}{10}{section.1.4}%
-\contentsline {subsection}{\numberline {1.4.1}Đối tượng dự án}{10}{subsection.1.4.1}%
-\contentsline {subsection}{\numberline {1.4.2}Phạm vi dự án}{10}{subsection.1.4.2}%
-\contentsline {section}{\numberline {1.5}Công nghệ và nền tảng sử dụng}{11}{section.1.5}%
-\contentsline {subsection}{\numberline {1.5.1}Microsoft Fabric}{11}{subsection.1.5.1}%
-\contentsline {subsection}{\numberline {1.5.2}OneLake và Lakehouse}{11}{subsection.1.5.2}%
-\contentsline {subsection}{\numberline {1.5.3}Fabric Data Factory}{11}{subsection.1.5.3}%
-\contentsline {subsection}{\numberline {1.5.4}Fabric Data Warehouse}{11}{subsection.1.5.4}%
-\contentsline {subsection}{\numberline {1.5.5}Fabric Data Science}{11}{subsection.1.5.5}%
-\contentsline {subsection}{\numberline {1.5.6}Power BI và Web Application}{11}{subsection.1.5.6}%
-\contentsline {chapter}{\numberline {2}MÔ TẢ VÀ PHÂN TÍCH DỮ LIỆU BÁN HÀNG}{12}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Tổng quan về Adventure Works Cycles}{12}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Tổng quan hoạt động bán hàng}{12}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Quy trình bán hàng}{12}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}Các đối tượng tham gia hoạt động bán hàng}{13}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Các chỉ tiêu đánh giá hoạt động bán hàng}{13}{subsection.2.2.3}%
-\contentsline {section}{\numberline {2.3}Nguồn gốc và cấu trúc dữ liệu}{13}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Nguồn dữ liệu Adventure Works}{13}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Cấu trúc dữ liệu nguồn}{13}{subsection.2.3.2}%
-\contentsline {subsection}{\numberline {2.3.3}Các bảng dữ liệu phục vụ hoạt động bán hàng}{17}{subsection.2.3.3}%
-\contentsline {subsection}{\numberline {2.3.4}Mối quan hệ giữa các bảng dữ liệu}{17}{subsection.2.3.4}%
-\contentsline {section}{\numberline {2.4}Khám phá và trực quan hóa dữ liệu}{17}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Doanh thu theo kênh bán hàng}{17}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Doanh thu theo nhóm sản phẩm}{17}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Doanh thu theo thời gian}{17}{subsection.2.4.3}%
-\contentsline {subsection}{\numberline {2.4.4}Phân tích khách hàng}{17}{subsection.2.4.4}%
-\contentsline {subsection}{\numberline {2.4.5}Doanh thu theo khu vực}{18}{subsection.2.4.5}%
-\contentsline {section}{\numberline {2.5}Xác định yêu cầu dữ liệu cho giải pháp}{18}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Quy trình nghiệp vụ và mức độ chi tiết}{18}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {2.5.2}Các chiều phân tích và chỉ tiêu đo lường}{18}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}Yêu cầu dữ liệu cho học máy}{18}{subsection.2.5.3}%
-\contentsline {chapter}{TÀI LIỆU THAM KHẢO}{19}{section*.6}%
-\contentsline {section}{PHỤ LỤC}{20}{chapter*.7}%
+\contentsline {section}{DANH SÁCH THÀNH VIÊN}{1}{Doc-Start}%
+\contentsline {section}{LỜI CẢM ƠN}{2}{table.caption.1}%
+\contentsline {section}{MỤC LỤC}{3}{table.caption.1}%
+\contentsline {section}{DANH MỤC HÌNH ẢNH}{7}{table.caption.1}%
+\contentsline {section}{DANH MỤC BẢNG BIỂU}{9}{table.caption.1}%
+\contentsline {section}{DANH MỤC TỪ VIẾT TẮT}{10}{table.caption.1}%
+\contentsline {section}{DANH MỤC THUẬT NGỮ}{11}{table.0.1}%
+\contentsline {section}{CHƯƠNG 1: GIỚI THIỆU TỔNG QUAN}{12}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Bối cảnh thực tế}{12}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Lý do chọn đề tài}{13}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Mục tiêu dự án}{13}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}Mục tiêu tổng quan}{13}{subsubsection.1.3.1}%
+\contentsline {subsubsection}{\numberline {1.3.2}Mục tiêu cụ thể}{13}{subsubsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.4}Đối tượng và phạm vi dự án}{15}{subsection.1.4}%
+\contentsline {subsubsection}{\numberline {1.4.1}Đối tượng nghiên cứu}{15}{subsubsection.1.4.1}%
+\contentsline {subsubsection}{\numberline {1.4.2}Phạm vi nghiệp vụ bán hàng}{15}{subsubsection.1.4.2}%
+\contentsline {subsubsection}{\numberline {1.4.3}Phạm vi dữ liệu}{15}{subsubsection.1.4.3}%
+\contentsline {subsubsection}{\numberline {1.4.4}Phạm vi triển khai}{15}{subsubsection.1.4.4}%
+\contentsline {subsection}{\numberline {1.5}Công nghệ và nền tảng sử dụng}{16}{subsection.1.5}%
+\contentsline {subsubsection}{\numberline {1.5.1}Azure SQL Database}{16}{subsubsection.1.5.1}%
+\contentsline {subsubsection}{\numberline {1.5.2}Microsoft Fabric và OneLake}{17}{subsubsection.1.5.2}%
+\contentsline {subsubsection}{\numberline {1.5.3}Lakehouse và Medallion Architecture}{17}{subsubsection.1.5.3}%
+\contentsline {subsubsection}{\numberline {1.5.4}Fabric Data Factory}{17}{subsubsection.1.5.4}%
+\contentsline {subsubsection}{\numberline {1.5.5}Fabric Data Warehouse và Semantic Model}{17}{subsubsection.1.5.5}%
+\contentsline {subsubsection}{\numberline {1.5.6}Fabric Data Science và Machine Learning}{18}{subsubsection.1.5.6}%
+\contentsline {subsubsection}{\numberline {1.5.7}Power BI và Data Agent}{18}{subsubsection.1.5.7}%
+\contentsline {section}{CHƯƠNG 2: MÔ TẢ VÀ PHÂN TÍCH DỮ LIỆU BÁN HÀNG}{19}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Tổng quan về Adventure Works Cycles}{19}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Tổng quan hoạt động bán hàng}{19}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Quy trình bán hàng}{19}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Các đối tượng tham gia hoạt động bán hàng}{20}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Các chỉ tiêu đánh giá hoạt động bán hàng}{20}{subsubsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.3}Nguồn gốc và cấu trúc dữ liệu}{20}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Nguồn dữ liệu Adventure Works}{20}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Cấu trúc dữ liệu nguồn}{20}{subsubsection.2.3.2}%
+\contentsline {subsubsection}{\numberline {2.3.3}Các bảng dữ liệu phục vụ hoạt động bán hàng}{22}{subsubsection.2.3.3}%
+\contentsline {subsubsection}{\numberline {2.3.4}Mối quan hệ giữa các bảng dữ liệu}{22}{subsubsection.2.3.4}%
+\contentsline {subsection}{\numberline {2.4}Khám phá và trực quan hóa dữ liệu}{22}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Phạm vi dữ liệu và phương pháp khám phá}{22}{subsubsection.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Kiểm tra chất lượng và khả năng liên kết}{24}{subsubsection.2.4.2}%
+\contentsline {subsubsection}{\numberline {2.4.3}Phân tích doanh thu theo thời gian}{25}{subsubsection.2.4.3}%
+\contentsline {subsubsection}{\numberline {2.4.4}Phân tích kênh bán hàng và khách hàng}{25}{subsubsection.2.4.4}%
+\contentsline {subsubsection}{\numberline {2.4.5}Phân tích cơ cấu sản phẩm}{27}{subsubsection.2.4.5}%
+\contentsline {subsubsection}{\numberline {2.4.6}Phân tích doanh thu theo lãnh thổ}{27}{subsubsection.2.4.6}%
+\contentsline {subsubsection}{\numberline {2.4.7}Kết luận từ khám phá dữ liệu}{28}{subsubsection.2.4.7}%
+\contentsline {subsection}{\numberline {2.5}Xác định yêu cầu dữ liệu cho giải pháp}{29}{subsection.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}Xác định quy trình nghiệp vụ}{29}{subsubsection.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}Xác định mức độ chi tiết dữ liệu}{29}{subsubsection.2.5.2}%
+\contentsline {subsubsection}{\numberline {2.5.3}Xác định các chiều phân tích}{29}{subsubsection.2.5.3}%
+\contentsline {subsubsection}{\numberline {2.5.4}Xác định các chỉ tiêu đo lường}{29}{subsubsection.2.5.4}%
+\contentsline {subsubsection}{\numberline {2.5.5}Xác định yêu cầu dữ liệu cho Machine Learning}{30}{subsubsection.2.5.5}%
+\contentsline {section}{CHƯƠNG 3: XÂY DỰNG KHO DỮ LIỆU TRÊN MICROSOFT FABRIC}{31}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Kiến trúc tổng thể của giải pháp}{31}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Kiến trúc Microsoft Fabric}{33}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Luồng dữ liệu trong hệ thống}{35}{subsubsection.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.3}Vai trò của OneLake}{36}{subsubsection.3.1.3}%
+\contentsline {subsubsection}{\numberline {3.1.4}Vai trò của Lakehouse và Data Warehouse}{36}{subsubsection.3.1.4}%
+\contentsline {subsection}{\numberline {3.2}Tích hợp dữ liệu với Microsoft Fabric}{36}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Kết nối và thu thập dữ liệu nguồn}{36}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Xây dựng Data Pipeline}{37}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Xây dựng Dataflow Gen2}{38}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Phạm vi điều phối các quy trình tích hợp dữ liệu}{39}{subsubsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.3}Xây dựng Lakehouse theo Medallion Architecture}{40}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Tầng Bronze – dữ liệu nguồn}{40}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Tầng Silver – dữ liệu làm sạch và chuyển đổi}{41}{subsubsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}Tầng Gold – dữ liệu được chuẩn hóa phục vụ phân tích}{43}{subsubsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.4}Luồng chuyển đổi dữ liệu giữa các tầng}{47}{subsubsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.4}Thiết kế Data Warehouse cho hoạt động bán hàng}{48}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}Xác định Business Process và Grain}{48}{subsubsection.3.4.1}%
+\contentsline {subsubsection}{\numberline {3.4.2}Xây dựng Bus Matrix}{49}{subsubsection.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.4.3}Thiết kế Dimension Tables}{50}{subsubsection.3.4.3}%
+\contentsline {subsubsection}{\numberline {3.4.4}Thiết kế Fact Tables}{51}{subsubsection.3.4.4}%
+\contentsline {subsubsection}{\numberline {3.4.5}Xây dựng mô hình Star Schema}{52}{subsubsection.3.4.5}%
+\contentsline {subsection}{\numberline {3.5}Xây dựng Fabric Data Warehouse}{53}{subsection.3.5}%
+\contentsline {subsubsection}{\numberline {3.5.1}Tạo và cấu hình Data Warehouse}{53}{subsubsection.3.5.1}%
+\contentsline {subsubsection}{\numberline {3.5.2}Xây dựng các bảng Dimension}{54}{subsubsection.3.5.2}%
+\contentsline {subsubsection}{\numberline {3.5.3}Xây dựng các bảng Fact}{54}{subsubsection.3.5.3}%
+\contentsline {subsubsection}{\numberline {3.5.4}Thiết lập khóa và mối quan hệ}{54}{subsubsection.3.5.4}%
+\contentsline {subsubsection}{\numberline {3.5.5}Nạp và đồng bộ dữ liệu}{54}{subsubsection.3.5.5}%
+\contentsline {subsection}{\numberline {3.6}Xây dựng Semantic Model}{56}{subsection.3.6}%
+\contentsline {subsubsection}{\numberline {3.6.1}Thiết kế mô hình dữ liệu phân tích}{56}{subsubsection.3.6.1}%
+\contentsline {subsubsection}{\numberline {3.6.2}Xây dựng Measures và KPI}{57}{subsubsection.3.6.2}%
+\contentsline {subsubsection}{\numberline {3.6.3}Thiết lập Relationships}{59}{subsubsection.3.6.3}%
+\contentsline {subsubsection}{\numberline {3.6.4}Kết nối với Power BI}{61}{subsubsection.3.6.4}%
+\contentsline {section}{CHƯƠNG 4: XÂY DỰNG CÁC MÔ HÌNH HỌC MÁY CHO HOẠT ĐỘNG BÁN HÀNG}{64}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Chuẩn bị dữ liệu cho Machine Learning}{64}{subsection.4.1}%
+\contentsline {subsubsection}{\numberline {4.1.1}Xác định phạm vi bài toán}{64}{subsubsection.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.1.2}Xây dựng các tập dữ liệu dạng rộng}{64}{subsubsection.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.1.3}Chia dữ liệu theo thời gian và tiền xử lý}{65}{subsubsection.4.1.3}%
+\contentsline {subsection}{\numberline {4.2}Dự báo lượng bán trong 7 ngày tiếp theo}{66}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Biến mục tiêu và đặc trưng đầu vào}{66}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Huấn luyện mô hình}{66}{subsubsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.3}Baseline và tiêu chí đánh giá}{67}{subsubsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.3}Dự đoán khả năng mua lại trong 30 ngày}{68}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Xác định target và tập đặc trưng}{68}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Huấn luyện và đánh giá}{68}{subsubsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.4}Dự đoán nhóm sản phẩm tiếp theo trong 60 ngày}{69}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}Xác định target và điều kiện gán nhãn}{69}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}Huấn luyện và đánh giá}{69}{subsubsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.5}Tổ chức quy trình huấn luyện trên Microsoft Fabric}{70}{subsection.4.5}%
+\contentsline {section}{CHƯƠNG 5: KHAI THÁC DỮ LIỆU}{72}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Khai thác dữ liệu với Power BI}{72}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}Tổng quan hoạt động bán hàng}{72}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}Phân tích sản phẩm và vận hành giao hàng}{73}{subsubsection.5.1.2}%
+\contentsline {subsubsection}{\numberline {5.1.3}Theo dõi hạn ngạch và tồn kho}{74}{subsubsection.5.1.3}%
+\contentsline {subsubsection}{\numberline {5.1.4}Theo dõi chất lượng dữ liệu và dữ liệu học máy}{75}{subsubsection.5.1.4}%
+\contentsline {subsection}{\numberline {5.2}Xây dựng Data Agent khai thác Semantic Model}{77}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}Kiến trúc ứng dụng và nguồn dữ liệu}{77}{subsubsection.5.2.1}%
+\contentsline {subsubsection}{\numberline {5.2.2}Luồng xử lý truy vấn}{78}{subsubsection.5.2.2}%
+\contentsline {subsubsection}{\numberline {5.2.3}Kiểm soát an toàn và tính nhất quán}{80}{subsubsection.5.2.3}%
+\contentsline {subsubsection}{\numberline {5.2.4}Kết quả thử nghiệm và phạm vi triển khai}{81}{subsubsection.5.2.4}%
+\contentsline {section}{CHƯƠNG 6: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN}{83}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Kết quả đạt được}{83}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Hoàn thiện kiến trúc tích hợp và kho dữ liệu}{83}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}Xây dựng lớp phân tích và báo cáo dùng chung}{84}{subsubsection.6.1.2}%
+\contentsline {subsubsection}{\numberline {6.1.3}Xây dựng dữ liệu và quy trình cho ba bài toán học máy}{84}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.4}Thử nghiệm Data Agent khai thác Semantic Model}{84}{subsubsection.6.1.4}%
+\contentsline {subsection}{\numberline {6.2}Ưu điểm của giải pháp}{85}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Kiến trúc phân tầng rõ ràng trên một nền tảng thống nhất}{85}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}Kiểm soát chất lượng và khả năng truy vết được tích hợp vào luồng dữ liệu}{85}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Lớp ngữ nghĩa được tái sử dụng giữa nhiều hình thức khai thác}{85}{subsubsection.6.2.3}%
+\contentsline {subsubsection}{\numberline {6.2.4}Kết hợp phân tích mô tả, dự báo và hỏi--đáp có kiểm soát}{86}{subsubsection.6.2.4}%
+\contentsline {subsection}{\numberline {6.3}Hạn chế của dự án}{86}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}Chưa có pipeline điều phối thống nhất}{86}{subsubsection.6.3.1}%
+\contentsline {subsubsection}{\numberline {6.3.2}Giới hạn công bố Data Agent ra môi trường công cộng}{87}{subsubsection.6.3.2}%
+\contentsline {subsubsection}{\numberline {6.3.3}Giới hạn tích hợp Git và công bố mã nguồn}{87}{subsubsection.6.3.3}%
+\contentsline {subsubsection}{\numberline {6.3.4}Giới hạn về thời gian và bảo mật môi trường}{88}{subsubsection.6.3.4}%
+\contentsline {subsection}{\numberline {6.4}Hướng phát triển}{88}{subsection.6.4}%
+\contentsline {subsubsection}{\numberline {6.4.1}Hoàn thiện pipeline điều phối và quản lý phiên dữ liệu}{88}{subsubsection.6.4.1}%
+\contentsline {subsubsection}{\numberline {6.4.2}Tăng cường bảo mật và quản lý Data Agent}{89}{subsubsection.6.4.2}%
+\contentsline {subsubsection}{\numberline {6.4.3}Thiết lập quản lý mã nguồn và triển khai nhiều môi trường}{89}{subsubsection.6.4.3}%
+\contentsline {subsubsection}{\numberline {6.4.4}Đánh giá và cải thiện các mô hình học máy}{90}{subsubsection.6.4.4}%
+\contentsline {subsubsection}{\numberline {6.4.5}Mở rộng giám sát, hiệu năng và quản trị dữ liệu}{90}{subsubsection.6.4.5}%
+\contentsline {section}{TÀI LIỆU THAM KHẢO}{91}{section*.61}%
