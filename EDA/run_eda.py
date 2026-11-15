@@ -1,14 +1,13 @@
-"""Reproducible exploratory analysis for the AdventureWorks sales scope.
+"""Reproducible exploratory analysis for the AdventureWorks 2019 sales scope.
 
-The raw files in ``AdventureWorks/raw`` are tab-separated exports without a
-header row.  Column names below are taken from ``instawdb.sql``.  The script
-validates the core joins used by the warehouse design, writes summary tables,
-and exports report-ready figures with CNSPlots.
+The source files in ``AdventureWorks_2019`` are comma-separated exports with
+header rows and schema-qualified filenames.  The script validates their
+columns and the core joins used by the warehouse design, writes summary
+tables, and exports report-ready figures with CNSPlots.
 """
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 import matplotlib
@@ -28,7 +27,7 @@ except ImportError as exc:  # pragma: no cover - environment-specific message
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = REPO_ROOT / "AdventureWorks" / "raw"
+RAW_DIR = REPO_ROOT / "AdventureWorks_2019"
 OUTPUT_DIR = REPO_ROOT / "EDA" / "output"
 FIGURE_DIR = (
     REPO_ROOT / "docs" / "data_warehouse" / "images" / "chapter-2" / "eda"
@@ -149,32 +148,36 @@ PRIMARY_KEYS = {
     "SalesTerritory": ["TerritoryID"],
 }
 
+SOURCE_SCHEMAS = {
+    "SalesOrderHeader": "Sales",
+    "SalesOrderDetail": "Sales",
+    "Product": "Production",
+    "ProductSubcategory": "Production",
+    "ProductCategory": "Production",
+    "Customer": "Sales",
+    "SalesTerritory": "Sales",
+}
+
 
 def read_raw(table_name: str) -> pd.DataFrame:
-    """Load one headerless tab-separated export with its SQL schema."""
-    path = RAW_DIR / f"{table_name}.csv"
+    """Load one schema-qualified AdventureWorks 2019 CSV export."""
+    path = RAW_DIR / f"{SOURCE_SCHEMAS[table_name]} {table_name}.csv"
     if not path.exists():
         raise FileNotFoundError(f"Source table not found: {path}")
     expected_columns = SCHEMAS[table_name]
-    with path.open("r", encoding="utf-8-sig", newline="") as source:
-        rows = list(csv.reader(source, delimiter="\t"))
-
-    invalid_rows = [
-        (row_number, len(row))
-        for row_number, row in enumerate(rows, start=1)
-        if len(row) != len(expected_columns)
-    ]
-    if invalid_rows:
-        examples = ", ".join(
-            f"row {row_number}: {width} columns"
-            for row_number, width in invalid_rows[:5]
-        )
+    frame = pd.read_csv(
+        path,
+        dtype=str,
+        keep_default_na=False,
+        encoding="utf-8-sig",
+    )
+    actual_columns = frame.columns.tolist()
+    if actual_columns != expected_columns:
         raise ValueError(
-            f"Unexpected column count in {table_name}; "
-            f"expected {len(expected_columns)} ({examples})"
+            f"Unexpected columns in {table_name}; "
+            f"expected {expected_columns}, got {actual_columns}"
         )
-
-    return pd.DataFrame(rows, columns=expected_columns).replace("", pd.NA)
+    return frame.replace("", pd.NA)
 
 
 def convert_numeric(frame: pd.DataFrame, columns: list[str]) -> None:
@@ -330,7 +333,12 @@ def prepare_data() -> tuple[dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]
         )
     )
 
-    channel_labels = {"1": "Trực tuyến", "0": "Đại lý"}
+    channel_labels = {
+        "True": "Trực tuyến",
+        "False": "Đại lý",
+        "1": "Trực tuyến",
+        "0": "Đại lý",
+    }
     base["Channel"] = base["OnlineOrderFlag"].map(channel_labels)
     header["Channel"] = header["OnlineOrderFlag"].map(channel_labels)
     if base["Channel"].isna().any() or header["Channel"].isna().any():
@@ -447,14 +455,23 @@ def save_figures(
             marker="o",
             linewidth=1.8,
         )
-        ax.scatter(
-            monthly.iloc[[0, -1]]["Month"],
-            monthly.iloc[[0, -1]]["RevenueMillions"],
-            color="#E66C37",
-            s=35,
-            zorder=4,
-            label="Tháng biên chưa đủ dữ liệu",
-        )
+        min_date = header["OrderDate"].min()
+        max_date = header["OrderDate"].max()
+        partial_months = []
+        if min_date.day != 1:
+            partial_months.append(min_date.to_period("M").to_timestamp())
+        if max_date != max_date.to_period("M").end_time.normalize():
+            partial_months.append(max_date.to_period("M").to_timestamp())
+        if partial_months:
+            partial = monthly[monthly["Month"].isin(partial_months)]
+            ax.scatter(
+                partial["Month"],
+                partial["RevenueMillions"],
+                color="#E66C37",
+                s=35,
+                zorder=4,
+                label="Tháng biên chưa đủ dữ liệu",
+            )
         ax.set(
             title="Doanh thu dòng hàng theo tháng",
             xlabel="Tháng đặt hàng",

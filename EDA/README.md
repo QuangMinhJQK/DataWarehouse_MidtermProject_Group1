@@ -1,8 +1,8 @@
 # AdventureWorks exploratory data analysis
 
-The analysis uses the headerless, tab-separated exports in
-`AdventureWorks/raw`. Column names are mapped from `instawdb.sql`; no source
-file is modified.
+The analysis uses the comma-separated AdventureWorks 2019 exports in
+`AdventureWorks_2019`. Each file has a header row and a schema-qualified
+filename; no source file is modified.
 
 From the repository root, run:
 
@@ -17,5 +17,6 @@ The script validates primary keys and the core sales joins, reconciles
 - report-ready CNSPlots figures to
   `docs/data_warehouse/images/chapter-2/eda`.
 
-The first and last months in the time series are partial periods because the
-source date range begins on 2022-05-30 and ends on 2025-06-29.
+The first month in the time series is a partial period because the source date
+range begins on 2011-05-31. The range ends on 2014-06-30, so the final month is
+complete.

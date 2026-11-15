@@ -1,6 +1,6 @@
 \contentsline {figure}{\numberline {2.1}{\ignorespaces Sơ đồ tổng quát AdventureWorks OLTP 2008 (nguồn: \citealp {aw-schema}).}}{21}{figure.caption.3}%
 \contentsline {figure}{\numberline {2.2}{\ignorespaces Danh sách query Dataflow Bronze--STG được dùng để xác định phạm vi khám phá dữ liệu.}}{23}{figure.caption.4}%
-\contentsline {figure}{\numberline {2.3}{\ignorespaces Doanh thu dòng hàng theo tháng đặt hàng; hai điểm màu cam là tháng chưa đủ dữ liệu.}}{25}{figure.caption.7}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Doanh thu dòng hàng theo tháng đặt hàng; điểm màu cam là tháng chưa đủ dữ liệu.}}{25}{figure.caption.7}%
 \contentsline {figure}{\numberline {2.4}{\ignorespaces Phân phối giá trị đơn hàng theo kênh; trục tung dùng thang log.}}{26}{figure.caption.9}%
 \contentsline {figure}{\numberline {2.5}{\ignorespaces Doanh thu dòng hàng theo danh mục sản phẩm.}}{27}{figure.caption.10}%
 \contentsline {figure}{\numberline {2.6}{\ignorespaces Doanh thu dòng hàng theo lãnh thổ bán hàng.}}{28}{figure.caption.11}%

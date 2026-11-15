@@ -88,7 +88,7 @@ Trong phân tích, doanh thu được định nghĩa là tổng \texttt{SalesOrd
 
 \subsubsection{Kiểm tra chất lượng và khả năng liên kết}
 
-Dữ liệu gồm 31\,465 đầu đơn và 121\,317 dòng hàng, phát sinh từ ngày 30/05/2022 đến 29/06/2025. Không phát hiện khóa chính trùng trong bảy bảng lõi được dùng cho phân tích. Sáu quan hệ từ dòng hàng đến đầu đơn và sản phẩm, từ đầu đơn đến khách hàng và lãnh thổ, cùng chuỗi sản phẩm--phân nhóm--danh mục đều không có khóa ngoại mất liên kết. Tổng \texttt{LineTotal} lệch tổng \texttt{SubTotal} dưới 0,01 đơn vị do sai số làm tròn khi tổng hợp; về mặt nghiệp vụ hai số đo được đối soát là nhất quán.
+Dữ liệu gồm 31\,465 đầu đơn và 121\,317 dòng hàng, phát sinh từ ngày 31/05/2011 đến 30/06/2014. Không phát hiện khóa chính trùng trong bảy bảng lõi được dùng cho phân tích. Sáu quan hệ từ dòng hàng đến đầu đơn và sản phẩm, từ đầu đơn đến khách hàng và lãnh thổ, cùng chuỗi sản phẩm--phân nhóm--danh mục đều không có khóa ngoại mất liên kết. Tổng \texttt{LineTotal} lệch tổng \texttt{SubTotal} dưới 0,01 đơn vị do sai số làm tròn khi tổng hợp; về mặt nghiệp vụ hai số đo được đối soát là nhất quán.
 
 \begin{table}[H]\centering
 \caption{Kết quả kiểm tra dữ liệu lõi trước khi trực quan hóa}
@@ -109,11 +109,11 @@ Các giá trị thiếu trên không được thay thế hoặc loại bỏ tron
 
 \subsubsection{Phân tích doanh thu theo thời gian}
 
-Hình~\ref{fig:eda-monthly-revenue} tổng hợp doanh thu dòng hàng theo tháng đặt hàng. Tháng 05/2022 chỉ có dữ liệu từ ngày 30 và tháng 06/2025 kết thúc ở ngày 29, vì vậy hai điểm biên được đánh dấu riêng và không dùng để so sánh trực tiếp với tháng đầy đủ. Trong 36 tháng đầy đủ, doanh thu biến động đáng kể; tháng 04/2025 đạt mức cao nhất, khoảng 5,22 triệu đơn vị tiền tệ. Chuỗi cũng cho thấy mức doanh thu ở giai đoạn sau nhìn chung cao hơn giai đoạn đầu, nhưng vẫn có dao động giữa các tháng. Vì vậy, bài toán dự báo cần tách tập theo trình tự thời gian và xem xét yếu tố mùa vụ thay vì chia mẫu ngẫu nhiên.
+Hình~\ref{fig:eda-monthly-revenue} tổng hợp doanh thu dòng hàng theo tháng đặt hàng. Tháng 05/2011 chỉ có dữ liệu ngày 31 nên điểm biên này được đánh dấu riêng và không dùng để so sánh trực tiếp với tháng đầy đủ; tháng 06/2014 kết thúc đúng ngày 30 nên là một tháng đầy đủ. Trong 37 tháng đầy đủ, doanh thu biến động đáng kể; tháng 03/2014 đạt mức cao nhất, khoảng 7,22 triệu đơn vị tiền tệ. Chuỗi cũng cho thấy mức doanh thu ở giai đoạn sau nhìn chung cao hơn giai đoạn đầu, nhưng vẫn có dao động giữa các tháng. Vì vậy, bài toán dự báo cần tách tập theo trình tự thời gian và xem xét yếu tố mùa vụ thay vì chia mẫu ngẫu nhiên.
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.96\textwidth,keepaspectratio]{chapter-2/eda/monthly_revenue.png}
-\caption{Doanh thu dòng hàng theo tháng đặt hàng; hai điểm màu cam là tháng chưa đủ dữ liệu.}
+\caption{Doanh thu dòng hàng theo tháng đặt hàng; điểm màu cam là tháng chưa đủ dữ liệu.}
 \label{fig:eda-monthly-revenue}
 \end{figure}
 

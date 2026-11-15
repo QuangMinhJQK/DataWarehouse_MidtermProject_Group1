@@ -1,0 +1,226 @@
+hai nhóm bảng. Nhóm thứ nhất là bảng sự kiện, có tiền tố Fact, chứa các số đo định
+lượng phát sinh từ nghiệp vụ. Nhóm thứ hai là bảng chiều, có tiền tố Dim, chứa các
+thông tin mô tả ngữ cảnh như khách hàng, sản phẩm, thời gian hay lãnh thổ. Các bảng
+liên kết với nhau bằng khóa thay thế có hậu tố Key, thay vì dùng trực tiếp mã nghiệp vụ
+của hệ thống nguồn.
+      Sự khác biệt giữa hai cách tổ chức này chính là lý do đồ án cần một quy trình
+chuyển đổi. OLTP được tối ưu cho việc ghi nhận giao dịch, còn mô hình chiều được tối
+ưu cho truy vấn và phân tích. Việc đưa dữ liệu từ nguồn thô đến mô hình chiều là nội
+dung của các chương sau.
+
+2.3.3 Các bảng dữ liệu phục vụ hoạt động bán hàng
+
+       Nhóm bảng lõi gồm SalesOrderHeader, SalesOrderDetail, Customer,
+SalesTerritory, Product, ProductSubcategory và ProductCategory. Các bảng
+Person và Store bổ sung thông tin mô tả khách hàng. Khả năng nối giữa các bảng và
+các khóa ngoại thiếu giá trị được kiểm tra trước khi dữ liệu được dùng để xây dựng các
+chiều phân tích (Microsoft, n.d.-d).
+
+2.3.4 Mối quan hệ giữa các bảng dữ liệu
+
+       SalesOrderDetail.SalesOrderID           nối     với      SalesOrderHeader.
+SalesOrderID; ProductID nối dòng hàng với sản phẩm.                 CustomerID và
+TerritoryID ở đầu đơn dẫn đến khách hàng và lãnh thổ. Từ sản phẩm có thể đi qua
+ProductSubcategoryID rồi ProductCategoryID để phân tích theo nhóm. Các đường
+nối này được sử dụng trong mô hình phân tích và được kiểm tra trên dữ liệu đã nạp.
+
+2.4 Khám phá và trực quan hóa dữ liệu
+
+2.4.1 Phạm vi dữ liệu và phương pháp khám phá
+
+       Quá trình khám phá tập trung vào ba nội dung: kiểm tra chất lượng và khả năng
+liên kết giữa các bảng, mô tả đặc điểm phân phối của các chỉ tiêu bán hàng, và xác định
+những yêu cầu cần thiết cho mô hình kho dữ liệu. Dữ liệu được xem xét ở cả mức đầu
+đơn và dòng hàng, sau đó phân tích theo thời gian, kênh bán, sản phẩm, khách hàng và
+lãnh thổ. Cách tổ chức này bảo đảm các nhận xét mô tả gắn trực tiếp với phạm vi nghiệp
+vụ bán hàng của dự án.
+      Danh sách query Dataflow trong Hình 2.2 cho thấy 24 bảng đã được chọn cho
+
+
+                                          22
+luồng Bronze–STG. Hai query còn lại là fnSnakeCaseColumns và fnDQGate, phục vụ
+chuẩn hóa tên cột và kiểm soát chất lượng. Bảng 2.2 lược bỏ tiền tố stg_ để thể hiện tên
+thực thể nguồn. Phạm vi này rộng hơn bảy bảng lõi của mô hình doanh thu vì còn giữ
+dữ liệu lịch sử giá, chi phí, tồn kho, khuyến mại, tiền tệ và địa chỉ để phục vụ các bước
+tích hợp tiếp theo.
+
+
+
+
+  Hình 2.2: Danh sách query Dataflow Bronze–STG được dùng để xác định phạm vi
+                               khám phá dữ liệu.
+
+
+          Bảng 2.2: Nhóm bảng được lựa chọn trong Dataflow Bronze–STG
+
+ Nhóm dữ liệu        Các bảng được lựa chọn
+ Giao dịch      và SalesOrderHeader, SalesOrderDetail, Customer, Person, Store,
+ khách hàng        SalesPerson, SalesPersonQuotaHistory
+ Sản phẩm và tồn Product, ProductCategory, ProductSubcategory, ProductCostHis-
+ kho             tory, ProductListPriceHistory, ProductInventory, Location, Spe-
+                 cialOffer, SpecialOfferProduct
+ Địa lý và lãnh thổ SalesTerritory,    SalesTerritoryHistory,          CountryRegion,
+                    StateProvince, Address
+ Danh mục tham ShipMethod, Currency, CurrencyRate
+ chiếu
+
+
+
+                                           23
+      Trong phân tích, doanh thu được định nghĩa là tổng SalesOrderDetail.
+LineTotal, tức giá trị dòng hàng sau chiết khấu nhưng chưa cộng thuế và phí vận
+chuyển. OrderDate được dùng làm ngày nghiệp vụ, SalesOrderID dùng để đếm đơn
+phân biệt và OrderQty dùng để đo số lượng bán. Việc cố định định nghĩa ngay từ bước
+khám phá giúp tránh cộng lặp TaxAmt và Freight, vốn được lưu ở mức đầu đơn.
+
+2.4.2 Kiểm tra chất lượng và khả năng liên kết
+
+       Dữ liệu gồm 31 465 đầu đơn và 121 317 dòng hàng, phát sinh từ ngày 31/05/2011
+đến 30/06/2014. Không phát hiện khóa chính trùng trong bảy bảng lõi được dùng cho
+phân tích. Sáu quan hệ từ dòng hàng đến đầu đơn và sản phẩm, từ đầu đơn đến khách
+hàng và lãnh thổ, cùng chuỗi sản phẩm–phân nhóm–danh mục đều không có khóa ngoại
+mất liên kết. Tổng LineTotal lệch tổng SubTotal dưới 0,01 đơn vị do sai số làm tròn
+khi tổng hợp; về mặt nghiệp vụ hai số đo được đối soát là nhất quán.
+
+            Bảng 2.3: Kết quả kiểm tra dữ liệu lõi trước khi trực quan hóa
+
+ Nội dung kiểm tra                    Kết quả Diễn giải
+ Khóa chính trùng ở bảy bảng lõi              0 Không phát hiện bản ghi trùng theo
+                                                khóa nghiệp vụ được kiểm tra
+ Khóa ngoại mất liên kết ở sáu quan           0 Có thể nối dữ liệu bán hàng với sản
+ hệ lõi                                         phẩm, khách hàng và lãnh thổ
+ Giá trị trạng thái đơn phân biệt             1 Toàn bộ bản ghi hiện có mang mã
+                                                trạng thái 5
+ SalesPersonID thiếu                    27 659 Bằng đúng số đơn trực tuyến; đây là
+                                               thiếu có cấu trúc, không nên tự động
+                                               loại bản ghi
+ CurrencyRateID thiếu                   17 489 Cột cho phép rỗng; cần quy tắc riêng
+                                               khi chuẩn hóa tiền tệ
+ Khách hàng chưa phát sinh đơn             701 Nên giữ trong chiều khách hàng
+                                               nhưng không xuất hiện trong sự kiện
+                                               bán hàng hiện tại
+ Sản phẩm chưa có phân nhóm                209 Cần thành viên “chưa xác định” khi
+                                               xây dựng chiều sản phẩm
+
+
+     Các giá trị thiếu trên không được thay thế hoặc loại bỏ trong giai đoạn khám phá.
+Chúng được xem là tín hiệu để thiết kế quy tắc STG: phân biệt thiếu hợp lệ theo nghiệp
+
+                                         24
+vụ với lỗi chất lượng, đồng thời tạo thành viên mặc định trong các chiều nhằm bảo toàn
+dòng sự kiện nếu dữ liệu mới xuất hiện.
+
+2.4.3 Phân tích doanh thu theo thời gian
+
+       Hình 2.3 tổng hợp doanh thu dòng hàng theo tháng đặt hàng. Tháng 05/2011 chỉ
+có dữ liệu ngày 31 nên điểm biên này được đánh dấu riêng và không dùng để so sánh
+trực tiếp với tháng đầy đủ; tháng 06/2014 kết thúc đúng ngày 30 nên là một tháng đầy
+đủ. Trong 37 tháng đầy đủ, doanh thu biến động đáng kể; tháng 03/2014 đạt mức cao
+nhất, khoảng 7,22 triệu đơn vị tiền tệ. Chuỗi cũng cho thấy mức doanh thu ở giai đoạn
+sau nhìn chung cao hơn giai đoạn đầu, nhưng vẫn có dao động giữa các tháng. Vì vậy,
+bài toán dự báo cần tách tập theo trình tự thời gian và xem xét yếu tố mùa vụ thay vì chia
+mẫu ngẫu nhiên.
+
+
+
+
+Hình 2.3: Doanh thu dòng hàng theo tháng đặt hàng; điểm màu cam là tháng chưa đủ
+                                     dữ liệu.
+
+
+2.4.4 Phân tích kênh bán hàng và khách hàng
+
+      OnlineOrderFlag tách dữ liệu thành kênh trực tuyến và kênh không trực tuyến,
+được gọi là kênh đại lý trong phần phân tích. Bảng 2.4 cho thấy số đơn và doanh thu
+không phân bổ cùng một tỷ lệ. Trực tuyến tạo 87,90% số đơn nhưng chỉ chiếm 26,73%
+doanh thu. Đại lý chỉ chiếm 12,10% số đơn nhưng tạo 73,27% doanh thu; trung vị giá
+
+                                           25
+trị đơn của kênh này cao hơn khoảng 13,9 lần so với trực tuyến. Do đó, chỉ tiêu số đơn
+không thể thay thế doanh thu khi đánh giá hiệu quả kênh.
+
+             Bảng 2.4: Tổng hợp đơn hàng và doanh thu theo kênh bán hàng
+
+    Kênh          Số đơn Tỷ trọng đơn DT (triệu) Tỷ trọng DT Trung vị
+    Trực tuyến     27 659         87,90%         29,36         26,73%       594,97
+    Đại lý          3 806         12,10%         80,49         73,27%     8 257,08
+
+
+      Phân phối trong Hình 2.4 được trình bày trên thang log vì giá trị đơn trải rộng từ
+vài đơn vị đến hơn 100 nghìn đơn vị tiền tệ. Biểu đồ giữ trung vị và khoảng tứ phân vị
+thay vì chỉ dùng trung bình, qua đó cho thấy khác biệt về quy mô giao dịch giữa hai kênh
+mà không để một số đơn rất lớn che khuất phần lớn quan sát.
+
+
+
+
+      Hình 2.4: Phân phối giá trị đơn hàng theo kênh; trục tung dùng thang log.
+
+
+       Trong 19 820 khách hàng nguồn, có 19 119 khách hàng đã phát sinh đơn và 701
+khách hàng chưa xuất hiện trong giao dịch. Khách hàng của hai kênh không giao nhau
+trong tập dữ liệu hiện tại. Điều này củng cố nhu cầu giữ CustomerID và thuộc tính loại
+khách hàng trong chiều khách hàng, đồng thời không loại các thành viên chưa có giao
+dịch khi nạp chiều.
+
+
+
+
+                                           26
+2.4.5 Phân tích cơ cấu sản phẩm
+
+      Doanh thu được nối từ dòng hàng qua Product, ProductSubcategory đến
+ProductCategory. Tất cả dòng hàng hiện tại đều tìm được danh mục, dù 209 sản
+phẩm trong bảng nguồn chưa có phân nhóm. Hình 2.5 cho thấy Bikes tạo 94,65 triệu,
+tương đương 86,17% doanh thu dòng hàng. Components đứng thứ hai với 10,74%, còn
+Clothing và Accessories cộng lại chỉ chiếm khoảng 3,09%.
+
+
+
+
+              Hình 2.5: Doanh thu dòng hàng theo danh mục sản phẩm.
+
+
+       Mức tập trung trên cho thấy số lượng bán, số đơn có sản phẩm và doanh thu phải
+được lưu như các số đo riêng. Chẳng hạn, Accessories xuất hiện trong 19 524 đơn nhưng
+chỉ tạo 1,16% doanh thu; vì vậy tần suất xuất hiện cao không đồng nghĩa với đóng góp
+doanh thu lớn. Chiều sản phẩm cần giữ cả cấp sản phẩm, phân nhóm và danh mục để có
+thể chuyển đổi mức phân tích mà không làm mất chi tiết.
+
+2.4.6 Phân tích doanh thu theo lãnh thổ
+
+      Phân tích khu vực sử dụng TerritoryID ghi trên đầu đơn và nối với
+SalesTerritory; không suy ngược lãnh thổ từ địa chỉ hiện tại của khách hàng.
+Hình 2.6 cho thấy Southwest dẫn đầu với 24,18 triệu, tương đương 22,02% doanh thu.
+Canada và Northwest lần lượt đóng góp 14,89% và 14,64%; ba lãnh thổ này cộng lại
+chiếm khoảng 51,55% doanh thu. Tuy vậy, cả mười lãnh thổ đều có giao dịch nên
+
+
+                                         27
+không có cơ sở loại bỏ lãnh thổ nào khỏi chiều phân tích.
+
+
+
+
+               Hình 2.6: Doanh thu dòng hàng theo lãnh thổ bán hàng.
+
+
+2.4.7 Kết luận từ khám phá dữ liệu
+
+       Kết quả khám phá xác nhận mức hạt phù hợp của bảng sự kiện là một dòng cho
+mỗi SalesOrderDetailID. Ở mức này có thể cộng đúng số lượng và doanh thu dòng
+hàng, đồng thời đếm đơn phân biệt qua SalesOrderID. Các chiều tối thiểu gồm ngày
+đặt hàng, sản phẩm, khách hàng, lãnh thổ và kênh bán. Thuế, phí vận chuyển và tổng
+phải trả vẫn thuộc mức đầu đơn, nên nếu đưa vào bảng sự kiện dòng hàng phải có quy
+tắc phân bổ hoặc một bảng sự kiện đầu đơn riêng.
+         Quá trình khám phá cũng chỉ ra ba yêu cầu xử lý cho tầng Silver: bảo toàn các
+giá trị thiếu có ý nghĩa nghiệp vụ, tạo thành viên “chưa xác định” cho khóa chiều không
+đầy đủ và chuẩn hóa tiền tệ trước khi so sánh các giao dịch có tỷ giá. Những kết luận
+này được chuyển thành yêu cầu dữ liệu ở mục tiếp theo và là cơ sở cho thiết kế kho ở
+Chương 3.
+
+
+
+
+                                          28
+
