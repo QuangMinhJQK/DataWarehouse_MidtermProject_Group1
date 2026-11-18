@@ -96,11 +96,11 @@ def render_hero(health: dict[str, Any] | None) -> None:
     st.markdown(
         f"""
         <section class="hero">
-          <div class="hero-kicker">AdventureWorks · Semantic Control Room</div>
-          <h1>Ask the model.<br/>Keep the metric.</h1>
+          <div class="hero-kicker">AdventureWorks · Sales Analytics</div>
+          <h1>Trợ lý hỏi đáp Sales</h1>
           <p>
-            Trợ lý hỏi đáp trực tiếp trên Fabric Semantic Model.
-            Mọi truy vấn đều qua catalog allowlist và DAX compiler chỉ đọc.
+            Đặt câu hỏi về doanh thu, đơn hàng, sản phẩm và tồn kho
+            để xem số liệu từ báo cáo bán hàng.
           </p>
           <div class="status-strip">{chips}</div>
         </section>

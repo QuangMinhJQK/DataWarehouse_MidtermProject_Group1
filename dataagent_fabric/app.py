@@ -19,13 +19,12 @@ from dataagent.ui import inject_theme, render_assistant_message, render_hero  # 
 
 REPORT_URL = (
     "https://app.fabric.microsoft.com/view?"
-    "r=eyJrIjoiOWM2M2ZiOGEtOGE1YS00NDU0LWI4ZDgtNGM0MGMyN2YwNzEwIiwidCI6"
+    "r=eyJrIjoiNmQyMDJiZWYtYjNhYy00NDkyLWJhMmItOTI3NTIwYzk5N2RjIiwidCI6"
     "IjExOGQ0NmZmLTkxZDUtNDhkNS1iOWI3LWEwMTA4ZTI4ZTliMyIsImMiOjEwfQ%3D%3D"
-    "&pageName=b0e897342a58048000e3"
 )
 
 st.set_page_config(
-    page_title="AdventureWorks | Dashboard & Data Agent",
+    page_title="AdventureWorks | Dashboard & Trợ lý Sales",
     page_icon="◈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -55,7 +54,7 @@ def load_health(service: DataAgentService) -> tuple[dict[str, Any] | None, bool]
 
 
 def render_dashboard() -> None:
-    st.title("Dashboard vận hành")
+    st.title("Dashboard bán hàng")
     st.caption("Báo cáo Power BI/Fabric được công bố công khai.")
     st.link_button("Mở dashboard trong tab mới", REPORT_URL)
     st.iframe(REPORT_URL, height=760)
@@ -131,7 +130,7 @@ def render_agent() -> None:
 
 inject_theme()
 with st.sidebar:
-    page = st.radio("Điều hướng", ["Dashboard", "Data Agent"], label_visibility="collapsed")
+    page = st.radio("Điều hướng", ["Dashboard", "Trợ lý Sales"], label_visibility="collapsed")
 
 if page == "Dashboard":
     render_dashboard()
